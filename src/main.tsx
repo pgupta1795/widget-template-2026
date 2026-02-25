@@ -3,6 +3,8 @@ import ReactDOM from "react-dom/client"
 import "./index.css"
 import {logger} from "./lib/logger"
 import {init} from "./lib/widget/api"
+import {getModule} from "./lib/modules/registry"
+import {loadModules} from "./lib/modules/loader"
 import {WidgetProvider} from "./lib/widget/context"
 import type {DSPlatformAPIs} from "./lib/widget/types"
 import {getRouter} from "./router"
@@ -26,7 +28,7 @@ const waitFor = (predicate: () => boolean, timeout: number) => {
 
 const rootId = "root"
 
-const start = () => {
+const start = async () => {
   logger.info("Starting widget application...")
   let rootEl = document.getElementById(rootId)
   if (!rootEl) {
@@ -36,52 +38,27 @@ const start = () => {
     document.body.appendChild(rootEl)
   }
 
-  window.requirejs(
-    [
-      "DS/PlatformAPI/PlatformAPI",
-      "DS/WAFData/WAFData",
-      "DS/i3DXCompassServices/i3DXCompassServices",
-      "DS/DataDragAndDrop/DataDragAndDrop",
-      "UWA/Core",
-      "UWA/Utils/InterCom",
-      "DS/WebappsUtils/WebappsUtils",
-    ],
-    (...modules: unknown[]) => {
-      const [
-        PlatformAPI,
-        WAFData,
-        i3DXCompassServices,
-        DataDragAndDrop,
-        UWA_Core,
-        UWA_Utils_InterCom,
-        WebappsUtils,
-      ] = modules
+  await loadModules(["drag-drop", "uwa-core", "intercom"])
 
-      const apis: DSPlatformAPIs = {
-        PlatformAPI: PlatformAPI as DSPlatformAPIs["PlatformAPI"],
-        WAFData: WAFData as DSPlatformAPIs["WAFData"],
-        i3DXCompassServices: i3DXCompassServices as DSPlatformAPIs["i3DXCompassServices"],
-        DataDragAndDrop: DataDragAndDrop as DSPlatformAPIs["DataDragAndDrop"],
-        UWA_Core,
-        UWA_Utils_InterCom: UWA_Utils_InterCom as DSPlatformAPIs["UWA_Utils_InterCom"],
-        WebappsUtils: WebappsUtils as DSPlatformAPIs["WebappsUtils"],
-      }
+  const apis: DSPlatformAPIs = {
+    PlatformAPI: getModule("platform-api"),
+    WAFData: getModule("waf-data"),
+    i3DXCompassServices: getModule("compass-services"),
+    DataDragAndDrop: getModule("drag-drop"),
+    UWA_Core: getModule("uwa-core"),
+    UWA_Utils_InterCom: getModule("intercom"),
+    WebappsUtils: getModule("webapps-utils"),
+  }
 
-      init(apis, window.widget, window.UWA)
-      const widgetContext = {
-        widget: window.widget,
-        uwa: window.UWA,
-        apis,
-      }
-      const router = getRouter()
-      ReactDOM.createRoot(rootEl).render(
-        <WidgetProvider value={widgetContext}>
-          <RouterProvider router={router} />
-        </WidgetProvider>,
-      )
-      logger.info("Widget application rendered.")
-    },
+  init(apis, window.widget, window.UWA)
+  const widgetContext = { widget: window.widget, uwa: window.UWA, apis }
+  const router = getRouter()
+  ReactDOM.createRoot(rootEl).render(
+    <WidgetProvider value={widgetContext}>
+      <RouterProvider router={router} />
+    </WidgetProvider>,
   )
+  logger.info("Widget application rendered.")
 }
 
 waitFor(() => window.widget != null, 1000)
