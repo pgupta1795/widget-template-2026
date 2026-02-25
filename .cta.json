@@ -1,0 +1,22 @@
+{
+  "projectName": "tanstack-start-widget-template",
+  "mode": "file-router",
+  "typescript": true,
+  "packageManager": "npm",
+  "includeExamples": false,
+  "tailwind": true,
+  "addOnOptions": {},
+  "envVarValues": {},
+  "git": true,
+  "routerOnly": false,
+  "version": 1,
+  "framework": "react-cra",
+  "chosenAddOns": [
+    "biome",
+    "cloudflare",
+    "shadcn",
+    "t3env",
+    "table",
+    "tanstack-query"
+  ]
+}
