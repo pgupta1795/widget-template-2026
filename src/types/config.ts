@@ -184,6 +184,33 @@ export type DropZoneConfig = {
 	typeField?: string;
 };
 
+export type SidebarItemType = "link" | "action" | "divider";
+
+export type SidebarItem = {
+	id: string;
+	label: string;
+	icon?: string;
+	type: SidebarItemType;
+	view?: string;
+	action?: string;
+	active?: boolean;
+};
+
+export type SidebarSection = {
+	id: string;
+	title: string;
+	description?: string;
+	items: SidebarItem[];
+};
+
+export type SidebarConfig = {
+	title: string;
+	description?: string;
+	sections: SidebarSection[];
+	collapsible?: boolean;
+	defaultWidth?: number;
+};
+
 export type WidgetConfig = {
 	id: string;
 	title: string;
@@ -193,4 +220,5 @@ export type WidgetConfig = {
 	tabs: TabDefinition[];
 	modules?: string[];
 	defaultTab?: string;
+	sidebar?: SidebarConfig;
 };
