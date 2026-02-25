@@ -1,2 +1,6 @@
-export { getWidgetConfig, getAvailableWidgets, registerWidgetConfig } from "./widgets"
-export { MODULE_REGISTRY, CORE_MODULES, type ModuleKey } from "./modules"
+export { CORE_MODULES, MODULE_REGISTRY, type ModuleKey } from "./modules";
+export {
+	getAvailableWidgets,
+	getWidgetConfig,
+	registerWidgetConfig,
+} from "./widgets";

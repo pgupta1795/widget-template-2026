@@ -24,7 +24,20 @@
 	"linter": {
 		"enabled": true,
 		"rules": {
-			"recommended": true
+			"recommended": true,
+			"suspicious": {
+				"noArrayIndexKey": "warn",
+				"noExplicitAny": "warn",
+				"noUnknownAtRules": "off"
+			},
+			"style": {
+				"noNonNullAssertion": "warn"
+			},
+			"a11y": {
+				"useSemanticElements": "warn",
+				"noLabelWithoutControl": "warn",
+				"useKeyWithClickEvents": "warn"
+			}
 		}
 	},
 	"javascript": {
@@ -33,4 +46,3 @@
 		}
 	}
 }
-
