@@ -1,19 +1,18 @@
-import { createRouter as createTanStackRouter } from '@tanstack/react-router'
-import { routeTree } from './routeTree.gen'
-
-import { getContext } from './integrations/tanstack-query/root-provider'
+import {getContext} from '@/components/root-provider'
+import {env} from '@/lib/env'
+import {routeTree} from '@/routeTree.gen'
+import {createRouter} from '@tanstack/react-router'
 
 export function getRouter() {
-  const router = createTanStackRouter({
+  console.log({BASE_PATH : env.VITE_WIDGET_BASE_PATH})
+  const router = createRouter({
     routeTree,
-
+    basepath: env.VITE_WIDGET_BASE_PATH,
     context: getContext(),
-
     scrollRestoration: true,
     defaultPreload: 'intent',
     defaultPreloadStaleTime: 0,
   })
-
   return router
 }
 

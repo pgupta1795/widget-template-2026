@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml" xmlns:widget="http://www.netvibes.com/ns/">
+
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>VITE Widget</title>
+  <widget:preferences>
+    <widget:preference type="text" name="Title" label="Title" defaultValue="Widget Template" />
+    <widget:preference type="list" name="Type" label="Type" defaultValue="VPMReference">
+      <widget:option value="VPMReference" label="Physical Product"></widget:option>
+    </widget:preference>
+  </widget:preferences>
+  <script type="text/javascript">
+    function addStyle(ootbCss) {
+      var link=document.createElement("link");
+      link.type="text/css";
+      link.rel="stylesheet";
+      link.href=UWA.hosts.uwa+ootbCss;
+      document.head.appendChild(link);
+    };
+    addStyle("/UIKIT/UIKIT.css");
+    addStyle("/Core/wux.css");
+    addStyle("/Core/wux-3ds-fonticons.css");
+  </script>
+  <script type="module" src="/src/main.tsx"></script>
+</head>
+
+<body>
+  <div id="root">
+    Loading...
+  </div>
+</body>
+
+</html>
