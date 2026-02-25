@@ -1,7 +1,7 @@
-import { Upload } from "lucide-react";
-import { cn } from "@/lib/utils";
-import type { DropZoneConfig } from "@/types/config";
-import { type DroppedObject, useObjectDrop } from "./use-object-drop";
+import {cn} from "@/lib/utils";
+import type {DropZoneConfig} from "@/types/config";
+import {Upload} from "lucide-react";
+import {type DroppedObject,useObjectDrop} from "./use-object-drop";
 
 type DropZoneProps = {
 	config: DropZoneConfig;
@@ -24,7 +24,7 @@ export function DropZone({
 		<div
 			ref={elementRef}
 			className={cn(
-				"relative min-h-[120px] rounded-lg border-2 border-dashed transition-colors",
+				"relative min-h-30 rounded-lg border-2 border-dashed transition-colors",
 				isDragging
 					? "border-primary bg-primary/5"
 					: "border-muted-foreground/25 hover:border-muted-foreground/40",

@@ -1,5 +1,12 @@
-import type { WidgetConfig } from "@/types/config";
-import { engineeringBomConfig } from "./engineering-bom";
+import logger from '@/lib/logger';
+import type {WidgetConfig} from "@/types/config";
+import {engineeringBomConfig} from "./engineering-bom";
+
+type WidgetProps = {
+	id: string;
+	title: string;
+	description?: string;
+}
 
 const WIDGET_CONFIGS: Record<string, WidgetConfig> = {
 	"engineering-bom": engineeringBomConfig,
@@ -7,18 +14,15 @@ const WIDGET_CONFIGS: Record<string, WidgetConfig> = {
 
 export function getWidgetConfig(id: string): WidgetConfig {
 	const config = WIDGET_CONFIGS[id];
-	if (!config)
-		throw new Error(
-			`Widget config "${id}" not found. Available: ${Object.keys(WIDGET_CONFIGS).join(", ")}`,
-		);
+	if (!config) {
+		const err = `Widget config "${id}" not found. Available: ${Object.keys(WIDGET_CONFIGS).join(", ")}`;
+		logger.error(err);
+		throw new Error(err);
+	}
 	return config;
 }
 
-export function getAvailableWidgets(): {
-	id: string;
-	title: string;
-	description?: string;
-}[] {
+export function getAvailableWidgets(): WidgetProps[] {
 	return Object.values(WIDGET_CONFIGS).map(({ id, title, description }) => ({
 		id,
 		title,
