@@ -2,11 +2,36 @@ import tailwindcss from '@tailwindcss/vite'
 import tanstackRouter from '@tanstack/router-plugin/vite'
 import viteReact from '@vitejs/plugin-react'
 import {defineConfig} from 'vite'
+import type {Plugin} from 'vite'
 import tsconfigPaths from 'vite-tsconfig-paths'
+
+function cacheVersionPlugin(): Plugin {
+	const version = Date.now().toString(36)
+	return {
+		name: "cache-version",
+		apply: "build",
+		transformIndexHtml(html) {
+			return html
+				.replace(
+					/(<script[^>]+\bsrc=["'])([^"'?]+)(["'])/g,
+					`$1$2?v=${version}$3`,
+				)
+				.replace(
+					/(<link[^>]+\brel=["']stylesheet["'][^>]+\bhref=["'])([^"'?]+)(["'])/g,
+					`$1$2?v=${version}$3`,
+				)
+				.replace(
+					/(<link[^>]+\bhref=["'])([^"'?]+\.css)(["'][^>]*>)/g,
+					`$1$2?v=${version}$3`,
+				)
+		},
+	}
+}
 
 export default defineConfig({
   base: './',
   plugins: [
+    cacheVersionPlugin(),
     tanstackRouter({
       target: 'react',
       autoCodeSplitting: true,
