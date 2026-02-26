@@ -126,7 +126,7 @@ export function DataTable({
 					{table.getHeaderGroups().map((headerGroup) => (
 						<TableRow
 							key={headerGroup.id}
-							className="bg-[#F3F4F6] hover:bg-[#F3F4F6]"
+							className="bg-muted hover:bg-muted"
 						>
 							{headerGroup.headers.map((header) => (
 								<TableHead
