@@ -14,6 +14,14 @@ import { ArrowUpDown, ChevronLeft, ChevronRight } from "lucide-react";
 import { useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import {
+	Table,
+	TableBody,
+	TableCell,
+	TableHead,
+	TableHeader,
+	TableRow,
+} from "@/components/ui/table";
 import { cn } from "@/lib/utils";
 import type { CommandDefinition, TableConfig } from "@/types/config";
 import { buildColumns } from "./table-columns";
@@ -113,71 +121,70 @@ export function DataTable({
 				onAction={onToolbarAction}
 			/>
 
-			<div className="overflow-auto">
-				<table className="w-full text-xs">
-					<thead>
-						{table.getHeaderGroups().map((headerGroup) => (
-							<tr key={headerGroup.id} className="border-b bg-[#F3F4F6]">
-								{headerGroup.headers.map((header) => (
-									<th
-										key={header.id}
-										className={cn(
-											"h-8 px-3 text-left font-medium text-muted-foreground",
-											header.column.getCanSort() &&
-												"cursor-pointer select-none",
-										)}
-										style={{ width: header.getSize() }}
-										onClick={header.column.getToggleSortingHandler()}
-									>
-										<div className="flex items-center gap-1">
-											{header.isPlaceholder
-												? null
-												: flexRender(
-														header.column.columnDef.header,
-														header.getContext(),
-													)}
-											{header.column.getCanSort() && (
-												<ArrowUpDown className="size-3 text-muted-foreground/50" />
-											)}
-										</div>
-									</th>
-								))}
-							</tr>
-						))}
-					</thead>
-					<tbody>
-						{table.getRowModel().rows.length === 0 ? (
-							<tr>
-								<td
-									colSpan={columns.length}
-									className="h-24 text-center text-muted-foreground"
-								>
-									No results.
-								</td>
-							</tr>
-						) : (
-							table.getRowModel().rows.map((row) => (
-								<tr
-									key={row.id}
+			<Table>
+				<TableHeader>
+					{table.getHeaderGroups().map((headerGroup) => (
+						<TableRow
+							key={headerGroup.id}
+							className="bg-[#F3F4F6] hover:bg-[#F3F4F6]"
+						>
+							{headerGroup.headers.map((header) => (
+								<TableHead
+									key={header.id}
 									className={cn(
-										"border-b transition-colors hover:bg-muted/50",
-										row.getIsSelected() && "bg-muted",
+										"h-8 px-3 text-muted-foreground font-medium",
+										header.column.getCanSort() &&
+											"cursor-pointer select-none",
 									)}
+									style={{ width: header.getSize() }}
+									onClick={header.column.getToggleSortingHandler()}
 								>
-									{row.getVisibleCells().map((cell) => (
-										<td key={cell.id} className="h-8 px-3">
-											{flexRender(
-												cell.column.columnDef.cell,
-												cell.getContext(),
-											)}
-										</td>
-									))}
-								</tr>
-							))
-						)}
-					</tbody>
-				</table>
-			</div>
+									<div className="flex items-center gap-1">
+										{header.isPlaceholder
+											? null
+											: flexRender(
+													header.column.columnDef.header,
+													header.getContext(),
+												)}
+										{header.column.getCanSort() && (
+											<ArrowUpDown className="size-3 text-muted-foreground/50" />
+										)}
+									</div>
+								</TableHead>
+							))}
+						</TableRow>
+					))}
+				</TableHeader>
+				<TableBody>
+					{table.getRowModel().rows.length === 0 ? (
+						<TableRow>
+							<TableCell
+								colSpan={columns.length}
+								className="h-24 text-center text-muted-foreground"
+							>
+								No results.
+							</TableCell>
+						</TableRow>
+					) : (
+						table.getRowModel().rows.map((row) => (
+							<TableRow
+								key={row.id}
+								data-state={row.getIsSelected() ? "selected" : undefined}
+								className="transition-colors"
+							>
+								{row.getVisibleCells().map((cell) => (
+									<TableCell key={cell.id} className="h-8 px-3 py-0">
+										{flexRender(
+											cell.column.columnDef.cell,
+											cell.getContext(),
+										)}
+									</TableCell>
+								))}
+							</TableRow>
+						))
+					)}
+				</TableBody>
+			</Table>
 
 			{config.pagination && (
 				<div className="flex items-center justify-between border-t px-4 py-2">
