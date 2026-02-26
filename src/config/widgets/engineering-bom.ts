@@ -11,6 +11,63 @@ export const engineeringBomConfig: WidgetConfig = {
 	title: "Engineering BOM",
 	description: "Engineering Bill of Materials viewer with structure navigation",
 
+	sidebar: {
+		title: "Engineering BOM",
+		description: "Browse and manage engineering bill of materials",
+		sections: [
+			{
+				id: "access",
+				title: "Access Your Work",
+				items: [
+					{
+						id: "recents",
+						label: "Recents",
+						icon: "clock",
+						type: "link",
+						view: "recents",
+						active: true,
+					},
+					{
+						id: "open",
+						label: "Open",
+						icon: "folder-open",
+						type: "link",
+						view: "open",
+					},
+					{
+						id: "my-products",
+						label: "My Products",
+						icon: "box",
+						type: "link",
+						view: "my-products",
+					},
+				],
+			},
+			{
+				id: "new",
+				title: "Start a New Activity",
+				items: [
+					{
+						id: "new-product",
+						label: "New Product",
+						icon: "plus-square",
+						type: "action",
+						action: "create-product",
+					},
+					{
+						id: "new-part",
+						label: "New Part",
+						icon: "plus-square",
+						type: "action",
+						action: "create-part",
+					},
+				],
+			},
+		],
+		collapsible: true,
+		defaultWidth: 220,
+	},
+
 	header: {
 		endpoint: ZONE_QUERY,
 		titleField: "title",
