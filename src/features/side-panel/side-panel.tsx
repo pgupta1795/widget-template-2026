@@ -44,7 +44,9 @@ export function SidePanel({
 		<Sheet open={open} onOpenChange={onOpenChange}>
 			<SheetContent className={WIDTH_MAP[config.width ?? "md"]}>
 				<SheetHeader>
-					<SheetTitle className="text-sm">{config.title}</SheetTitle>
+					<SheetTitle className="text-sm font-semibold text-foreground">
+						{config.title}
+					</SheetTitle>
 					<SheetDescription className="sr-only">
 						Object attributes
 					</SheetDescription>
