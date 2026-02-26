@@ -114,7 +114,7 @@ export function DataTable({
 				<table className="w-full text-xs">
 					<thead>
 						{table.getHeaderGroups().map((headerGroup) => (
-							<tr key={headerGroup.id} className="border-b bg-muted/50">
+							<tr key={headerGroup.id} className="border-b bg-[#F3F4F6]">
 								{headerGroup.headers.map((header) => (
 									<th
 										key={header.id}
@@ -162,7 +162,7 @@ export function DataTable({
 									)}
 								>
 									{row.getVisibleCells().map((cell) => (
-										<td key={cell.id} className="h-9 px-3">
+										<td key={cell.id} className="h-8 px-3">
 											{flexRender(
 												cell.column.columnDef.cell,
 												cell.getContext(),
