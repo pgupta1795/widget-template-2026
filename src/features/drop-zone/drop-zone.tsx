@@ -1,7 +1,7 @@
-import {cn} from "@/lib/utils";
-import type {DropZoneConfig} from "@/types/config";
-import {Upload} from "lucide-react";
-import {type DroppedObject,useObjectDrop} from "./use-object-drop";
+import { Upload } from "lucide-react";
+import { cn } from "@/lib/utils";
+import type { DropZoneConfig } from "@/types/config";
+import { type DroppedObject, useObjectDrop } from "./use-object-drop";
 
 type DropZoneProps = {
 	config: DropZoneConfig;
@@ -24,27 +24,46 @@ export function DropZone({
 		<div
 			ref={elementRef}
 			className={cn(
-				"relative min-h-30 rounded-lg border-2 border-dashed transition-colors",
+				"relative rounded-md border border-dashed transition-colors",
 				isDragging
 					? "border-primary bg-primary/5"
-					: "border-muted-foreground/25 hover:border-muted-foreground/40",
-				children && "border-transparent hover:border-transparent",
+					: "border-border hover:border-primary/50 hover:bg-primary/5",
+				children &&
+					"border-transparent hover:border-transparent hover:bg-transparent",
+				!children && "max-w-sm w-full",
 				className,
 			)}
 		>
 			{children ?? (
-				<div className="flex flex-col items-center justify-center gap-2 p-8 text-muted-foreground">
-					<Upload className="size-8" />
-					<p className="text-sm font-medium">
-						{config.message ?? "Drop an object here to begin"}
-					</p>
-					{config.acceptTypes && (
-						<p className="text-xs">Accepts: {config.acceptTypes.join(", ")}</p>
-					)}
+				<div className="flex flex-col items-center justify-center gap-4 p-10 text-center">
+					<div className="rounded-full bg-muted p-3">
+						<Upload className="size-6 text-muted-foreground" />
+					</div>
+					<div className="space-y-1">
+						<p className="text-sm font-medium text-foreground">
+							{config.message ?? "Drop here to open"}
+						</p>
+						{config.acceptTypes && (
+							<p className="text-xs text-muted-foreground">
+								Accepts: {config.acceptTypes.join(", ")}
+							</p>
+						)}
+					</div>
+					<div className="flex w-full items-center gap-3">
+						<div className="h-px flex-1 bg-border" />
+						<span className="text-xs text-muted-foreground">or</span>
+						<div className="h-px flex-1 bg-border" />
+					</div>
+					<button
+						type="button"
+						className="rounded-md bg-primary px-4 py-2 text-xs font-medium text-primary-foreground shadow-sm transition-colors hover:bg-primary/90 cursor-pointer"
+					>
+						Start with New Product
+					</button>
 				</div>
 			)}
 			{isDragging && children && (
-				<div className="absolute inset-0 z-10 flex items-center justify-center rounded-lg border-2 border-dashed border-primary bg-primary/10">
+				<div className="absolute inset-0 z-10 flex items-center justify-center rounded-md border-2 border-dashed border-primary bg-primary/10">
 					<div className="flex items-center gap-2 rounded-md bg-background/90 px-4 py-2 text-sm font-medium shadow-sm">
 						<Upload className="size-4" />
 						Drop here
