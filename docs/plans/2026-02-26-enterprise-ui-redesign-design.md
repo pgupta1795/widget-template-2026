@@ -11,30 +11,30 @@ Complete UI redesign of the widget template to match enterprise PLM standards (E
 
 ### Color Scheme
 
-| Token | Value | Usage |
-|-------|-------|-------|
-| `--background` | `#F6F8FA` | App background |
-| `--foreground` | `#111827` | Headings, primary text |
-| `--card` | `#FFFFFF` | Cards, sidebar, panels |
-| `--primary` | `#2563EB` | Blue accent, active states, CTAs |
-| `--primary-foreground` | `#FFFFFF` | Text on primary |
-| `--primary-hover` | `#1D4ED8` | Hover blue |
-| `--muted` | `#F3F4F6` | Table headers, subtle backgrounds |
-| `--muted-foreground` | `#6B7280` | Secondary text, labels |
-| `--border` | `#E5E7EB` | Borders, dividers |
-| `--sidebar` | `#FFFFFF` | Sidebar background |
-| `--sidebar-primary` | `#2563EB` | Active sidebar item text |
-| `--sidebar-accent` | `#EFF6FF` | Active sidebar item background |
-| `--radius` | `0.375rem` | 6px, medium border radius |
+| Token                  | Value      | Usage                             |
+| ---------------------- | ---------- | --------------------------------- |
+| `--background`         | `#F6F8FA`  | App background                    |
+| `--foreground`         | `#111827`  | Headings, primary text            |
+| `--card`               | `#FFFFFF`  | Cards, sidebar, panels            |
+| `--primary`            | `#2563EB`  | Blue accent, active states, CTAs  |
+| `--primary-foreground` | `#FFFFFF`  | Text on primary                   |
+| `--primary-hover`      | `#1D4ED8`  | Hover blue                        |
+| `--muted`              | `#F3F4F6`  | Table headers, subtle backgrounds |
+| `--muted-foreground`   | `#6B7280`  | Secondary text, labels            |
+| `--border`             | `#E5E7EB`  | Borders, dividers                 |
+| `--sidebar`            | `#FFFFFF`  | Sidebar background                |
+| `--sidebar-primary`    | `#2563EB`  | Active sidebar item text          |
+| `--sidebar-accent`     | `#EFF6FF`  | Active sidebar item background    |
+| `--radius`             | `0.375rem` | 6px, medium border radius         |
 
 ### Badge Variants
 
-| State | Style |
-|-------|-------|
-| In Work | Soft blue: `#DBEAFE` bg, `#1E40AF` text |
+| State    | Style                                    |
+| -------- | ---------------------------------------- |
+| In Work  | Soft blue: `#DBEAFE` bg, `#1E40AF` text  |
 | Released | Soft green: `#DCFCE7` bg, `#166534` text |
-| Frozen | Soft amber: `#FEF3C7` bg, `#92400E` text |
-| Draft | Soft gray: `#F3F4F6` bg, `#374151` text |
+| Frozen   | Soft amber: `#FEF3C7` bg, `#92400E` text |
+| Draft    | Soft gray: `#F3F4F6` bg, `#374151` text  |
 
 ### Typography
 
@@ -57,7 +57,7 @@ Complete UI redesign of the widget template to match enterprise PLM standards (E
 ### New Types (`src/types/config.ts`)
 
 ```typescript
-type SidebarItemType = "link" | "action" | "divider";
+type SidebarItemType = 'link' | 'action' | 'divider';
 
 type SidebarItem = {
   id: string;
@@ -149,7 +149,7 @@ type WidgetConfig = {
 - Bottom: `1px #E5E7EB` separator
 - Background: `#FFFFFF`
 
-### 4. TabManager (styling update)
+### 4. TabManager (styling update and fix the issue of not showing tabs or too big space for tabs headers)
 
 - Background: transparent (sits on white card)
 - Active tab: `#2563EB` text + `2px` bottom blue border
@@ -184,12 +184,12 @@ type WidgetConfig = {
 
 Sidebar items control which view renders in the main content:
 
-| Sidebar Item | View |
-|-------------|------|
-| Recents | Recent object cards + dropzone empty state |
-| My Products / Open | Filtered table views (placeholder initially) |
+| Sidebar Item           | View                                         |
+| ---------------------- | -------------------------------------------- |
+| Recents                | Recent object cards + dropzone empty state   |
+| My Products / Open     | Filtered table views (placeholder initially) |
 | New Product / New Part | Create action/dialog (placeholder initially) |
-| Object selected | Header + Tabs + Table + Details Panel |
+| Object selected        | Header + Tabs + Table + Details Panel        |
 
 ### State Flow
 
@@ -201,6 +201,7 @@ Sidebar items control which view renders in the main content:
 ## Files Changed
 
 ### Modified
+
 - `src/index.css` - Theme variables
 - `src/types/config.ts` - Add SidebarConfig types
 - `src/config/widgets/engineering-bom.ts` - Add sidebar configuration
@@ -213,6 +214,7 @@ Sidebar items control which view renders in the main content:
 - `src/components/ui/badge.tsx` - Updated badge variant colors
 
 ### New
+
 - `src/features/sidebar/sidebar.tsx` - Sidebar navigation component
 - `src/features/sidebar/sidebar-section.tsx` - Sidebar section component
 - `src/features/sidebar/sidebar-item.tsx` - Sidebar item component
@@ -222,3 +224,4 @@ Sidebar items control which view renders in the main content:
 
 - Widget1.png: Current state (bare-bones, no styling)
 - Widget2.png: ENOVIA Change Governance (target reference for sidebar + cards layout)
+
