@@ -54,7 +54,7 @@ function TableTabContent({
 	params,
 	onCommand,
 }: TableTabContentProps) {
-	const { data, isLoading } = useTableData(endpoint, params);
+	const { data, isLoading, refetch } = useTableData(endpoint, params);
 
 	return (
 		<DataTable
@@ -62,6 +62,11 @@ function TableTabContent({
 			data={data}
 			isLoading={isLoading}
 			onCommand={onCommand}
+			onToolbarAction={(actionId) => {
+				if (actionId === "refresh") {
+					refetch();
+				}
+			}}
 		/>
 	);
 }

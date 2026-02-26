@@ -27,6 +27,7 @@ type DataTableProps = {
 	data: RowData[];
 	isLoading?: boolean;
 	onCommand?: (command: CommandDefinition, row: RowData) => void;
+	onToolbarAction?: (actionId: string) => void;
 	className?: string;
 };
 
@@ -35,6 +36,7 @@ export function DataTable({
 	data,
 	isLoading,
 	onCommand,
+	onToolbarAction,
 	className,
 }: DataTableProps) {
 	const [sorting, setSorting] = useState<SortingState>(
@@ -108,6 +110,7 @@ export function DataTable({
 				onGlobalFilterChange={setGlobalFilter}
 				totalItems={data.length}
 				selectedItems={Object.keys(rowSelection).length}
+				onAction={onToolbarAction}
 			/>
 
 			<div className="overflow-auto">

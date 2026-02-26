@@ -10,6 +10,7 @@ type TableToolbarProps = {
 	onGlobalFilterChange: (value: string) => void;
 	totalItems: number;
 	selectedItems: number;
+	onAction?: (actionId: string) => void;
 };
 
 export function TableToolbar({
@@ -18,6 +19,7 @@ export function TableToolbar({
 	onGlobalFilterChange,
 	totalItems,
 	selectedItems,
+	onAction,
 }: TableToolbarProps) {
 	const [showSearch, setShowSearch] = useState(false);
 
@@ -31,6 +33,7 @@ export function TableToolbar({
 						variant={action.variant ?? "ghost"}
 						size="sm"
 						className="h-7 text-xs text-muted-foreground hover:text-foreground"
+						onClick={() => onAction?.(action.id)}
 					>
 						{action.label}
 					</Button>
