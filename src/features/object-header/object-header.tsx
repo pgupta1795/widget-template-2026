@@ -30,7 +30,11 @@ export function ObjectHeader({
 	className,
 }: ObjectHeaderProps) {
 	const { data, isLoading } = useQuery(
-		createQueryOptions(config.endpoint, { objectId }, { single: true }),
+		createQueryOptions(
+			config.endpoint,
+			{ physicalId: objectId, objectId, expandLevel: "1" },
+			{ single: true },
+		),
 	);
 
 	if (isLoading) {
