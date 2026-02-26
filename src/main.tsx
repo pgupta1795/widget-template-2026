@@ -61,7 +61,7 @@ const start = async () => {
 	logger.info("Widget application rendered.");
 };
 
-waitFor(() => window.widget != null, 1000)
+waitFor(() => window.widget != null, 10000)
 	.then(() => {
 		logger.debug("Widget object detected.");
 		window.widget.addEvent("onLoad", () => {
