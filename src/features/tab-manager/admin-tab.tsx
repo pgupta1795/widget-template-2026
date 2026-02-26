@@ -11,7 +11,8 @@ type AdminTabProps = {
 
 export function AdminTab({ tabs, onToggle, onReorder }: AdminTabProps) {
 	const moveTab = (index: number, direction: -1 | 1) => {
-		const newOrder = tabs.map((t) => t.id);
+		const nonAdmin = tabs.filter((t) => !t.adminOnly);
+		const newOrder = nonAdmin.map((t) => t.id);
 		const [moved] = newOrder.splice(index, 1);
 		newOrder.splice(index + direction, 0, moved);
 		onReorder(newOrder);
