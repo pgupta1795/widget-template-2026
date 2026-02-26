@@ -2,9 +2,9 @@ import {
 	GET_ENGINEERING_ITEM,
 	UPDATE_ENGINEERING_ITEM,
 } from "@/config/endpoints/engineering-item";
-import { GET_ECOSYSTEM } from "@/config/endpoints/relations";
-import { ZONE_QUERY } from "@/config/endpoints/zone-query";
-import type { WidgetConfig } from "@/types/config";
+import {GET_ECOSYSTEM} from "@/config/endpoints/relations";
+import {ZONE_QUERY} from "@/config/endpoints/zone-query";
+import type {WidgetConfig} from "@/types/config";
 
 export const engineeringBomConfig: WidgetConfig = {
 	id: "engineering-bom",
@@ -26,13 +26,6 @@ export const engineeringBomConfig: WidgetConfig = {
 						type: "link",
 						view: "recents",
 						active: true,
-					},
-					{
-						id: "open",
-						label: "Open",
-						icon: "folder-open",
-						type: "link",
-						view: "open",
 					},
 					{
 						id: "my-products",

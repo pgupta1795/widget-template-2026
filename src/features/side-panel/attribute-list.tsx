@@ -13,7 +13,7 @@ export function AttributeList({ sections, data }: AttributeListProps) {
 			{sections.map((section, idx) => (
 				<div key={section.label}>
 					{idx > 0 && <Separator className="mb-4" />}
-					<h4 className="mb-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+					<h4 className="mb-2 text-[0.6875rem] font-semibold uppercase tracking-wide text-muted-foreground">
 						{section.label}
 					</h4>
 					<dl className="space-y-0.5">
@@ -22,16 +22,16 @@ export function AttributeList({ sections, data }: AttributeListProps) {
 							return (
 								<div
 									key={field}
-									className="group flex items-start justify-between gap-4 rounded px-1 py-1 hover:bg-muted/50 transition-colors"
+									className="group flex items-start justify-between gap-3 rounded-sm px-1 py-1 transition-colors hover:bg-muted/40"
 								>
-									<dt className="text-xs text-muted-foreground shrink-0">
+									<dt className="shrink-0 text-[0.6875rem] text-muted-foreground">
 										{field}
 									</dt>
 									<div className="flex items-center gap-1">
-										<dd className="text-xs font-medium text-foreground text-right truncate max-w-[200px]">
-											{value != null ? String(value) : "—"}
+										<dd className="max-w-[200px] truncate text-right text-[0.6875rem] font-medium text-foreground">
+											{value != null ? String(value) : "-"}
 										</dd>
-										<Pencil className="size-3 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer shrink-0" />
+										<Pencil className="size-3 shrink-0 cursor-pointer text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100" />
 									</div>
 								</div>
 							);

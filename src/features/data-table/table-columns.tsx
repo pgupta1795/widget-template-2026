@@ -27,7 +27,7 @@ function CellRenderer({
 		}
 		case "link":
 			return (
-				<span className="text-primary cursor-pointer hover:underline text-xs">
+				<span className="cursor-pointer text-primary hover:underline text-[0.6875rem]">
 					{strValue}
 				</span>
 			);
@@ -36,7 +36,7 @@ function CellRenderer({
 				<img src={strValue} alt="" className="size-8 rounded object-cover" />
 			) : null;
 		default:
-			return <span className="text-xs">{strValue}</span>;
+			return <span className="text-[0.6875rem]">{strValue}</span>;
 	}
 }
 

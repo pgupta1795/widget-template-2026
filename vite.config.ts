@@ -1,16 +1,16 @@
-import tailwindcss from '@tailwindcss/vite'
-import tanstackRouter from '@tanstack/router-plugin/vite'
-import viteReact from '@vitejs/plugin-react'
-import type {Plugin} from 'vite'
-import {defineConfig} from 'vite'
-import tsconfigPaths from 'vite-tsconfig-paths'
+import tailwindcss from "@tailwindcss/vite";
+import tanstackRouter from "@tanstack/router-plugin/vite";
+import viteReact from "@vitejs/plugin-react";
+import type { Plugin } from "vite";
+import { defineConfig } from "vite";
+import tsconfigPaths from "vite-tsconfig-paths";
 
 function cacheVersionPlugin(): Plugin {
 	return {
 		name: "cache-version",
 		apply: "build",
 		transformIndexHtml(html) {
-			const version = Math.floor(Math.random() * 1e15).toString()
+			const version = Math.floor(Math.random() * 1e15).toString();
 			return html
 				.replace(
 					/(<script[^>]+\bsrc=["'])([^"'?]+)(["'])/g,
@@ -23,45 +23,47 @@ function cacheVersionPlugin(): Plugin {
 				.replace(
 					/(<link[^>]+\bhref=["'])([^"'?]+\.css)(["'][^>]*>)/g,
 					`$1$2?v=${version}$3`,
-				)
+				);
 		},
-	}
+	};
 }
 
 export default defineConfig({
-  base: './',
-  plugins: [
-    cacheVersionPlugin(),
-    tanstackRouter({
-      target: 'react',
-      autoCodeSplitting: true,
-    }),
-    tsconfigPaths({ projects: ['./tsconfig.json'] }),
-    tailwindcss(),
-    viteReact(),
-  ],
-  define: { 'process.env': {} },
-  server: {
-    host: '0.0.0.0',
-    port: 3999,
-    watch: { usePolling: true },
-  },
-  preview: {
-    host: '0.0.0.0',
-    port: 3999,
-  },
-  build: {
-    emptyOutDir: true,
-    // outDir: 'build',
-    assetsDir: '',
-    sourcemap: true,
-    minify: true,
-    rollupOptions: {
-      output: {
-        entryFileNames: 'index.js',
-        chunkFileNames: '[name].js',
-        assetFileNames: '[name][extname]',
-      },
-    },
-  },
-})
+	base: "./",
+	plugins: [
+		cacheVersionPlugin(),
+		tanstackRouter({
+			target: "react",
+			// Keep a single runtime bundle inside the 3DDashboard widget iframe.
+			// Route-level split chunks can duplicate React and break hook context in production.
+			autoCodeSplitting: false,
+		}),
+		tsconfigPaths({ projects: ["./tsconfig.json"] }),
+		tailwindcss(),
+		viteReact(),
+	],
+	define: { "process.env": {} },
+	server: {
+		host: "0.0.0.0",
+		port: 3999,
+		watch: { usePolling: true },
+	},
+	preview: {
+		host: "0.0.0.0",
+		port: 3999,
+	},
+	build: {
+		emptyOutDir: true,
+		// outDir: 'build',
+		assetsDir: "",
+		sourcemap: true,
+		minify: true,
+		rollupOptions: {
+			output: {
+				entryFileNames: "index.js",
+				chunkFileNames: "[name].js",
+				assetFileNames: "[name][extname]",
+			},
+		},
+	},
+});

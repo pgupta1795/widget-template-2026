@@ -2,6 +2,37 @@
 <html lang="en" xmlns="http://www.w3.org/1999/xhtml" xmlns:widget="http://www.netvibes.com/ns/">
 
 <head>
+  <script type="text/javascript">
+    /* Intercept and remove 3DDashboard injected iframe.css */
+    (function() {
+      function checkAndRemove(node) {
+        if(node&&node.tagName==='LINK'&&node.rel==='stylesheet'&&node.href&&/.*\/UWA\/assets\/css\/iframe\.css/i.test(node.href)) {
+          if(node.parentNode) {
+            node.parentNode.removeChild(node);
+          }
+        }
+      }
+
+      // Check existing links
+      var links=document.getElementsByTagName('link');
+      for(var i=0; i<links.length; i++) {
+        checkAndRemove(links[i]);
+      }
+
+      // Watch for new links
+      if(typeof MutationObserver!=='undefined') {
+        var observer=new MutationObserver(function(mutations) {
+          for(var j=0; j<mutations.length; j++) {
+            var addedNodes=mutations[j].addedNodes;
+            for(var k=0; k<addedNodes.length; k++) {
+              checkAndRemove(addedNodes[k]);
+            }
+          }
+        });
+        observer.observe(document.documentElement,{childList: true,subtree: true});
+      }
+    })();
+  </script>
   <meta http-equiv="content-type" content="text/html; charset=utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>VITE Widget</title>
@@ -11,7 +42,7 @@
       <widget:option value="VPMReference" label="Physical Product"></widget:option>
     </widget:preference>
   </widget:preferences>
-  <script type="text/javascript">
+  <!-- <script type="text/javascript">
     function addStyle(ootbCss) {
       var link=document.createElement("link");
       link.type="text/css";
@@ -22,7 +53,7 @@
     addStyle("/UIKIT/UIKIT.css");
     addStyle("/Core/wux.css");
     addStyle("/Core/wux-3ds-fonticons.css");
-  </script>
+  </script> -->
   <script type="module" src="/src/main.tsx"></script>
 </head>
 

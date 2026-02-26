@@ -36,15 +36,16 @@ export function DynamicForm({
 	});
 
 	return (
-		<form onSubmit={onSubmit} className="space-y-4 p-4">
+		<form onSubmit={onSubmit} className="space-y-3 p-3">
 			<div
-				className={`grid gap-3 ${config.columns === 2 ? "grid-cols-2" : "grid-cols-1"}`}
+				className={`grid gap-2.5 ${config.columns === 2 ? "grid-cols-2" : "grid-cols-1"}`}
 			>
 				{config.fields.map((field) => (
 					<FieldRenderer
 						key={field.id}
 						field={{ ...field, readOnly: isViewMode || field.readOnly }}
 						register={form.register}
+						control={form.control}
 						errors={form.formState.errors}
 						defaultValue={initialData?.[field.accessorKey]}
 					/>

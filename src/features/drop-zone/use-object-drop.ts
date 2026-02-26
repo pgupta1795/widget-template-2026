@@ -54,18 +54,64 @@ export function useObjectDrop({ config, onDrop }: UseObjectDropOptions) {
 
 	useEffect(() => {
 		const el = elementRef.current;
-		if (!el || registeredRef.current || !hasModule("drag-drop")) return;
+		if (!el) return;
 
-		const dnd = getModule<DataDragAndDrop>("drag-drop");
-		dnd.droppable(el, {
-			drop: handleDrop,
-			enter: () => setIsDragging(true),
-			leave: () => setIsDragging(false),
-			over: () => {},
-		});
-		registeredRef.current = true;
+		// Native DnD fallback improves hover/allow-drop affordance in non-3DX contexts.
+		const onDragEnter = (event: DragEvent) => {
+			event.preventDefault();
+			setIsDragging(true);
+		};
+		const onDragOver = (event: DragEvent) => {
+			event.preventDefault();
+			if (event.dataTransfer) {
+				event.dataTransfer.dropEffect = "copy";
+			}
+			setIsDragging(true);
+		};
+		const onDragLeave = () => {
+			setIsDragging(false);
+		};
+		const onDropNative = (event: DragEvent) => {
+			event.preventDefault();
+			setIsDragging(false);
+		};
+		el.addEventListener("dragenter", onDragEnter);
+		el.addEventListener("dragover", onDragOver);
+		el.addEventListener("dragleave", onDragLeave);
+		el.addEventListener("drop", onDropNative);
+
+		const register3dxDrop = () => {
+			if (registeredRef.current || !hasModule("drag-drop")) return false;
+
+			const dnd = getModule<DataDragAndDrop>("drag-drop");
+			dnd.droppable(el, {
+				drop: handleDrop,
+				enter: () => setIsDragging(true),
+				leave: () => setIsDragging(false),
+				over: () => setIsDragging(true),
+			});
+			registeredRef.current = true;
+			logger.debug("3DX dropzone registered.");
+			return true;
+		};
+
+		// If module timing is delayed, retry briefly so dropzone still activates.
+		let attempts = 0;
+		const maxAttempts = 20;
+		const intervalId = window.setInterval(() => {
+			if (register3dxDrop() || attempts >= maxAttempts) {
+				window.clearInterval(intervalId);
+			}
+			attempts += 1;
+		}, 100);
+		register3dxDrop();
 
 		return () => {
+			window.clearInterval(intervalId);
+			el.removeEventListener("dragenter", onDragEnter);
+			el.removeEventListener("dragover", onDragOver);
+			el.removeEventListener("dragleave", onDragLeave);
+			el.removeEventListener("drop", onDropNative);
 			registeredRef.current = false;
 		};
 	}, [handleDrop]);

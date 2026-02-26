@@ -10,9 +10,23 @@ import {
 	type SortingState,
 	useReactTable,
 } from "@tanstack/react-table";
-import { ArrowUpDown, ChevronLeft, ChevronRight } from "lucide-react";
+import { ArrowUpDown } from "lucide-react";
 import { useMemo, useState } from "react";
-import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
+import {
+	ContextMenu,
+	ContextMenuContent,
+	ContextMenuItem,
+	ContextMenuTrigger,
+} from "@/components/ui/context-menu";
+import {
+	Pagination,
+	PaginationContent,
+	PaginationItem,
+	PaginationLink,
+	PaginationNext,
+	PaginationPrevious,
+} from "@/components/ui/pagination";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
 	Table,
@@ -53,6 +67,7 @@ export function DataTable({
 	const [globalFilter, setGlobalFilter] = useState("");
 	const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
 	const [expanded, setExpanded] = useState<ExpandedState>({});
+	const [columnVisibility, setColumnVisibility] = useState({});
 
 	const columns = useMemo(() => {
 		const cols = buildColumns(config.columns, {
@@ -67,7 +82,10 @@ export function DataTable({
 					<TableCommands
 						commands={config.commands}
 						row={row.original}
-						onCommand={(cmd, data) => onCommand?.(cmd, data)}
+						onCommand={(cmd, rowData) => {
+							onCommand?.(cmd, rowData);
+							toast.success(`${cmd.label} action triggered.`);
+						}}
 					/>
 				),
 				size: config.commands.length * 28 + 16,
@@ -81,11 +99,12 @@ export function DataTable({
 	const table = useReactTable({
 		data,
 		columns,
-		state: { sorting, globalFilter, rowSelection, expanded },
+		state: { sorting, globalFilter, rowSelection, expanded, columnVisibility },
 		onSortingChange: setSorting,
 		onGlobalFilterChange: setGlobalFilter,
 		onRowSelectionChange: setRowSelection,
 		onExpandedChange: setExpanded,
+		onColumnVisibilityChange: setColumnVisibility,
 		getCoreRowModel: getCoreRowModel(),
 		getSortedRowModel: getSortedRowModel(),
 		getFilteredRowModel: getFilteredRowModel(),
@@ -103,16 +122,20 @@ export function DataTable({
 	if (isLoading) {
 		return (
 			<div className="space-y-1 p-4">
-				{Array.from({ length: 5 }).map((_, i) => (
-					<Skeleton key={i} className="h-8 w-full" />
+				{["row-a", "row-b", "row-c", "row-d", "row-e"].map((key) => (
+					<Skeleton key={key} className="h-8 w-full" />
 				))}
 			</div>
 		);
 	}
 
+	const pageIndex = table.getState().pagination.pageIndex;
+	const pageCount = table.getPageCount();
+
 	return (
 		<div className={cn("flex flex-col overflow-hidden", className)}>
 			<TableToolbar
+				table={table}
 				config={config.toolbar}
 				globalFilter={globalFilter}
 				onGlobalFilterChange={setGlobalFilter}
@@ -127,13 +150,13 @@ export function DataTable({
 						{table.getHeaderGroups().map((headerGroup) => (
 							<TableRow
 								key={headerGroup.id}
-								className="bg-muted hover:bg-muted"
+								className="bg-muted/60 hover:bg-muted/60"
 							>
 								{headerGroup.headers.map((header) => (
 									<TableHead
 										key={header.id}
 										className={cn(
-											"h-8 px-3 text-muted-foreground font-medium",
+											"h-7 px-2.5 text-[0.6875rem] font-semibold text-muted-foreground",
 											header.column.getCanSort() &&
 												"cursor-pointer select-none",
 										)}
@@ -147,9 +170,9 @@ export function DataTable({
 														header.column.columnDef.header,
 														header.getContext(),
 													)}
-											{header.column.getCanSort() && (
-												<ArrowUpDown className="size-3 text-muted-foreground/50" />
-											)}
+											{header.column.getCanSort() ? (
+												<ArrowUpDown className="size-3 text-muted-foreground/70" />
+											) : null}
 										</div>
 									</TableHead>
 								))}
@@ -168,52 +191,110 @@ export function DataTable({
 							</TableRow>
 						) : (
 							table.getRowModel().rows.map((row) => (
-								<TableRow
-									key={row.id}
-									data-state={row.getIsSelected() ? "selected" : undefined}
-									className="transition-colors"
-								>
-									{row.getVisibleCells().map((cell) => (
-										<TableCell key={cell.id} className="h-8 px-3 py-0">
-											{flexRender(
-												cell.column.columnDef.cell,
-												cell.getContext(),
-											)}
-										</TableCell>
-									))}
-								</TableRow>
+								<ContextMenu key={row.id}>
+									<ContextMenuTrigger className="contents">
+										<TableRow
+											data-state={row.getIsSelected() ? "selected" : undefined}
+											className="transition-colors hover:bg-muted/20"
+										>
+											{row.getVisibleCells().map((cell) => (
+												<TableCell
+													key={cell.id}
+													className="h-7 px-2.5 py-0 text-[0.6875rem]"
+												>
+													{flexRender(
+														cell.column.columnDef.cell,
+														cell.getContext(),
+													)}
+												</TableCell>
+											))}
+										</TableRow>
+									</ContextMenuTrigger>
+									<ContextMenuContent>
+										{config.commands.map((cmd) => (
+											<ContextMenuItem
+												key={`${row.id}-${cmd.id}`}
+												onClick={() => {
+													onCommand?.(cmd, row.original);
+													toast.success(`${cmd.label} executed.`);
+												}}
+											>
+												{cmd.label}
+											</ContextMenuItem>
+										))}
+									</ContextMenuContent>
+								</ContextMenu>
 							))
 						)}
 					</TableBody>
 				</Table>
 			</div>
 
-			{config.pagination && (
-				<div className="shrink-0 flex items-center justify-between border-t px-4 py-2">
-					<p className="text-xs text-muted-foreground">
-						Page {table.getState().pagination.pageIndex + 1} of{" "}
-						{table.getPageCount()}
-					</p>
-					<div className="flex items-center gap-1">
-						<Button
-							variant="outline"
-							size="icon-xs"
-							onClick={() => table.previousPage()}
-							disabled={!table.getCanPreviousPage()}
-						>
-							<ChevronLeft />
-						</Button>
-						<Button
-							variant="outline"
-							size="icon-xs"
-							onClick={() => table.nextPage()}
-							disabled={!table.getCanNextPage()}
-						>
-							<ChevronRight />
-						</Button>
+			{config.pagination && pageCount > 0 && (
+				<div className="shrink-0 border-t border-border px-3 py-1.5">
+					<div className="flex items-center justify-between">
+						<p className="text-[0.6875rem] text-muted-foreground">
+							Page {pageIndex + 1} of {pageCount}
+						</p>
+						<Pagination className="mx-0 w-auto justify-end">
+							<PaginationContent>
+								<PaginationItem>
+									<PaginationPrevious
+										href="#"
+										onClick={(e) => {
+											e.preventDefault();
+											table.previousPage();
+										}}
+										aria-disabled={!table.getCanPreviousPage()}
+										className={
+											!table.getCanPreviousPage()
+												? "pointer-events-none opacity-50"
+												: ""
+										}
+									/>
+								</PaginationItem>
+								{getVisiblePageNumbers(pageIndex, pageCount).map((page) => (
+									<PaginationItem key={page}>
+										<PaginationLink
+											href="#"
+											isActive={page === pageIndex}
+											onClick={(e) => {
+												e.preventDefault();
+												table.setPageIndex(page);
+											}}
+										>
+											{page + 1}
+										</PaginationLink>
+									</PaginationItem>
+								))}
+								<PaginationItem>
+									<PaginationNext
+										href="#"
+										onClick={(e) => {
+											e.preventDefault();
+											table.nextPage();
+										}}
+										aria-disabled={!table.getCanNextPage()}
+										className={
+											!table.getCanNextPage()
+												? "pointer-events-none opacity-50"
+												: ""
+										}
+									/>
+								</PaginationItem>
+							</PaginationContent>
+						</Pagination>
 					</div>
 				</div>
 			)}
 		</div>
 	);
+}
+
+function getVisiblePageNumbers(current: number, total: number) {
+	if (total <= 5) return Array.from({ length: total }, (_, i) => i);
+	if (current < 2) return [0, 1, 2, 3, 4];
+	if (current > total - 3)
+		return [total - 5, total - 4, total - 3, total - 2, total - 1];
+	return [current - 2, current - 1, current, current + 1, current + 2];
 }

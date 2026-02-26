@@ -1,13 +1,13 @@
-import {RouterProvider} from "@tanstack/react-router";
-import ReactDOM from "react-dom/client";
+import { RouterProvider } from "@tanstack/react-router";
+import ReactDOM, { type Root } from "react-dom/client";
 import "./index.css";
-import {logger} from "./lib/logger";
-import {loadModules} from "./lib/modules/loader";
-import {getModule} from "./lib/modules/registry";
-import {init} from "./lib/widget/api";
-import {WidgetProvider} from "./lib/widget/context";
-import type {DSPlatformAPIs} from "./lib/widget/types";
-import {getRouter} from "./router";
+import { logger } from "./lib/logger";
+import { loadModules } from "./lib/modules/loader";
+import { getModule } from "./lib/modules/registry";
+import { init } from "./lib/widget/api";
+import { WidgetProvider } from "./lib/widget/context";
+import type { DSPlatformAPIs } from "./lib/widget/types";
+import { getRouter } from "./router";
 
 const waitFor = (predicate: () => boolean, timeout: number) => {
 	return new Promise<boolean>((resolve, reject) => {
@@ -27,8 +27,17 @@ const waitFor = (predicate: () => boolean, timeout: number) => {
 };
 
 const rootId = "root";
+let root: Root | null = null;
+let started = false;
 
 const start = async () => {
+	if (started) {
+		logger.warn(
+			"Widget application already started. Skipping duplicate start.",
+		);
+		return;
+	}
+	started = true;
 	logger.info("Starting widget application ...");
 	let rootEl = document.getElementById(rootId);
 	if (!rootEl) {
@@ -52,7 +61,8 @@ const start = async () => {
 	init(apis, window.widget, window.UWA);
 	const widgetContext = { widget: window.widget, uwa: window.UWA, apis };
 	const router = getRouter();
-	ReactDOM.createRoot(rootEl).render(
+	root ??= ReactDOM.createRoot(rootEl);
+	root.render(
 		<WidgetProvider value={widgetContext}>
 			<RouterProvider router={router} />
 		</WidgetProvider>,

@@ -1,10 +1,7 @@
-import { createFileRoute } from "@tanstack/react-router";
-import { getWidgetConfig } from "@/config/registry";
-import { WidgetShell } from "@/features/widget-shell/widget-shell";
+import { createFileRoute, Navigate } from "@tanstack/react-router";
 
-export const Route = createFileRoute("/")({ component: App });
+export const Route = createFileRoute("/")({ component: IndexRedirect });
 
-function App() {
-	const config = getWidgetConfig("engineering-bom");
-	return <WidgetShell config={config} />;
+function IndexRedirect() {
+	return <Navigate to="/recents" />;
 }
