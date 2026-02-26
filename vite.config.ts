@@ -1,16 +1,16 @@
 import tailwindcss from '@tailwindcss/vite'
 import tanstackRouter from '@tanstack/router-plugin/vite'
 import viteReact from '@vitejs/plugin-react'
-import {defineConfig} from 'vite'
 import type {Plugin} from 'vite'
+import {defineConfig} from 'vite'
 import tsconfigPaths from 'vite-tsconfig-paths'
 
 function cacheVersionPlugin(): Plugin {
-	const version = Date.now().toString(36)
 	return {
 		name: "cache-version",
 		apply: "build",
 		transformIndexHtml(html) {
+			const version = Math.floor(Math.random() * 1e15).toString()
 			return html
 				.replace(
 					/(<script[^>]+\bsrc=["'])([^"'?]+)(["'])/g,
@@ -56,10 +56,12 @@ export default defineConfig({
     assetsDir: '',
     sourcemap: true,
     minify: true,
-    // rollupOptions: {
-    //   output: {
-    //     entryFileNames: 'build.js',
-    //   },
-    // },
+    rollupOptions: {
+      output: {
+        entryFileNames: 'index.js',
+        chunkFileNames: '[name].js',
+        assetFileNames: '[name][extname]',
+      },
+    },
   },
 })

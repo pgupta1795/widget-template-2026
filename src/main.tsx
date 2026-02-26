@@ -1,13 +1,13 @@
-import { RouterProvider } from "@tanstack/react-router";
+import {RouterProvider} from "@tanstack/react-router";
 import ReactDOM from "react-dom/client";
 import "./index.css";
-import { logger } from "./lib/logger";
-import { loadModules } from "./lib/modules/loader";
-import { getModule } from "./lib/modules/registry";
-import { init } from "./lib/widget/api";
-import { WidgetProvider } from "./lib/widget/context";
-import type { DSPlatformAPIs } from "./lib/widget/types";
-import { getRouter } from "./router";
+import {logger} from "./lib/logger";
+import {loadModules} from "./lib/modules/loader";
+import {getModule} from "./lib/modules/registry";
+import {init} from "./lib/widget/api";
+import {WidgetProvider} from "./lib/widget/context";
+import type {DSPlatformAPIs} from "./lib/widget/types";
+import {getRouter} from "./router";
 
 const waitFor = (predicate: () => boolean, timeout: number) => {
 	return new Promise<boolean>((resolve, reject) => {
@@ -29,7 +29,7 @@ const waitFor = (predicate: () => boolean, timeout: number) => {
 const rootId = "root";
 
 const start = async () => {
-	logger.info("Starting widget application...");
+	logger.info("Starting widget application ...");
 	let rootEl = document.getElementById(rootId);
 	if (!rootEl) {
 		rootEl = document.createElement("div");
@@ -39,7 +39,6 @@ const start = async () => {
 	}
 
 	await loadModules(["drag-drop", "uwa-core", "intercom"]);
-
 	const apis: DSPlatformAPIs = {
 		PlatformAPI: getModule("platform-api"),
 		WAFData: getModule("waf-data"),

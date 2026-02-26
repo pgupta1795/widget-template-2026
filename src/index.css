@@ -127,3 +127,7 @@
 		@apply font-sans;
 	}
 }
+
+#root{
+	@apply h-full w-full
+}
