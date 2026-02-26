@@ -49,17 +49,6 @@ export function DropZone({
 							</p>
 						)}
 					</div>
-					<div className="flex w-full items-center gap-3">
-						<div className="h-px flex-1 bg-border" />
-						<span className="text-xs text-muted-foreground">or</span>
-						<div className="h-px flex-1 bg-border" />
-					</div>
-					<button
-						type="button"
-						className="rounded-md bg-primary px-4 py-2 text-xs font-medium text-primary-foreground shadow-sm transition-colors hover:bg-primary/90 cursor-pointer"
-					>
-						Start with New Product
-					</button>
 				</div>
 			)}
 			{isDragging && children && (
