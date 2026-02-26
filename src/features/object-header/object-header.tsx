@@ -1,6 +1,7 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { HelpCircle, RefreshCw, Search, Settings } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { DEFAULT_ICONS } from "@/config/endpoints/zone-query";
 import { cn } from "@/lib/utils";
@@ -29,6 +30,7 @@ export function ObjectHeader({
 	widgetTitle,
 	className,
 }: ObjectHeaderProps) {
+	const queryClient = useQueryClient();
 	const { data, isLoading } = useQuery(
 		createQueryOptions(
 			config.endpoint,
@@ -160,35 +162,28 @@ export function ObjectHeader({
 				</div>
 
 				{/* Right-side action icons */}
-				<div className="flex items-center gap-1 shrink-0">
-					<button
-						type="button"
-						aria-label="Search"
-						className="rounded-md p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors cursor-pointer"
-					>
+				<div className="flex items-center gap-0.5 shrink-0">
+					<Button variant="ghost" size="icon-sm" aria-label="Search">
 						<Search className="size-4" />
-					</button>
-					<button
-						type="button"
+					</Button>
+					<Button
+						variant="ghost"
+						size="icon-sm"
 						aria-label="Refresh"
-						className="rounded-md p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors cursor-pointer"
+						onClick={() =>
+							queryClient.invalidateQueries({
+								queryKey: [config.endpoint.id],
+							})
+						}
 					>
 						<RefreshCw className="size-4" />
-					</button>
-					<button
-						type="button"
-						aria-label="Settings"
-						className="rounded-md p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors cursor-pointer"
-					>
+					</Button>
+					<Button variant="ghost" size="icon-sm" aria-label="Settings">
 						<Settings className="size-4" />
-					</button>
-					<button
-						type="button"
-						aria-label="Help"
-						className="rounded-md p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors cursor-pointer"
-					>
+					</Button>
+					<Button variant="ghost" size="icon-sm" aria-label="Help">
 						<HelpCircle className="size-4" />
-					</button>
+					</Button>
 				</div>
 			</div>
 		</div>
