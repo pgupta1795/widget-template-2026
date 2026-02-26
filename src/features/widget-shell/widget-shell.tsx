@@ -24,6 +24,7 @@ export function WidgetShell({ config }: WidgetShellProps) {
 	const [panelConfig, setPanelConfig] = useState<PanelConfig | null>(null);
 	const [panelObjectId, setPanelObjectId] = useState<string | null>(null);
 	const [panelOpen, setPanelOpen] = useState(false);
+	const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
 	const handleDrop = useCallback(
 		(objects: DroppedObject[]) => {
@@ -72,17 +73,19 @@ export function WidgetShell({ config }: WidgetShellProps) {
 		: {};
 
 	return (
-		<div className="flex h-full bg-background">
+		<div className="flex h-full overflow-hidden bg-background">
 			{config.sidebar && (
 				<Sidebar
 					config={config.sidebar}
 					activeView={activeView}
 					onViewChange={setActiveView}
 					onAction={handleSidebarAction}
+					isCollapsed={sidebarCollapsed}
+					onToggleCollapse={() => setSidebarCollapsed((p) => !p)}
 				/>
 			)}
 
-			<div className="flex flex-1 flex-col overflow-hidden">
+			<div className="flex flex-1 flex-col overflow-hidden min-w-0">
 				{objectId ? (
 					<ObjectDetailView
 						config={config}
@@ -117,14 +120,14 @@ function RecentsView({
 }) {
 	if (!config.dropZone?.enabled) {
 		return (
-			<div className="flex flex-1 items-center justify-center text-sm text-muted-foreground">
+			<div className="flex flex-1 h-full items-center justify-center text-sm text-muted-foreground">
 				Select an item from the sidebar to begin.
 			</div>
 		);
 	}
 
 	return (
-		<div className="flex flex-1 items-center justify-center p-8">
+		<div className="flex flex-1 h-full items-center justify-center p-8">
 			<DropZone config={config.dropZone} onDrop={onDrop} />
 		</div>
 	);
@@ -144,7 +147,7 @@ function ObjectDetailView({
 	onCommand: (command: CommandDefinition, row: Record<string, unknown>) => void;
 }) {
 	return (
-		<>
+		<div className="flex flex-col flex-1 overflow-hidden h-full">
 			{config.header && (
 				<ObjectHeader
 					config={config.header}
@@ -153,11 +156,31 @@ function ObjectDetailView({
 				/>
 			)}
 
-			{config.dropZone?.enabled ? (
-				<DropZone config={config.dropZone} onDrop={onDrop}>
+			<div className="flex-1 overflow-hidden">
+				{config.dropZone?.enabled ? (
+					<DropZone
+						config={config.dropZone}
+						onDrop={onDrop}
+						className="h-full overflow-hidden"
+					>
+						<TabManager
+							tabs={config.tabs}
+							defaultTab={config.defaultTab}
+							className="h-full"
+							renderTabContent={(tab) => (
+								<TabContentRenderer
+									tab={tab}
+									params={params}
+									onCommand={onCommand}
+								/>
+							)}
+						/>
+					</DropZone>
+				) : (
 					<TabManager
 						tabs={config.tabs}
 						defaultTab={config.defaultTab}
+						className="h-full"
 						renderTabContent={(tab) => (
 							<TabContentRenderer
 								tab={tab}
@@ -166,20 +189,8 @@ function ObjectDetailView({
 							/>
 						)}
 					/>
-				</DropZone>
-			) : (
-				<TabManager
-					tabs={config.tabs}
-					defaultTab={config.defaultTab}
-					renderTabContent={(tab) => (
-						<TabContentRenderer
-							tab={tab}
-							params={params}
-							onCommand={onCommand}
-						/>
-					)}
-				/>
-			)}
-		</>
+				)}
+			</div>
+		</div>
 	);
 }

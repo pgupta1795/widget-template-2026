@@ -62,6 +62,7 @@ function TableTabContent({
 			data={data}
 			isLoading={isLoading}
 			onCommand={onCommand}
+			className="h-full"
 			onToolbarAction={(actionId) => {
 				if (actionId === "refresh") {
 					refetch();

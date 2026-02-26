@@ -1,5 +1,7 @@
 import {
 	Box,
+	ChevronLeft,
+	ChevronRight,
 	Clock,
 	FolderOpen,
 	type LucideIcon,
@@ -25,6 +27,8 @@ type SidebarProps = {
 	onViewChange: (view: string) => void;
 	onAction?: (action: string) => void;
 	className?: string;
+	isCollapsed?: boolean;
+	onToggleCollapse?: () => void;
 };
 
 export function Sidebar({
@@ -33,27 +37,38 @@ export function Sidebar({
 	onViewChange,
 	onAction,
 	className,
+	isCollapsed = false,
+	onToggleCollapse,
 }: SidebarProps) {
+	const width = isCollapsed ? 52 : (config.defaultWidth ?? 220);
+
 	return (
 		<aside
 			className={cn(
-				"flex h-full flex-col border-r border-border bg-card",
+				"flex h-full flex-col border-r border-border bg-card transition-all duration-200 shrink-0",
 				className,
 			)}
-			style={{ width: config.defaultWidth ?? 220 }}
+			style={{ width }}
 		>
-			<div className="px-4 pt-4 pb-2">
-				<h2 className="text-sm font-semibold text-foreground">
-					{config.title}
-				</h2>
-				{config.description && (
-					<p className="mt-0.5 text-[0.6875rem] leading-snug text-muted-foreground">
-						{config.description}
-					</p>
-				)}
-			</div>
+			{!isCollapsed && (
+				<div className="px-4 pt-4 pb-2 shrink-0">
+					<h2 className="text-sm font-semibold text-foreground">
+						{config.title}
+					</h2>
+					{config.description && (
+						<p className="mt-0.5 text-[0.6875rem] leading-snug text-muted-foreground">
+							{config.description}
+						</p>
+					)}
+				</div>
+			)}
 
-			<nav className="flex-1 overflow-y-auto px-2 pb-4">
+			<nav
+				className={cn(
+					"flex-1 overflow-y-auto pb-2",
+					isCollapsed ? "px-1.5 pt-3" : "px-2 pt-1",
+				)}
+			>
 				{config.sections.map((section, idx) => (
 					<SidebarSectionGroup
 						key={section.id}
@@ -62,9 +77,31 @@ export function Sidebar({
 						onViewChange={onViewChange}
 						onAction={onAction}
 						showDivider={idx > 0}
+						isCollapsed={isCollapsed}
 					/>
 				))}
 			</nav>
+
+			<div className="shrink-0 border-t border-border p-1.5">
+				<button
+					type="button"
+					onClick={onToggleCollapse}
+					aria-label={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+					className={cn(
+						"flex w-full items-center rounded-md p-1.5 text-muted-foreground transition-colors cursor-pointer hover:bg-muted hover:text-foreground",
+						isCollapsed ? "justify-center" : "justify-end gap-1.5 pr-2",
+					)}
+				>
+					{isCollapsed ? (
+						<ChevronRight className="size-3.5" />
+					) : (
+						<>
+							<span className="text-[0.625rem]">Collapse</span>
+							<ChevronLeft className="size-3.5" />
+						</>
+					)}
+				</button>
+			</div>
 		</aside>
 	);
 }
@@ -75,23 +112,24 @@ function SidebarSectionGroup({
 	onViewChange,
 	onAction,
 	showDivider,
+	isCollapsed,
 }: {
 	section: SidebarSection;
 	activeView: string;
 	onViewChange: (view: string) => void;
 	onAction?: (action: string) => void;
 	showDivider: boolean;
+	isCollapsed: boolean;
 }) {
 	return (
 		<div>
-			{showDivider && <div className="mx-2 my-2 border-t border-border" />}
-			<h3 className="px-2 pb-1 pt-3 text-[0.6875rem] font-semibold text-foreground">
-				{section.title}
-			</h3>
-			{section.description && (
-				<p className="px-2 pb-1 text-[0.625rem] text-muted-foreground">
-					{section.description}
-				</p>
+			{showDivider && (
+				<div className={cn("my-2 border-t border-border", isCollapsed ? "mx-1" : "mx-2")} />
+			)}
+			{!isCollapsed && (
+				<h3 className="px-2 pb-1 pt-3 text-[0.6875rem] font-semibold text-foreground uppercase tracking-wide">
+					{section.title}
+				</h3>
 			)}
 			<ul className="space-y-0.5">
 				{section.items.map((item) => (
@@ -101,6 +139,7 @@ function SidebarSectionGroup({
 						isActive={item.view === activeView}
 						onViewChange={onViewChange}
 						onAction={onAction}
+						isCollapsed={isCollapsed}
 					/>
 				))}
 			</ul>
@@ -113,14 +152,18 @@ function SidebarNavItem({
 	isActive,
 	onViewChange,
 	onAction,
+	isCollapsed,
 }: {
 	item: SidebarItemType;
 	isActive: boolean;
 	onViewChange: (view: string) => void;
 	onAction?: (action: string) => void;
+	isCollapsed: boolean;
 }) {
 	if (item.type === "divider") {
-		return <div className="mx-2 my-2 border-t border-border" />;
+		return isCollapsed ? null : (
+			<div className="mx-2 my-2 border-t border-border" />
+		);
 	}
 
 	const Icon = item.icon ? ICON_MAP[item.icon] : null;
@@ -138,22 +181,30 @@ function SidebarNavItem({
 			<button
 				type="button"
 				onClick={handleClick}
+				title={isCollapsed ? item.label : undefined}
 				className={cn(
-					"flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-xs transition-colors cursor-pointer",
+					"flex w-full items-center rounded-md text-xs transition-colors cursor-pointer",
+					isCollapsed
+						? "justify-center p-2"
+						: "gap-2 px-2 py-1.5",
 					isActive
-						? "border-l-2 border-l-primary bg-sidebar-accent text-primary font-medium"
+						? cn(
+								"bg-sidebar-accent text-primary font-medium",
+								!isCollapsed && "border-l-2 border-l-primary",
+							)
 						: "text-muted-foreground hover:bg-muted hover:text-foreground",
 				)}
 			>
 				{Icon && (
 					<Icon
 						className={cn(
-							"size-4 shrink-0",
+							"shrink-0",
+							isCollapsed ? "size-[1.125rem]" : "size-4",
 							isActive ? "text-primary" : "text-muted-foreground",
 						)}
 					/>
 				)}
-				<span>{item.label}</span>
+				{!isCollapsed && <span>{item.label}</span>}
 			</button>
 		</li>
 	);

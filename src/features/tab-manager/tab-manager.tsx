@@ -2,6 +2,7 @@ import { Settings } from "lucide-react";
 import { Suspense } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { cn } from "@/lib/utils";
 import type { TabDefinition } from "@/types/config";
 import { AdminTab } from "./admin-tab";
 import { useTabs } from "./use-tabs";
@@ -31,17 +32,21 @@ export function TabManager({
 	} = useTabs(tabs, defaultTab);
 
 	return (
-		<Tabs value={activeTab} onValueChange={setActiveTab} className={className}>
-			<TabsList className="w-full justify-start border-b rounded-none bg-transparent px-4 h-auto gap-0">
+		<Tabs
+			value={activeTab}
+			onValueChange={setActiveTab}
+			className={cn("flex flex-col overflow-hidden", className)}
+		>
+			<TabsList className="w-full shrink-0 justify-start border-b border-border rounded-none bg-card px-3 h-9 gap-0">
 				{visibleTabs.map((tab) => (
 					<TabsTrigger
 						key={tab.id}
 						value={tab.id}
-						className="rounded-none border-b-2 border-transparent px-4 py-2 text-xs text-muted-foreground transition-colors data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:text-primary data-[state=active]:shadow-none"
+						className="rounded-none border-b-2 border-transparent h-9 px-4 text-xs font-medium text-muted-foreground transition-colors hover:text-foreground hover:bg-muted/50 data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:text-primary data-[state=active]:font-semibold data-[state=active]:shadow-none"
 					>
 						{tab.label}
 						{tab.badge && (
-							<span className="ml-1.5 rounded-full bg-muted px-1.5 py-0.5 text-[0.625rem]">
+							<span className="ml-1.5 rounded-full bg-primary/10 text-primary px-1.5 py-0.5 text-[0.625rem] font-medium">
 								{tab.badge}
 							</span>
 						)}
@@ -50,7 +55,7 @@ export function TabManager({
 				{showAdmin && (
 					<TabsTrigger
 						value="__admin"
-						className="ml-auto rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none px-2 py-2"
+						className="ml-auto rounded-none border-b-2 border-transparent h-9 px-2 text-muted-foreground hover:text-foreground hover:bg-muted/50 data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none"
 					>
 						<Settings className="size-3.5" />
 					</TabsTrigger>
@@ -58,7 +63,7 @@ export function TabManager({
 			</TabsList>
 
 			{visibleTabs.map((tab) => (
-				<TabsContent key={tab.id} value={tab.id} className="mt-0">
+				<TabsContent key={tab.id} value={tab.id} className="flex-1 overflow-hidden mt-0">
 					<Suspense fallback={<TabSkeleton />}>
 						{renderTabContent(tab)}
 					</Suspense>
@@ -66,7 +71,7 @@ export function TabManager({
 			))}
 
 			{showAdmin && (
-				<TabsContent value="__admin" className="mt-0">
+				<TabsContent value="__admin" className="flex-1 overflow-auto mt-0">
 					<AdminTab
 						tabs={allTabs}
 						onToggle={toggleTab}

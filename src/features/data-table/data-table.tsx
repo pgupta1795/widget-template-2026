@@ -111,7 +111,7 @@ export function DataTable({
 	}
 
 	return (
-		<div className={cn("flex flex-col", className)}>
+		<div className={cn("flex flex-col overflow-hidden", className)}>
 			<TableToolbar
 				config={config.toolbar}
 				globalFilter={globalFilter}
@@ -121,73 +121,75 @@ export function DataTable({
 				onAction={onToolbarAction}
 			/>
 
-			<Table>
-				<TableHeader>
-					{table.getHeaderGroups().map((headerGroup) => (
-						<TableRow
-							key={headerGroup.id}
-							className="bg-muted hover:bg-muted"
-						>
-							{headerGroup.headers.map((header) => (
-								<TableHead
-									key={header.id}
-									className={cn(
-										"h-8 px-3 text-muted-foreground font-medium",
-										header.column.getCanSort() &&
-											"cursor-pointer select-none",
-									)}
-									style={{ width: header.getSize() }}
-									onClick={header.column.getToggleSortingHandler()}
-								>
-									<div className="flex items-center gap-1">
-										{header.isPlaceholder
-											? null
-											: flexRender(
-													header.column.columnDef.header,
-													header.getContext(),
-												)}
-										{header.column.getCanSort() && (
-											<ArrowUpDown className="size-3 text-muted-foreground/50" />
-										)}
-									</div>
-								</TableHead>
-							))}
-						</TableRow>
-					))}
-				</TableHeader>
-				<TableBody>
-					{table.getRowModel().rows.length === 0 ? (
-						<TableRow>
-							<TableCell
-								colSpan={columns.length}
-								className="h-24 text-center text-muted-foreground"
-							>
-								No results.
-							</TableCell>
-						</TableRow>
-					) : (
-						table.getRowModel().rows.map((row) => (
+			<div className="flex-1 overflow-auto">
+				<Table>
+					<TableHeader>
+						{table.getHeaderGroups().map((headerGroup) => (
 							<TableRow
-								key={row.id}
-								data-state={row.getIsSelected() ? "selected" : undefined}
-								className="transition-colors"
+								key={headerGroup.id}
+								className="bg-muted hover:bg-muted"
 							>
-								{row.getVisibleCells().map((cell) => (
-									<TableCell key={cell.id} className="h-8 px-3 py-0">
-										{flexRender(
-											cell.column.columnDef.cell,
-											cell.getContext(),
+								{headerGroup.headers.map((header) => (
+									<TableHead
+										key={header.id}
+										className={cn(
+											"h-8 px-3 text-muted-foreground font-medium",
+											header.column.getCanSort() &&
+												"cursor-pointer select-none",
 										)}
-									</TableCell>
+										style={{ width: header.getSize() }}
+										onClick={header.column.getToggleSortingHandler()}
+									>
+										<div className="flex items-center gap-1">
+											{header.isPlaceholder
+												? null
+												: flexRender(
+														header.column.columnDef.header,
+														header.getContext(),
+													)}
+											{header.column.getCanSort() && (
+												<ArrowUpDown className="size-3 text-muted-foreground/50" />
+											)}
+										</div>
+									</TableHead>
 								))}
 							</TableRow>
-						))
-					)}
-				</TableBody>
-			</Table>
+						))}
+					</TableHeader>
+					<TableBody>
+						{table.getRowModel().rows.length === 0 ? (
+							<TableRow>
+								<TableCell
+									colSpan={columns.length}
+									className="h-24 text-center text-muted-foreground"
+								>
+									No results.
+								</TableCell>
+							</TableRow>
+						) : (
+							table.getRowModel().rows.map((row) => (
+								<TableRow
+									key={row.id}
+									data-state={row.getIsSelected() ? "selected" : undefined}
+									className="transition-colors"
+								>
+									{row.getVisibleCells().map((cell) => (
+										<TableCell key={cell.id} className="h-8 px-3 py-0">
+											{flexRender(
+												cell.column.columnDef.cell,
+												cell.getContext(),
+											)}
+										</TableCell>
+									))}
+								</TableRow>
+							))
+						)}
+					</TableBody>
+				</Table>
+			</div>
 
 			{config.pagination && (
-				<div className="flex items-center justify-between border-t px-4 py-2">
+				<div className="shrink-0 flex items-center justify-between border-t px-4 py-2">
 					<p className="text-xs text-muted-foreground">
 						Page {table.getState().pagination.pageIndex + 1} of{" "}
 						{table.getPageCount()}
