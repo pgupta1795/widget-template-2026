@@ -1,5 +1,4 @@
 import { invalidate as invalidateCsrf, getToken } from '../core/csrf-manager';
-import { is3DXUrl } from '../core/platform-resolver';
 import { withRetry } from '../core/retry';
 import { wafAuthenticatedRequest, wafProxifiedRequest } from '../core/waf-transport';
 import {
@@ -9,9 +8,6 @@ import {
   type ServiceConfig,
   type ServiceResponse,
 } from '../types';
-
-// is3DXUrl is imported as a utility for callers — transport choice is explicit via useProxy
-export { is3DXUrl };
 
 const CSRF_METHODS: HttpMethod[] = ['POST', 'PUT', 'PATCH', 'DELETE'];
 
