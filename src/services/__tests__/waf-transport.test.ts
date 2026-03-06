@@ -59,6 +59,17 @@ describe('wafAuthenticatedRequest', () => {
     expect(err.status).toBe(408);
   });
 
+  it('rejects with ServiceError(401) on onPassportError', async () => {
+    mockWAFData.authenticatedRequest.mockImplementation((_url: string, opts: any) => {
+      opts.onPassportError(new Error('Passport error'));
+      return { cancel: vi.fn(), xhr: {} };
+    });
+
+    const err = await wafAuthenticatedRequest('https://3dspace.example.com/api', {}).catch(e => e);
+    expect(err).toBeInstanceOf(ServiceError);
+    expect(err.status).toBe(401);
+  });
+
   it('passes onProgress callback to WAFData', async () => {
     const onProgress = vi.fn();
     mockWAFData.authenticatedRequest.mockImplementation((_url: string, opts: any) => {
@@ -84,6 +95,29 @@ describe('wafProxifiedRequest', () => {
     const result = await wafProxifiedRequest('https://external.example.com/api', { proxyType: 'ajax' });
     expect(result.data).toBe('hello');
     expect(result.status).toBe(200);
+  });
+
+  it('rejects with ServiceError on onFailure', async () => {
+    mockWAFData.proxifiedRequest.mockImplementation((_url: string, opts: any) => {
+      const err = Object.assign(new Error('Bad request'), { status: 400 });
+      opts.onFailure(err, null, {});
+      return { cancel: vi.fn(), xhr: {} };
+    });
+
+    const err = await wafProxifiedRequest('https://external.example.com/api', {}).catch(e => e);
+    expect(err).toBeInstanceOf(ServiceError);
+    expect(err.status).toBe(400);
+  });
+
+  it('rejects with ServiceError(408) on onTimeout', async () => {
+    mockWAFData.proxifiedRequest.mockImplementation((_url: string, opts: any) => {
+      opts.onTimeout();
+      return { cancel: vi.fn(), xhr: {} };
+    });
+
+    const err = await wafProxifiedRequest('https://external.example.com/api', {}).catch(e => e);
+    expect(err).toBeInstanceOf(ServiceError);
+    expect(err.status).toBe(408);
   });
 
   it('passes proxy option to WAFData', async () => {

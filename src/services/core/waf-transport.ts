@@ -4,8 +4,12 @@ import { ServiceError, type RequestOptions, type ServiceResponse } from '../type
 type WAFDataUserOptions = Omit<RequestOptions, 'params' | 'csrfOverride' | 'useProxy' | 'proxyType' | 'retry'>;
 
 function buildSize(data: unknown): number {
+  if (data == null) return 0;
+  if (data instanceof Blob) return data.size;
+  if (data instanceof ArrayBuffer) return data.byteLength;
+  if (typeof data === 'string') return new Blob([data]).size;
   try {
-    return new Blob([typeof data === 'string' ? data : JSON.stringify(data)]).size;
+    return new Blob([JSON.stringify(data)]).size;
   } catch {
     return 0;
   }
