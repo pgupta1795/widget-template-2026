@@ -1,8 +1,10 @@
 import type { OpenAPIV3 } from 'openapi-types';
 import { generateExample } from './schema-generator';
 import {
-  HttpMethod,
   OpenApiParseError,
+} from './types';
+import type {
+  HttpMethod,
   OpenApiParameter,
   OpenApiRequestBody,
   ParsedCollection,

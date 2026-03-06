@@ -80,7 +80,8 @@ export function buildSchemaTree(
 ): SchemaNode {
   if (depth > 6) return { name, type: '...', description: '', required };
 
-  const type = schema.type ?? (schema.properties ? 'object' : schema.items ? 'array' : 'unknown');
+  const s = schema as any;
+  const type = schema.type ?? (schema.properties ? 'object' : s.items ? 'array' : 'unknown');
   const node: SchemaNode = {
     name,
     type: schema.enum ? `enum(${schema.enum.join('|')})` : String(type),
@@ -95,8 +96,8 @@ export function buildSchemaTree(
       if ('$ref' in prop) return { name: key, type: '$ref', description: '', required: false };
       return buildSchemaTree(prop as OpenAPIV3.SchemaObject, key, requiredFields.has(key), depth + 1);
     });
-  } else if (schema.items && !('$ref' in schema.items)) {
-    node.children = [buildSchemaTree(schema.items as OpenAPIV3.SchemaObject, '[item]', false, depth + 1)];
+  } else if (s.items && !('$ref' in s.items)) {
+    node.children = [buildSchemaTree(s.items as OpenAPIV3.SchemaObject, '[item]', false, depth + 1)];
   }
 
   return node;
