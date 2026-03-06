@@ -1,4 +1,5 @@
-import {fetchCsrfToken} from '@/lib/utils';
+import Index from '@/app/test';
+import {fetchCsrfToken} from '@/lib/sample-request';
 import {useQuery} from '@tanstack/react-query';
 import {createFileRoute} from '@tanstack/react-router';
 
@@ -18,9 +19,6 @@ function App() {
     return <p className='flex items-center justify-center h-screen text-2xl'>An error occurred: {error.message}</p>;
   }
 
-  return (
-    <div className="flex items-center justify-center h-screen">
-      {data?.csrf?.value}
-    </div>
-  )
+  console.log({csrf : data})
+  return (<Index />)
 }
