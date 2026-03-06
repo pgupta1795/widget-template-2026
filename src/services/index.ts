@@ -6,6 +6,7 @@ export type { HttpClient } from './http/client';
 
 // Hooks
 export { useWafQuery } from './hooks/use-waf-query';
+export type { UseWafQueryOptions } from './hooks/use-waf-query';
 export { useWafMutation } from './hooks/use-waf-mutation';
 
 // Platform utility — useful for callers routing requests conditionally

@@ -58,12 +58,13 @@ export async function executePipeline<T>(
     const builtUrl = buildUrl(url, opts.params);
     const headers = await buildHeaders(method, opts, config);
 
-    const { params, csrfOverride, useProxy, proxyType, retry, ...wafOpts } = opts;
+    const { params, csrfOverride, useProxy, proxyType, retry, timeout: _timeout, ...wafOpts } = opts;
+    const timeout = opts.timeout ?? config.defaultTimeout;
 
     if (useProxy) {
-      return wafProxifiedRequest<T>(builtUrl, { ...wafOpts, headers, proxyType });
+      return wafProxifiedRequest<T>(builtUrl, { ...wafOpts, headers, proxyType, timeout });
     }
-    return wafAuthenticatedRequest<T>(builtUrl, { ...wafOpts, headers });
+    return wafAuthenticatedRequest<T>(builtUrl, { ...wafOpts, headers, timeout });
   };
 
   return withRetry(async () => {

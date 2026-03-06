@@ -4,16 +4,12 @@ vi.mock('../core/waf-transport', () => ({
   wafAuthenticatedRequest: vi.fn(),
   wafProxifiedRequest: vi.fn(),
 }));
-vi.mock('../core/platform-resolver', () => ({
-  is3DXUrl: vi.fn(),
-}));
 vi.mock('../core/csrf-manager', () => ({
   getToken: vi.fn(),
   invalidate: vi.fn(),
 }));
 
 import { wafAuthenticatedRequest, wafProxifiedRequest } from '../core/waf-transport';
-import { is3DXUrl } from '../core/platform-resolver';
 import { getToken, invalidate } from '../core/csrf-manager';
 import { ServiceError } from '../types';
 import { executePipeline } from '../http/request-pipeline';
@@ -22,7 +18,6 @@ const okResponse = { data: 'result', status: 200, statusText: 'OK', headers: {},
 
 beforeEach(() => {
   vi.clearAllMocks();
-  vi.mocked(is3DXUrl).mockResolvedValue(true);
   vi.mocked(wafAuthenticatedRequest).mockResolvedValue(okResponse as any);
   vi.mocked(wafProxifiedRequest).mockResolvedValue(okResponse as any);
   vi.mocked(getToken).mockResolvedValue({ name: 'ENO_CSRF_TOKEN', value: 'tok123' });
@@ -30,14 +25,12 @@ beforeEach(() => {
 
 describe('executePipeline — transport selection', () => {
   it('uses authenticatedRequest for 3DX URLs by default', async () => {
-    vi.mocked(is3DXUrl).mockResolvedValue(true);
     await executePipeline('GET', 'https://3dspace.example.com/api', {}, {});
     expect(wafAuthenticatedRequest).toHaveBeenCalled();
     expect(wafProxifiedRequest).not.toHaveBeenCalled();
   });
 
   it('uses authenticatedRequest even for non-3DX URLs when useProxy is not set', async () => {
-    vi.mocked(is3DXUrl).mockResolvedValue(false);
     await executePipeline('GET', 'https://external.example.com/api', {}, {});
     expect(wafAuthenticatedRequest).toHaveBeenCalled();
   });
@@ -106,6 +99,24 @@ describe('executePipeline — default headers', () => {
     expect(wafAuthenticatedRequest).toHaveBeenCalledWith(
       expect.any(String),
       expect.objectContaining({ headers: expect.objectContaining({ 'X-App': 'widget' }) })
+    );
+  });
+});
+
+describe('executePipeline — defaultTimeout', () => {
+  it('applies config.defaultTimeout when opts.timeout is not set', async () => {
+    await executePipeline('GET', 'https://3dspace.example.com/api', {}, { defaultTimeout: 15000 });
+    expect(wafAuthenticatedRequest).toHaveBeenCalledWith(
+      expect.any(String),
+      expect.objectContaining({ timeout: 15000 })
+    );
+  });
+
+  it('uses opts.timeout over config.defaultTimeout when both provided', async () => {
+    await executePipeline('GET', 'https://3dspace.example.com/api', { timeout: 5000 }, { defaultTimeout: 15000 });
+    expect(wafAuthenticatedRequest).toHaveBeenCalledWith(
+      expect.any(String),
+      expect.objectContaining({ timeout: 5000 })
     );
   });
 });
