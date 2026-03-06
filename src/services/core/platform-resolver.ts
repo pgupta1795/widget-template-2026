@@ -1,14 +1,18 @@
-import { getAPIs, getWidget } from '@/lib/widget/api';
+import {getAPIs,getWidget} from '@/lib/widget/api';
 
-let cache: Record<string, string> | null = null;
-let pending: Promise<Record<string, string>> | null = null;
+let cache: PlatformServices | null = null;
+let pending: Promise<PlatformServices> | null = null;
 
-export function resetPlatformResolver(): void {
-  cache = null;
-  pending = null;
+type PlatformServices = {
+  '3DSpace': string;
+  '3DSwym': string;
+  '3DPassport': string;
+  '3DCompass': string;
+  displayName: string;
+  platformId: string;
 }
 
-export function getPlatformUrls(): Promise<Record<string, string>> {
+function getPlatformUrls(): Promise<PlatformServices> {
   if (cache) return Promise.resolve(cache);
   if (pending) return pending;
 
@@ -16,11 +20,11 @@ export function getPlatformUrls(): Promise<Record<string, string>> {
   const widget = getWidget();
   const tenant = widget.getValue('tenant') || 'OnPremise';
 
-  pending = new Promise<Record<string, string>>((resolve, reject) => {
-    (i3DXCompassServices as any).getPlatformServices({
-      tenant,
-      onComplete(data: any) {
-        const services: Record<string, string> = Array.isArray(data) ? data[0] : data;
+  pending = new Promise<PlatformServices>((resolve, reject) => {
+    i3DXCompassServices.getPlatformServices({
+      platformId: tenant,
+      onComplete(data: PlatformServices) {
+        const services: PlatformServices = Array.isArray(data) ? data[0] : data;
         cache = Object.freeze(services);
         pending = null;
         resolve(cache);
@@ -31,11 +35,12 @@ export function getPlatformUrls(): Promise<Record<string, string>> {
       },
     });
   });
-
   return pending;
 }
 
-export async function is3DXUrl(url: string): Promise<boolean> {
+export async function get3DSpaceUrl(): Promise<string> {
   const urls = await getPlatformUrls();
-  return Object.values(urls).some(base => url.startsWith(base));
+  const spaceUrl = urls['3DSpace'];
+  if (!spaceUrl) throw new Error('3DSpace URL not found in platform services');
+  return spaceUrl;
 }

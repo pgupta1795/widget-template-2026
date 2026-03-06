@@ -1,20 +1,25 @@
-import { invalidate as invalidateCsrf, getToken } from '../core/csrf-manager';
-import { withRetry } from '../core/retry';
-import { wafAuthenticatedRequest, wafProxifiedRequest } from '../core/waf-transport';
+import logger from '@/lib/logger';
+import {getToken,invalidate as invalidateCsrf} from '@/services/core/csrf-manager';
+import {get3DSpaceUrl} from '@/services/core/platform-resolver';
+import {withRetry} from '@/services/core/retry';
+import {getSecurityContext} from '@/services/core/security-context-manager';
+import {wafAuthenticatedRequest,wafProxifiedRequest} from '@/services/core/waf-transport';
 import {
   ServiceError,
   type HttpMethod,
   type RequestOptions,
   type ServiceConfig,
   type ServiceResponse,
-} from '../types';
+} from '@/services/types';
 
 const CSRF_METHODS: HttpMethod[] = ['POST', 'PUT', 'PATCH', 'DELETE'];
 
-function buildUrl(url: string, params?: Record<string, string>): string {
-  if (!params || Object.keys(params).length === 0) return url;
+async function buildUrl(url: string, params?: Record<string, string>): Promise<string> {
+  const spaceUrl = await get3DSpaceUrl();
+  const finalUrl = `${spaceUrl}/${url}`;
+  if (!params || Object.keys(params).length === 0) return finalUrl;
   try {
-    const u = new URL(url);
+    const u = new URL(finalUrl);
     for (const [k, v] of Object.entries(params)) {
       u.searchParams.set(k, v);
     }
@@ -22,7 +27,7 @@ function buildUrl(url: string, params?: Record<string, string>): string {
   } catch {
     // Relative URL — append manually
     const qs = new URLSearchParams(params).toString();
-    return `${url}${url.includes('?') ? '&' : '?'}${qs}`;
+    return `${finalUrl}${finalUrl.includes('?') ? '&' : '?'}${qs}`;
   }
 }
 
@@ -36,13 +41,16 @@ async function buildHeaders(
     ...(opts.headers ?? {}),
   };
 
+  const sc = getSecurityContext();
+  if (sc) merged['SecurityContext'] = sc;
+
   if (CSRF_METHODS.includes(method)) {
     const { name, value } = opts.csrfOverride
       ? { name: 'ENO_CSRF_TOKEN', value: opts.csrfOverride }
       : await getToken();
     merged[name] = value;
   }
-
+  logger.debug('Headers', merged);
   return merged;
 }
 
@@ -53,11 +61,10 @@ export async function executePipeline<T>(
   config: ServiceConfig,
 ): Promise<ServiceResponse<T>> {
   const retryConfig = opts.retry ?? config.retry ?? { maxAttempts: 1 };
-
   const execute = async (): Promise<ServiceResponse<T>> => {
-    const builtUrl = buildUrl(url, opts.params);
+    const builtUrl = await buildUrl(url, opts.params);
+    logger.info('Sending Request to URL: ', builtUrl);
     const headers = await buildHeaders(method, opts, config);
-
     const { params, csrfOverride, useProxy, proxyType, retry, timeout: _timeout, ...wafOpts } = opts;
     const timeout = opts.timeout ?? config.defaultTimeout;
 

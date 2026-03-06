@@ -1,4 +1,4 @@
-import type { WAFDataBaseRequestOptions } from '@/lib/types/WAFData';
+import type {WAFDataBaseRequestOptions} from '@/lib/types/WAFData';
 
 export type HttpMethod = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
 

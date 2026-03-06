@@ -1,6 +1,6 @@
-import { getPlatformUrls } from './platform-resolver';
-import { wafAuthenticatedRequest } from './waf-transport';
-import type { CsrfToken } from '../types';
+import {get3DSpaceUrl} from '@/services/core/platform-resolver';
+import {wafAuthenticatedRequest} from '@/services/core/waf-transport';
+import type {CsrfToken} from '@/services/types';
 
 const CSRF_PATH = '/resources/v1/application/CSRF';
 
@@ -22,9 +22,7 @@ export function getToken(): Promise<CsrfToken> {
   if (pending) return pending;
 
   pending = (async () => {
-    const urls = await getPlatformUrls();
-    const spaceUrl = urls['3DSpace'];
-    if (!spaceUrl) throw new Error('3DSpace URL not found in platform services');
+    const spaceUrl = await get3DSpaceUrl();
 
     const response = await wafAuthenticatedRequest<{ csrf: CsrfToken }>(
       `${spaceUrl}${CSRF_PATH}`,

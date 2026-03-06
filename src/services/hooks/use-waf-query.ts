@@ -1,6 +1,6 @@
-import { useQuery, type UseQueryResult } from '@tanstack/react-query';
-import { httpClient } from '../http/client';
-import type { RequestOptions, ServiceError, ServiceResponse } from '../types';
+import {httpClient} from '@/services/http/client';
+import type {RequestOptions,ServiceError,ServiceResponse} from '@/services/types';
+import {useQuery,type UseQueryResult} from '@tanstack/react-query';
 
 export interface UseWafQueryOptions extends RequestOptions {
   queryKey?: unknown[];
