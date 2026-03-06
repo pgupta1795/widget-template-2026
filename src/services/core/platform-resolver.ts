@@ -44,3 +44,6 @@ export async function getPlatformURL(url: '3DSpace' | '3DSwym' | '3DPassport' | 
   if (!spaceUrl) throw new Error(`${url} URL not found in platform services`);
   return spaceUrl;
 }
+
+/** Convenience alias used by the request pipeline */
+export const get3DSpaceUrl = () => getPlatformURL('3DSpace');

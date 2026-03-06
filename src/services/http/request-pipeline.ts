@@ -1,6 +1,6 @@
 import logger from '@/lib/logger';
 import {getToken,invalidate as invalidateCsrf} from '@/services/core/csrf-manager';
-import {getPlatformURL} from '@/services/core/platform-resolver';
+import {get3DSpaceUrl} from '@/services/core/platform-resolver';
 import {withRetry} from '@/services/core/retry';
 import {getSecurityContext} from '@/services/core/security-context-manager';
 import {wafAuthenticatedRequest,wafProxifiedRequest} from '@/services/core/waf-transport';
@@ -14,8 +14,12 @@ import {
 
 const CSRF_METHODS: HttpMethod[] = ['POST', 'PUT', 'PATCH', 'DELETE'];
 
-async function buildUrl(url: string, params?: Record<string, string>): Promise<string> {
-  const spaceUrl = await getPlatformURL('3DSpace');
+async function buildUrl(
+  url: string,
+  params?: Record<string, string>,
+  baseUrl?: string,
+): Promise<string> {
+  const spaceUrl = baseUrl ?? await get3DSpaceUrl();
   const finalUrl = `${spaceUrl}/${url}`;
   if (!params || Object.keys(params).length === 0) return finalUrl;
   try {
@@ -62,7 +66,7 @@ export async function executePipeline<T>(
 ): Promise<ServiceResponse<T>> {
   const retryConfig = opts.retry ?? config.retry ?? { maxAttempts: 1 };
   const execute = async (): Promise<ServiceResponse<T>> => {
-    const builtUrl = await buildUrl(url, opts.params);
+    const builtUrl = await buildUrl(url, opts.params, config.baseUrl);
     logger.info('Sending Request to URL: ', builtUrl);
     const headers = await buildHeaders(method, opts, config);
     const { params, csrfOverride, useProxy, proxyType, retry, timeout: _timeout, ...wafOpts } = opts;

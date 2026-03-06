@@ -35,6 +35,8 @@ export interface ServiceConfig {
   defaultTimeout?: number;
   retry?: RetryConfig;
   defaultHeaders?: Record<string, string>;
+  /** Optional base URL override — if set, skips auto-resolving 3DSpace URL in the pipeline */
+  baseUrl?: string;
 }
 
 export interface RetryConfig {
