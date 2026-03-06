@@ -72,4 +72,28 @@ describe('createHttpClient', () => {
       expect.objectContaining({ defaultTimeout: 10000, defaultHeaders: { 'X-App': 'widget' } })
     );
   });
+
+  it('post() with null body does not serialize', async () => {
+    const client = createHttpClient();
+    await client.post('https://example.com/api', null);
+    expect(executePipeline).toHaveBeenCalledWith(
+      'POST',
+      expect.any(String),
+      {}, // opts unchanged — no data, no Content-Type
+      expect.any(Object)
+    );
+  });
+
+  it('post() with FormData body passes it through without serialization', async () => {
+    const client = createHttpClient();
+    const formData = new FormData();
+    formData.append('key', 'value');
+    await client.post('https://example.com/api', formData);
+    expect(executePipeline).toHaveBeenCalledWith(
+      'POST',
+      expect.any(String),
+      expect.objectContaining({ data: formData }), // FormData passed as-is
+      expect.any(Object)
+    );
+  });
 });
