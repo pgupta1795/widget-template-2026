@@ -1,6 +1,6 @@
 import logger from '@/lib/logger';
 import {getWidget} from '@/lib/widget/api';
-import {get3DSpaceUrl} from '@/services/core/platform-resolver';
+import {getPlatformURL} from '@/services/core/platform-resolver';
 import {wafAuthenticatedRequest} from '@/services/core/waf-transport';
 
 const SC_PREFERENCE_NAME = 'SecurityContext';
@@ -56,7 +56,7 @@ export function initSecurityContext(): Promise<void> {
   if (pending) return pending;
 
   pending = (async () => {
-    const spaceUrl = await get3DSpaceUrl();
+    const spaceUrl = await getPlatformURL('3DSpace');
     const { data } = await wafAuthenticatedRequest<SecurityContextResponse>(
       `${spaceUrl}${SC_API_PATH}`,
       { type: 'json' },

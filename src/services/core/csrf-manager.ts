@@ -1,4 +1,4 @@
-import {get3DSpaceUrl} from '@/services/core/platform-resolver';
+import {getPlatformURL} from '@/services/core/platform-resolver';
 import {wafAuthenticatedRequest} from '@/services/core/waf-transport';
 import type {CsrfToken} from '@/services/types';
 
@@ -22,7 +22,7 @@ export function getToken(): Promise<CsrfToken> {
   if (pending) return pending;
 
   pending = (async () => {
-    const spaceUrl = await get3DSpaceUrl();
+    const spaceUrl = await getPlatformURL('3DSpace');
 
     const response = await wafAuthenticatedRequest<{ csrf: CsrfToken }>(
       `${spaceUrl}${CSRF_PATH}`,

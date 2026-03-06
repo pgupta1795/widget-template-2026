@@ -1,6 +1,6 @@
 import logger from '@/lib/logger';
 import {getToken,invalidate as invalidateCsrf} from '@/services/core/csrf-manager';
-import {get3DSpaceUrl} from '@/services/core/platform-resolver';
+import {getPlatformURL} from '@/services/core/platform-resolver';
 import {withRetry} from '@/services/core/retry';
 import {getSecurityContext} from '@/services/core/security-context-manager';
 import {wafAuthenticatedRequest,wafProxifiedRequest} from '@/services/core/waf-transport';
@@ -15,7 +15,7 @@ import {
 const CSRF_METHODS: HttpMethod[] = ['POST', 'PUT', 'PATCH', 'DELETE'];
 
 async function buildUrl(url: string, params?: Record<string, string>): Promise<string> {
-  const spaceUrl = await get3DSpaceUrl();
+  const spaceUrl = await getPlatformURL('3DSpace');
   const finalUrl = `${spaceUrl}/${url}`;
   if (!params || Object.keys(params).length === 0) return finalUrl;
   try {

@@ -1,0 +1,3134 @@
+{
+    "openapi": "3.0.0",
+    "info": {"x-ds-copyright" : "3DEXPERIENCE R2022x (c) 2021 Dassault Systemes.",
+        "description": "REST Services provided for Electronics Logical objects",
+        "version": "1.0.0",
+        "title": "dslogpcb: Electronics Logical corpus."
+    },
+    "servers": [
+        {
+            "url": "{3DSpace}",
+            "variables": {
+                "3DSpace": {
+                    "default": "https://3DEXPERIENCE_3DSpace",
+                    "description": "URL of the 3DSpace service"
+                }
+            }
+        }
+    ],
+    "paths": {
+        "/resources/v1/modeler/dslogpcb/dslogpcb:Component": {
+            "get": {
+                "summary": "Gets all the Components",
+                "description": "Gets all the Logical Components",
+                "operationId": "GETAll_dslogpcb:Component",
+                "tags": [
+                    "dslogpcb:Component"
+                ],
+                "parameters": [
+                    {
+                        "name": "SecurityContext",
+                        "in": "header",
+                        "description": "Role.Organization.CollabSpace value Ex:VPLMProjectLeader.MyCompany.Default",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "in": "query",
+                        "name": "$mask",
+                        "description": "Mask defining what will be returned. Default Mask is:dsmvlogpcb:ComponentMask",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "dsmvlogpcb:ComponentMask"
+                            ]
+                        }
+                    },
+                    {
+                        "in": "query",
+                        "name": "$fields",
+                        "description": "We can add several fields with comma(,) separator to get in the response.",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "dsmvlogpcb:attribute.reference.preferphysicalcomponent",
+                                "dsmvlogpcb:attribute.reference.subtype",
+                                "dsmvlogpcb:attribute.reference.preferpackagefootprint"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "$top",
+                        "in": "query",
+                        "description": "Represents the total number of items returned from the search, accepts a maximum value of 1000.",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "$skip",
+                        "in": "query",
+                        "description": "Represents the number of items to skip (to be used along with $top query parameter)",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Request successful.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "oneOf": [
+                                        {
+                                            "$ref": "#/components/schemas/dsmvlogpcb_ComponentMask_WithCEStamp"
+                                        },
+                                        {
+                                            "$ref": "#/components/schemas/dsmvlogpcb_attribute.reference.preferphysicalcomponent"
+                                        },
+                                        {
+                                            "$ref": "#/components/schemas/dsmvlogpcb_attribute.reference.subtype"
+                                        },
+                                        {
+                                            "$ref": "#/components/schemas/dsmvlogpcb_attribute.reference.preferpackagefootprint"
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "BAD REQUEST. The request could not be understood by the server due to malformed syntax. The client SHOULD NOT repeat the request without modifications.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "integer",
+                                            "example": 400
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "My message"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "UNAUTHORIZED. The request requires user authentication. The response MUST include a WWW-Authenticate header field containing a challenge applicable to the requested resource. The client MAY repeat the request with a suitable Authorization header field. If the request already included Authorization credentials, then the 401 response indicates that authorization has been refused for those credentials. If the 401 response contains the same challenge as the prior response, and the user agent has already attempted authentication at least once, then the user SHOULD be presented the entity that was given in the response, since that entity might include relevant diagnostic information. HTTP access authentication is explained in \"HTTP Authentication: Basic and Digest Access Authentication\".",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "integer",
+                                            "example": 401
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "My message"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "INTERNAL SERVER ERROR. A generic error message, given when an unexpected condition was encountered and no more specific message is suitable.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "integer",
+                                            "example": 500
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "My message"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/resources/v1/modeler/dslogpcb/dslogpcb:Component/search": {
+            "get": {
+                "summary": "Gets a list of Components from indexed search ",
+                "description": "Gets a list of Components. By default, returns a total of up to 50 items, can be optionally increased up to 1000 items using $top query parameter. Recommendation: Use $searchStr query parameter for better performances",
+                "operationId": "GETSearch_dslogpcb:Component_Search",
+                "tags": [
+                    "dslogpcb:Component"
+                ],
+                "parameters": [
+                    {
+                        "name": "SecurityContext",
+                        "in": "header",
+                        "description": "Role.Organization.CollabSpace value Ex:VPLMProjectLeader.MyCompany.Default",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "$searchStr",
+                        "in": "query",
+                        "description": "Provide a 3DEXPERIENCE search expression with a minimum of two characters. Note that this will run on indexed data only.Example1 searchStr=\"FYD\" Example2 searchStr=[ds6wg:XP_VPMReference_Ext.Materiau]:(zinc)</br>Example3 searchStr=\"ARB\"",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "in": "query",
+                        "name": "$mask",
+                        "description": "Mask defining what will be returned. Default Mask is:dsmvlogpcb:ComponentMask",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "dsmvlogpcb:ComponentMask"
+                            ]
+                        }
+                    },
+                    {
+                        "in": "query",
+                        "name": "$fields",
+                        "description": "We can add several fields with comma(,) separator to get in the response.",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "dsmvlogpcb:attribute.reference.preferphysicalcomponent",
+                                "dsmvlogpcb:attribute.reference.subtype",
+                                "dsmvlogpcb:attribute.reference.preferpackagefootprint"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "$top",
+                        "in": "query",
+                        "description": "Represents the total number of items returned from the search, accepts a maximum value of 1000.",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "$skip",
+                        "in": "query",
+                        "description": "Represents the number of items to skip (to be used along with $top query parameter)",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Request successful.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "oneOf": [
+                                        {
+                                            "$ref": "#/components/schemas/dsmvlogpcb_ComponentMask_WithCEStamp"
+                                        },
+                                        {
+                                            "$ref": "#/components/schemas/dsmvlogpcb_attribute.reference.preferphysicalcomponent"
+                                        },
+                                        {
+                                            "$ref": "#/components/schemas/dsmvlogpcb_attribute.reference.subtype"
+                                        },
+                                        {
+                                            "$ref": "#/components/schemas/dsmvlogpcb_attribute.reference.preferpackagefootprint"
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "BAD REQUEST. The request could not be understood by the server due to malformed syntax. The client SHOULD NOT repeat the request without modifications.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "integer",
+                                            "example": 400
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "My message"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "UNAUTHORIZED. The request requires user authentication. The response MUST include a WWW-Authenticate header field containing a challenge applicable to the requested resource. The client MAY repeat the request with a suitable Authorization header field. If the request already included Authorization credentials, then the 401 response indicates that authorization has been refused for those credentials. If the 401 response contains the same challenge as the prior response, and the user agent has already attempted authentication at least once, then the user SHOULD be presented the entity that was given in the response, since that entity might include relevant diagnostic information. HTTP access authentication is explained in \"HTTP Authentication: Basic and Digest Access Authentication\".",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "integer",
+                                            "example": 401
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "My message"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "INTERNAL SERVER ERROR. A generic error message, given when an unexpected condition was encountered and no more specific message is suitable.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "integer",
+                                            "example": 500
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "My message"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/resources/v1/modeler/dslogpcb/dslogpcb:Component/{ID}": {
+            "get": {
+                "summary": "Gets a Component",
+                "description": "Gets a Logical Component",
+                "operationId": "GET_dslogpcb:Component_ID",
+                "tags": [
+                    "dslogpcb:Component"
+                ],
+                "parameters": [
+                    {
+                        "name": "SecurityContext",
+                        "in": "header",
+                        "description": "Role.Organization.CollabSpace value Ex:VPLMProjectLeader.MyCompany.Default",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "ID",
+                        "in": "path",
+                        "description": "dslogpcb:Component object ID",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "in": "query",
+                        "name": "$mask",
+                        "description": "Mask defining what will be returned. Default Mask is:dsmvlogpcb:ComponentMask",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "dsmvlogpcb:ComponentMask"
+                            ]
+                        }
+                    },
+                    {
+                        "in": "query",
+                        "name": "$fields",
+                        "description": "We can add several fields with comma(,) separator to get in the response.",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "dsmvlogpcb:attribute.reference.preferphysicalcomponent",
+                                "dsmvlogpcb:attribute.reference.subtype",
+                                "dsmvlogpcb:attribute.reference.preferpackagefootprint"
+                            ]
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Request successful.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "oneOf": [
+                                        {
+                                            "$ref": "#/components/schemas/dsmvlogpcb_ComponentMask_WithCEStamp"
+                                        },
+                                        {
+                                            "$ref": "#/components/schemas/dsmvlogpcb_attribute.reference.preferphysicalcomponent"
+                                        },
+                                        {
+                                            "$ref": "#/components/schemas/dsmvlogpcb_attribute.reference.subtype"
+                                        },
+                                        {
+                                            "$ref": "#/components/schemas/dsmvlogpcb_attribute.reference.preferpackagefootprint"
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "BAD REQUEST. The request could not be understood by the server due to malformed syntax. The client SHOULD NOT repeat the request without modifications.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "integer",
+                                            "example": 400
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "My message"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "UNAUTHORIZED. The request requires user authentication. The response MUST include a WWW-Authenticate header field containing a challenge applicable to the requested resource. The client MAY repeat the request with a suitable Authorization header field. If the request already included Authorization credentials, then the 401 response indicates that authorization has been refused for those credentials. If the 401 response contains the same challenge as the prior response, and the user agent has already attempted authentication at least once, then the user SHOULD be presented the entity that was given in the response, since that entity might include relevant diagnostic information. HTTP access authentication is explained in \"HTTP Authentication: Basic and Digest Access Authentication\".",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "integer",
+                                            "example": 401
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "My message"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "INTERNAL SERVER ERROR. A generic error message, given when an unexpected condition was encountered and no more specific message is suitable.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "integer",
+                                            "example": 500
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "My message"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/resources/v1/modeler/dslogpcb/dslogpcb:Component/{PID}/dslogpcb:Pin/{ID}": {
+            "get": {
+                "summary": "Gets a Pin",
+                "description": "Gets a Logical Pin",
+                "operationId": "GET_dslogpcb:Component_PID_dslogpcb:Pin_ID",
+                "tags": [
+                    "dslogpcb:Pin"
+                ],
+                "parameters": [
+                    {
+                        "name": "SecurityContext",
+                        "in": "header",
+                        "description": "Role.Organization.CollabSpace value Ex:VPLMProjectLeader.MyCompany.Default",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "PID",
+                        "in": "path",
+                        "description": "dslogpcb:Component object ID",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "ID",
+                        "in": "path",
+                        "description": "dslogpcb:Pin object ID",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "in": "query",
+                        "name": "$mask",
+                        "description": "Mask defining what will be returned. Default Mask is:dsmvlogpcb:PinMask",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "dsmvlogpcb:PinMask",
+                                "dsmvlogpcb:PinStrictMask"
+                            ]
+                        }
+                    },
+                    {
+                        "in": "query",
+                        "name": "$fields",
+                        "description": "We can add several fields with comma(,) separator to get in the response.",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "dsmvlogpcb:attribute.reference.direction",
+                                "dsmvlogpcb:attribute.reference.functionalname",
+                                "dsmveno:basic.id",
+                                "dsmvlogpcb:attribute.reference.pinsubtype"
+                            ]
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Request successful.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "oneOf": [
+                                        {
+                                            "$ref": "#/components/schemas/dsmvlogpcb_PinMask_WithCEStamp"
+                                        },
+                                        {
+                                            "$ref": "#/components/schemas/dsmvlogpcb_PinStrictMask_WithCEStamp"
+                                        },
+                                        {
+                                            "$ref": "#/components/schemas/dsmvlogpcb_attribute.reference.direction"
+                                        },
+                                        {
+                                            "$ref": "#/components/schemas/dsmvlogpcb_attribute.reference.functionalname"
+                                        },
+                                        {
+                                            "$ref": "#/components/schemas/dsmveno_basic.id"
+                                        },
+                                        {
+                                            "$ref": "#/components/schemas/dsmvlogpcb_attribute.reference.pinsubtype"
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "BAD REQUEST. The request could not be understood by the server due to malformed syntax. The client SHOULD NOT repeat the request without modifications.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "integer",
+                                            "example": 400
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "My message"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "UNAUTHORIZED. The request requires user authentication. The response MUST include a WWW-Authenticate header field containing a challenge applicable to the requested resource. The client MAY repeat the request with a suitable Authorization header field. If the request already included Authorization credentials, then the 401 response indicates that authorization has been refused for those credentials. If the 401 response contains the same challenge as the prior response, and the user agent has already attempted authentication at least once, then the user SHOULD be presented the entity that was given in the response, since that entity might include relevant diagnostic information. HTTP access authentication is explained in \"HTTP Authentication: Basic and Digest Access Authentication\".",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "integer",
+                                            "example": 401
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "My message"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "INTERNAL SERVER ERROR. A generic error message, given when an unexpected condition was encountered and no more specific message is suitable.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "integer",
+                                            "example": 500
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "My message"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/resources/v1/modeler/dslogpcb/dslogpcb:Component/{ID}/dslogpcb:Pin": {
+            "get": {
+                "summary": "Gets all the Pins",
+                "description": "Gets all the Logical Pins",
+                "operationId": "GETAll_dslogpcb:Component_ID_dslogpcb:Pin",
+                "tags": [
+                    "dslogpcb:Pin"
+                ],
+                "parameters": [
+                    {
+                        "name": "SecurityContext",
+                        "in": "header",
+                        "description": "Role.Organization.CollabSpace value Ex:VPLMProjectLeader.MyCompany.Default",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "ID",
+                        "in": "path",
+                        "description": "dslogpcb:Component object ID",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "in": "query",
+                        "name": "$mask",
+                        "description": "Mask defining what will be returned. Default Mask is:dsmvlogpcb:PinMask",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "dsmvlogpcb:PinMask",
+                                "dsmvlogpcb:PinStrictMask"
+                            ]
+                        }
+                    },
+                    {
+                        "in": "query",
+                        "name": "$fields",
+                        "description": "We can add several fields with comma(,) separator to get in the response.",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "dsmvlogpcb:attribute.reference.direction",
+                                "dsmvlogpcb:attribute.reference.functionalname",
+                                "dsmveno:basic.id",
+                                "dsmvlogpcb:attribute.reference.pinsubtype"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "$top",
+                        "in": "query",
+                        "description": "Represents the total number of items returned from the search, accepts a maximum value of 1000.",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "$skip",
+                        "in": "query",
+                        "description": "Represents the number of items to skip (to be used along with $top query parameter)",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Request successful.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "oneOf": [
+                                        {
+                                            "$ref": "#/components/schemas/dsmvlogpcb_PinMask_WithCEStamp"
+                                        },
+                                        {
+                                            "$ref": "#/components/schemas/dsmvlogpcb_PinStrictMask_WithCEStamp"
+                                        },
+                                        {
+                                            "$ref": "#/components/schemas/dsmvlogpcb_attribute.reference.direction"
+                                        },
+                                        {
+                                            "$ref": "#/components/schemas/dsmvlogpcb_attribute.reference.functionalname"
+                                        },
+                                        {
+                                            "$ref": "#/components/schemas/dsmveno_basic.id"
+                                        },
+                                        {
+                                            "$ref": "#/components/schemas/dsmvlogpcb_attribute.reference.pinsubtype"
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "BAD REQUEST. The request could not be understood by the server due to malformed syntax. The client SHOULD NOT repeat the request without modifications.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "integer",
+                                            "example": 400
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "My message"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "UNAUTHORIZED. The request requires user authentication. The response MUST include a WWW-Authenticate header field containing a challenge applicable to the requested resource. The client MAY repeat the request with a suitable Authorization header field. If the request already included Authorization credentials, then the 401 response indicates that authorization has been refused for those credentials. If the 401 response contains the same challenge as the prior response, and the user agent has already attempted authentication at least once, then the user SHOULD be presented the entity that was given in the response, since that entity might include relevant diagnostic information. HTTP access authentication is explained in \"HTTP Authentication: Basic and Digest Access Authentication\".",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "integer",
+                                            "example": 401
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "My message"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "INTERNAL SERVER ERROR. A generic error message, given when an unexpected condition was encountered and no more specific message is suitable.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "integer",
+                                            "example": 500
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "My message"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "components": {
+        "schemas": {
+            "dslogpcb_Component": {
+                "properties": {
+                    "Attribute DB Name": {
+                        "description": "Attribute DB Value",
+                        "type": "string",
+                        "example": "Attribute DB Value"
+                    }
+                }
+            },
+            "dslogpcb_Component_PATCH": {
+                "required": [
+                    "cestamp"
+                ],
+                "properties": {
+                    "cestamp": {
+                        "type": "string",
+                        "example": "Timestamp id"
+                    },
+                    "Attribute DB Name": {
+                        "description": "Attribute DB Value",
+                        "type": "string",
+                        "example": "Attribute DB Value"
+                    }
+                }
+            },
+            "dslogpcb_Pin": {
+                "properties": {
+                    "Attribute DB Name": {
+                        "description": "Attribute DB Value",
+                        "type": "string",
+                        "example": "Attribute DB Value"
+                    }
+                }
+            },
+            "dslogpcb_Pin_PATCH": {
+                "required": [
+                    "cestamp"
+                ],
+                "properties": {
+                    "cestamp": {
+                        "type": "string",
+                        "example": "Timestamp id"
+                    },
+                    "Attribute DB Name": {
+                        "description": "Attribute DB Value",
+                        "type": "string",
+                        "example": "Attribute DB Value"
+                    }
+                }
+            },
+            "dscfg_Configured": {
+                "properties": {
+                }
+            },
+            "dscfg_Configured_PATCH": {
+                "properties": {
+                    "enabledCriteria": {
+                        "type": "string",
+                        "example": "[ModelVersion, Variant]"
+                    }
+                }
+            },
+            "attachConfigurationContext": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "identifier": {
+                            "type": "string",
+                            "example": "F6AF82561E5700005EB271EE0003C500",
+                            "description": "The physical id of a model."
+                        },
+                        "type": {
+                            "type": "string",
+                            "example": "dseng:EngItem",
+                            "description": "type."
+                        },
+                        "source": {
+                            "type": "string",
+                            "example": "3DSpace",
+                            "description": "source."
+                        },
+                        "relativePath": {
+                            "type": "string",
+                            "example": "/resources/v1/modeler/dseng/dseng:EngItem/F6AF82561E5700005EB123650003C100",
+                            "description": "relativePath."
+                        }
+                    }
+                }
+            },
+            "detachConfigurationContext": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "identifier": {
+                            "type": "string",
+                            "example": "F6AF82561E5700005EB271EE0003C500",
+                            "description": "The physical id of a model."
+                        },
+                        "type": {
+                            "type": "string",
+                            "example": "dseng:EngItem",
+                            "description": "type."
+                        },
+                        "source": {
+                            "type": "string",
+                            "example": "3DSpace",
+                            "description": "source."
+                        },
+                        "relativePath": {
+                            "type": "string",
+                            "example": "/resources/v1/modeler/dseng/dseng:EngItem/F6AF82561E5700005EB123650003C100",
+                            "description": "relativePath."
+                        }
+                    }
+                }
+            },
+            "addGetItems": {
+                "type": "array",
+                "items": {
+                    "type": "string"
+                },
+                "example": [
+                    "EE512F4A015FE57B4F940A513C63AA77",
+                    "EE5211D2015FF9F94F940A513C63AA77"
+                ]
+            },
+            "addEmpty": {
+            },
+            "addLinks": {
+                "properties": {
+                    "fromID": {
+                        "type": "string",
+                        "example": "EE5211D2015FF9F94F940A513C63AA77"
+                    },
+                    "toID": {
+                        "type": "array",
+                        "items": {
+                            "type": "string",
+                            "example": "EE562168015FFCF14F940A513C63AA77"
+                        }
+                    }
+                }
+            },
+            "addVersions": {
+                "properties": {
+                    "versionName": {
+                        "type": "string",
+                        "example": "A.1"
+                    },
+                    "parents": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "parentID": {
+                                    "type": "string",
+                                    "example": "EE4FBDEA015FEC3D4F940A513C63AA77"
+                                },
+                                "scemantic": {
+                                    "type": "string",
+                                    "example": "fix"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "POST_BULK_UPDATE": {
+                "type": "array",
+                "items": {
+                    "properties": {
+                        "id": {
+                            "description": "Physical ID",
+                            "type": "string",
+                            "example": "CF446630000051C46023F7630004F39F"
+                        },
+                        "attr1": {
+                            "description": "Attribute Name1",
+                            "type": "string",
+                            "example": "Attribute Value"
+                        },
+                        "attr2": {
+                            "description": "Attribute Name2",
+                            "type": "string",
+                            "example": "Attribute Value"
+                        },
+                        "cestamp": {
+                            "description": "cestamp ID",
+                            "type": "string",
+                            "example": "CF446630000051C460123453E8123C"
+                        },
+                        "dsxxx:xxxEnterpriseAttributes": {
+                            "properties": {
+                                "attr3": {
+                                    "description": "Attribute Name3",
+                                    "type": "string",
+                                    "example": "Attribute Value"
+                                },
+                                "attr4": {
+                                    "description": "Attribute Name4",
+                                    "type": "string",
+                                    "example": "Attribute Value"
+                                }
+                            }
+                        },
+                        "customerAttributes": {
+                            "properties": {
+                                "attr5": {
+                                    "description": "Attribute Name5",
+                                    "type": "string",
+                                    "example": "Attribute Value"
+                                },
+                                "attr6": {
+                                    "description": "Attribute Name6",
+                                    "type": "string",
+                                    "example": "Attribute Value"
+                                },
+                                "customerAttributeGroups": {
+                                    "properties": {
+                                        "attr7": {
+                                            "description": "Attribute Name7",
+                                            "type": "string",
+                                            "example": "Attribute Value"
+                                        },
+                                        "attr8": {
+                                            "description": "Attribute Name8",
+                                            "type": "string",
+                                            "example": "Attribute Value"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "dsmvlogpcb_attribute.reference.preferphysicalcomponent": {
+                "properties": {
+                    "totalItems": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "member": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "preferphysicalcomponent": {
+                                    "description": "Physical component",
+                                    "type": "string",
+                                    "example": ""
+                                }
+                            }
+                        }
+                    },
+                    "nlsLabel": {
+                        "type": "object",
+                        "properties": {
+                            "preferphysicalcomponent": {
+                                "type": "string",
+                                "example": "My Prefer Physical Component translated value"
+                            }
+                        }
+                    }
+                }
+            },
+            "dsmvlogpcb_attribute.reference.subtype": {
+                "properties": {
+                    "totalItems": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "member": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "subtype": {
+                                    "description": "Subtype",
+                                    "type": "string",
+                                    "example": ""
+                                }
+                            }
+                        }
+                    },
+                    "nlsLabel": {
+                        "type": "object",
+                        "properties": {
+                            "subtype": {
+                                "type": "string",
+                                "example": "My Subtype translated value"
+                            }
+                        }
+                    }
+                }
+            },
+            "dsmvlogpcb_attribute.reference.preferpackagefootprint": {
+                "properties": {
+                    "totalItems": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "member": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "preferpackagefootprint": {
+                                    "description": "Default footprint used on a layout",
+                                    "type": "string",
+                                    "example": ""
+                                }
+                            }
+                        }
+                    },
+                    "nlsLabel": {
+                        "type": "object",
+                        "properties": {
+                            "preferpackagefootprint": {
+                                "type": "string",
+                                "example": "My Prefer Package Footprint translated value"
+                            }
+                        }
+                    }
+                }
+            },
+            "dsmvlogpcb_attribute.reference.direction": {
+                "properties": {
+                    "totalItems": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "member": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "direction": {
+                                    "description": "Direction",
+                                    "type": "string",
+                                    "example": ""
+                                }
+                            }
+                        }
+                    },
+                    "nlsLabel": {
+                        "type": "object",
+                        "properties": {
+                            "direction": {
+                                "type": "string",
+                                "example": "My Direction translated value"
+                            }
+                        }
+                    }
+                }
+            },
+            "dsmvlogpcb_attribute.reference.functionalname": {
+                "properties": {
+                    "totalItems": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "member": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "functionalname": {
+                                    "description": "Functional name",
+                                    "type": "string",
+                                    "example": ""
+                                }
+                            }
+                        }
+                    },
+                    "nlsLabel": {
+                        "type": "object",
+                        "properties": {
+                            "functionalname": {
+                                "type": "string",
+                                "example": "My Functional Name translated value"
+                            }
+                        }
+                    }
+                }
+            },
+            "dsmveno_basic.id": {
+                "properties": {
+                    "totalItems": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "member": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "id": {
+                                    "description": "Functional name",
+                                    "type": "string",
+                                    "example": "AD87ABA500003B3462BB00CA0000D465"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "dsmvlogpcb_attribute.reference.pinsubtype": {
+                "properties": {
+                    "totalItems": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "member": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "subtype": {
+                                    "description": "Subtype",
+                                    "type": "string",
+                                    "example": ""
+                                }
+                            }
+                        }
+                    },
+                    "nlsLabel": {
+                        "type": "object",
+                        "properties": {
+                            "subtype": {
+                                "type": "string",
+                                "example": "My Subtype translated value"
+                            }
+                        }
+                    }
+                }
+            },
+            "dsmvcfg_attribute.enabledCriteria": {
+                "properties": {
+                    "totalItems": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "member": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "enabledCriteria": {
+                                    "description": "Get the list of Enabled Criteria on Configured Object",
+                                    "type": "string",
+                                    "example": "classReturnType is not proper. Please check the computed program return type"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "dsmvcfg_attribute.configurationCtxt": {
+                "properties": {
+                    "totalItems": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "member": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "configurationCtxt": {
+                                    "type": "object",
+                                    "properties": {
+                                        "name": {
+                                            "description": "object name",
+                                            "type": "string",
+                                            "example": "My name"
+                                        },
+                                        "title": {
+                                            "description": "Object Title value",
+                                            "type": "string",
+                                            "example": "My title"
+                                        },
+                                        "description": {
+                                            "description": "Object description value",
+                                            "type": "string",
+                                            "example": "My description"
+                                        },
+                                        "id": {
+                                            "description": "Entity physical id",
+                                            "type": "string",
+                                            "example": "EE562168015FFCF14F940A513C63AA77"
+                                        },
+                                        "type": {
+                                            "description": "Basic type value",
+                                            "type": "string",
+                                            "example": "DBType"
+                                        },
+                                        "modified": {
+                                            "description": "Basic modified value",
+                                            "type": "string",
+                                            "example": "Dec 15, 2017 11:17 PM"
+                                        },
+                                        "created": {
+                                            "description": "Object created value",
+                                            "type": "string",
+                                            "example": "Dec 11, 2017 12:53 PM"
+                                        },
+                                        "revision": {
+                                            "description": "Object revision value",
+                                            "type": "string",
+                                            "example": "A.1"
+                                        },
+                                        "state": {
+                                            "description": "Object current state value",
+                                            "type": "string",
+                                            "example": "IN_WORK"
+                                        },
+                                        "owner": {
+                                            "description": "Object owner value",
+                                            "type": "string",
+                                            "example": "John Doe"
+                                        },
+                                        "organization": {
+                                            "description": "Object organization value",
+                                            "type": "string",
+                                            "example": "MyCompany"
+                                        },
+                                        "collabspace": {
+                                            "description": "Object collabspace value",
+                                            "type": "string",
+                                            "example": "Default"
+                                        },
+                                        "source": {
+                                            "description": "computed property",
+                                            "type": "string",
+                                            "example": "String"
+                                        },
+                                        "identifier": {
+                                            "description": "Entity physical id",
+                                            "type": "string",
+                                            "example": "EE562168015FFCF14F940A513C63AA77"
+                                        },
+                                        "relativePath": {
+                                            "description": "computed property",
+                                            "type": "string",
+                                            "example": "String"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "nlsLabel": {
+                        "type": "object",
+                        "properties": {
+                            "name": {
+                                "type": "string",
+                                "example": "My Name translated value"
+                            },
+                            "title": {
+                                "type": "string",
+                                "example": "My Title translated value"
+                            },
+                            "description": {
+                                "type": "string",
+                                "example": "My Description translated value"
+                            },
+                            "id": {
+                                "type": "string",
+                                "example": "My Id translated value"
+                            },
+                            "type": {
+                                "type": "string",
+                                "example": "My Type translated value"
+                            },
+                            "modified": {
+                                "type": "string",
+                                "example": "My Modification Date translated value"
+                            },
+                            "created": {
+                                "type": "string",
+                                "example": "My Creation Date translated value"
+                            },
+                            "revision": {
+                                "type": "string",
+                                "example": "My Revision translated value"
+                            },
+                            "state": {
+                                "type": "string",
+                                "example": "My State translated value"
+                            },
+                            "owner": {
+                                "type": "string",
+                                "example": "My Owner translated value"
+                            },
+                            "source": {
+                                "type": "string",
+                                "example": "My Source translated value"
+                            },
+                            "identifier": {
+                                "type": "string",
+                                "example": "My Identifier translated value"
+                            },
+                            "relativePath": {
+                                "type": "string",
+                                "example": "My RelativePath translated value"
+                            }
+                        }
+                    }
+                }
+            },
+            "dsmvcfg_attribute.isConfigured": {
+                "properties": {
+                    "totalItems": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "member": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "isConfigured": {
+                                    "description": "Check if the object is Configured or not",
+                                    "type": "string",
+                                    "example": "dscfg:[{\"isConfigured\":\"true\"}]"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "dsmvlogpcb_PinStrictMask": {
+                "properties": {
+                    "totalItems": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "member": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "id": {
+                                    "description": "Functional name",
+                                    "type": "string",
+                                    "example": "AD87ABA500003B3462BB00CA0000D465"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "dsmvlogpcb_PinStrictMask_WithCEStamp": {
+                "properties": {
+                    "totalItems": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "member": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "id": {
+                                    "description": "Functional name",
+                                    "type": "string",
+                                    "example": "AD87ABA500003B3462BB00CA0000D465"
+                                },
+                                "cestamp": {
+                                    "description": "Object cestamp value",
+                                    "type": "string",
+                                    "example": "2D70169432D84866A200F907881AC9B1"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "dsmvcfg_ConfiguredDetails": {
+                "properties": {
+                    "totalItems": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "member": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "enabledCriteria": {
+                                    "description": "Get the list of Enabled Criteria on Configured Object",
+                                    "type": "string",
+                                    "example": "classReturnType is not proper. Please check the computed program return type"
+                                },
+                                "configurationCtxt": {
+                                    "type": "object",
+                                    "properties": {
+                                        "name": {
+                                            "description": "object name",
+                                            "type": "string",
+                                            "example": "My name"
+                                        },
+                                        "title": {
+                                            "description": "Object Title value",
+                                            "type": "string",
+                                            "example": "My title"
+                                        },
+                                        "description": {
+                                            "description": "Object description value",
+                                            "type": "string",
+                                            "example": "My description"
+                                        },
+                                        "id": {
+                                            "description": "Entity physical id",
+                                            "type": "string",
+                                            "example": "EE562168015FFCF14F940A513C63AA77"
+                                        },
+                                        "type": {
+                                            "description": "Basic type value",
+                                            "type": "string",
+                                            "example": "DBType"
+                                        },
+                                        "modified": {
+                                            "description": "Basic modified value",
+                                            "type": "string",
+                                            "example": "Dec 15, 2017 11:17 PM"
+                                        },
+                                        "created": {
+                                            "description": "Object created value",
+                                            "type": "string",
+                                            "example": "Dec 11, 2017 12:53 PM"
+                                        },
+                                        "revision": {
+                                            "description": "Object revision value",
+                                            "type": "string",
+                                            "example": "A.1"
+                                        },
+                                        "state": {
+                                            "description": "Object current state value",
+                                            "type": "string",
+                                            "example": "IN_WORK"
+                                        },
+                                        "owner": {
+                                            "description": "Object owner value",
+                                            "type": "string",
+                                            "example": "John Doe"
+                                        },
+                                        "organization": {
+                                            "description": "Object organization value",
+                                            "type": "string",
+                                            "example": "MyCompany"
+                                        },
+                                        "collabspace": {
+                                            "description": "Object collabspace value",
+                                            "type": "string",
+                                            "example": "Default"
+                                        },
+                                        "source": {
+                                            "description": "computed property",
+                                            "type": "string",
+                                            "example": "String"
+                                        },
+                                        "identifier": {
+                                            "description": "Entity physical id",
+                                            "type": "string",
+                                            "example": "EE562168015FFCF14F940A513C63AA77"
+                                        },
+                                        "relativePath": {
+                                            "description": "computed property",
+                                            "type": "string",
+                                            "example": "String"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "nlsLabel": {
+                        "type": "object",
+                        "properties": {
+                            "name": {
+                                "type": "string",
+                                "example": "My Name translated value"
+                            },
+                            "title": {
+                                "type": "string",
+                                "example": "My Title translated value"
+                            },
+                            "description": {
+                                "type": "string",
+                                "example": "My Description translated value"
+                            },
+                            "id": {
+                                "type": "string",
+                                "example": "My Id translated value"
+                            },
+                            "type": {
+                                "type": "string",
+                                "example": "My Type translated value"
+                            },
+                            "modified": {
+                                "type": "string",
+                                "example": "My Modification Date translated value"
+                            },
+                            "created": {
+                                "type": "string",
+                                "example": "My Creation Date translated value"
+                            },
+                            "revision": {
+                                "type": "string",
+                                "example": "My Revision translated value"
+                            },
+                            "state": {
+                                "type": "string",
+                                "example": "My State translated value"
+                            },
+                            "owner": {
+                                "type": "string",
+                                "example": "My Owner translated value"
+                            },
+                            "source": {
+                                "type": "string",
+                                "example": "My Source translated value"
+                            },
+                            "identifier": {
+                                "type": "string",
+                                "example": "My Identifier translated value"
+                            },
+                            "relativePath": {
+                                "type": "string",
+                                "example": "My RelativePath translated value"
+                            }
+                        }
+                    }
+                }
+            },
+            "dsmvcfg_ConfiguredDetails_WithCEStamp": {
+                "properties": {
+                    "totalItems": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "member": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "enabledCriteria": {
+                                    "description": "Get the list of Enabled Criteria on Configured Object",
+                                    "type": "string",
+                                    "example": "classReturnType is not proper. Please check the computed program return type"
+                                },
+                                "configurationCtxt": {
+                                    "type": "object",
+                                    "properties": {
+                                        "name": {
+                                            "description": "object name",
+                                            "type": "string",
+                                            "example": "My name"
+                                        },
+                                        "title": {
+                                            "description": "Object Title value",
+                                            "type": "string",
+                                            "example": "My title"
+                                        },
+                                        "description": {
+                                            "description": "Object description value",
+                                            "type": "string",
+                                            "example": "My description"
+                                        },
+                                        "id": {
+                                            "description": "Entity physical id",
+                                            "type": "string",
+                                            "example": "EE562168015FFCF14F940A513C63AA77"
+                                        },
+                                        "type": {
+                                            "description": "Basic type value",
+                                            "type": "string",
+                                            "example": "DBType"
+                                        },
+                                        "modified": {
+                                            "description": "Basic modified value",
+                                            "type": "string",
+                                            "example": "Dec 15, 2017 11:17 PM"
+                                        },
+                                        "created": {
+                                            "description": "Object created value",
+                                            "type": "string",
+                                            "example": "Dec 11, 2017 12:53 PM"
+                                        },
+                                        "revision": {
+                                            "description": "Object revision value",
+                                            "type": "string",
+                                            "example": "A.1"
+                                        },
+                                        "state": {
+                                            "description": "Object current state value",
+                                            "type": "string",
+                                            "example": "IN_WORK"
+                                        },
+                                        "owner": {
+                                            "description": "Object owner value",
+                                            "type": "string",
+                                            "example": "John Doe"
+                                        },
+                                        "organization": {
+                                            "description": "Object organization value",
+                                            "type": "string",
+                                            "example": "MyCompany"
+                                        },
+                                        "collabspace": {
+                                            "description": "Object collabspace value",
+                                            "type": "string",
+                                            "example": "Default"
+                                        },
+                                        "source": {
+                                            "description": "computed property",
+                                            "type": "string",
+                                            "example": "String"
+                                        },
+                                        "identifier": {
+                                            "description": "Entity physical id",
+                                            "type": "string",
+                                            "example": "EE562168015FFCF14F940A513C63AA77"
+                                        },
+                                        "relativePath": {
+                                            "description": "computed property",
+                                            "type": "string",
+                                            "example": "String"
+                                        }
+                                    }
+                                },
+                                "cestamp": {
+                                    "description": "Object cestamp value",
+                                    "type": "string",
+                                    "example": "2D70169432D84866A200F907881AC9B1"
+                                }
+                            }
+                        }
+                    },
+                    "nlsLabel": {
+                        "type": "object",
+                        "properties": {
+                            "name": {
+                                "type": "string",
+                                "example": "My Name translated value"
+                            },
+                            "title": {
+                                "type": "string",
+                                "example": "My Title translated value"
+                            },
+                            "description": {
+                                "type": "string",
+                                "example": "My Description translated value"
+                            },
+                            "id": {
+                                "type": "string",
+                                "example": "My Id translated value"
+                            },
+                            "type": {
+                                "type": "string",
+                                "example": "My Type translated value"
+                            },
+                            "modified": {
+                                "type": "string",
+                                "example": "My Modification Date translated value"
+                            },
+                            "created": {
+                                "type": "string",
+                                "example": "My Creation Date translated value"
+                            },
+                            "revision": {
+                                "type": "string",
+                                "example": "My Revision translated value"
+                            },
+                            "state": {
+                                "type": "string",
+                                "example": "My State translated value"
+                            },
+                            "owner": {
+                                "type": "string",
+                                "example": "My Owner translated value"
+                            },
+                            "source": {
+                                "type": "string",
+                                "example": "My Source translated value"
+                            },
+                            "identifier": {
+                                "type": "string",
+                                "example": "My Identifier translated value"
+                            },
+                            "relativePath": {
+                                "type": "string",
+                                "example": "My RelativePath translated value"
+                            }
+                        }
+                    }
+                }
+            },
+            "dsmvlogpcb_ComponentMask": {
+                "properties": {
+                    "totalItems": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "member": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "name": {
+                                    "description": "Reference name",
+                                    "type": "string",
+                                    "example": "My name"
+                                },
+                                "title": {
+                                    "description": "Reference object title value",
+                                    "type": "string",
+                                    "example": "My title"
+                                },
+                                "description": {
+                                    "description": "Reference description value",
+                                    "type": "string",
+                                    "example": "My description"
+                                },
+                                "id": {
+                                    "description": "Entity physical id",
+                                    "type": "string",
+                                    "example": "EE562168015FFCF14F940A513C63AA77"
+                                },
+                                "type": {
+                                    "description": "Basic type value",
+                                    "type": "string",
+                                    "example": "DBType"
+                                },
+                                "modified": {
+                                    "description": "Basic modified value",
+                                    "type": "string",
+                                    "example": "10/19/2021 10:58:01 PM"
+                                },
+                                "created": {
+                                    "description": "Object created value",
+                                    "type": "string",
+                                    "example": "10/19/2021 10:58:01 PM"
+                                },
+                                "revision": {
+                                    "description": "Object revision value",
+                                    "type": "string",
+                                    "example": "A.1"
+                                },
+                                "state": {
+                                    "description": "Object current state value",
+                                    "type": "string",
+                                    "example": "IN_WORK"
+                                },
+                                "owner": {
+                                    "description": "Object owner value",
+                                    "type": "string",
+                                    "example": "DB Owner"
+                                },
+                                "organization": {
+                                    "description": "Object organization value",
+                                    "type": "string",
+                                    "example": "MyCompany"
+                                },
+                                "collabspace": {
+                                    "description": "Object collabspace value",
+                                    "type": "string",
+                                    "example": "Default"
+                                },
+                                "preferpackagefootprint": {
+                                    "description": "Default footprint used on a layout",
+                                    "type": "string",
+                                    "example": ""
+                                },
+                                "preferphysicalcomponent": {
+                                    "description": "Physical component",
+                                    "type": "string",
+                                    "example": ""
+                                },
+                                "subtype": {
+                                    "description": "Subtype",
+                                    "type": "string",
+                                    "example": ""
+                                }
+                            }
+                        }
+                    },
+                    "nlsLabel": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "example": "My Id translated value"
+                            },
+                            "type": {
+                                "type": "string",
+                                "example": "My Type translated value"
+                            },
+                            "modified": {
+                                "type": "string",
+                                "example": "My Modification Date translated value"
+                            },
+                            "created": {
+                                "type": "string",
+                                "example": "My Creation Date translated value"
+                            },
+                            "revision": {
+                                "type": "string",
+                                "example": "My Revision translated value"
+                            },
+                            "state": {
+                                "type": "string",
+                                "example": "My State translated value"
+                            },
+                            "owner": {
+                                "type": "string",
+                                "example": "My Owner translated value"
+                            },
+                            "preferpackagefootprint": {
+                                "type": "string",
+                                "example": "My Prefer Package Footprint translated value"
+                            },
+                            "preferphysicalcomponent": {
+                                "type": "string",
+                                "example": "My Prefer Physical Component translated value"
+                            },
+                            "subtype": {
+                                "type": "string",
+                                "example": "My Subtype translated value"
+                            }
+                        }
+                    }
+                }
+            },
+            "dsmvlogpcb_ComponentMask_WithCEStamp": {
+                "properties": {
+                    "totalItems": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "member": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "name": {
+                                    "description": "Reference name",
+                                    "type": "string",
+                                    "example": "My name"
+                                },
+                                "title": {
+                                    "description": "Reference object title value",
+                                    "type": "string",
+                                    "example": "My title"
+                                },
+                                "description": {
+                                    "description": "Reference description value",
+                                    "type": "string",
+                                    "example": "My description"
+                                },
+                                "id": {
+                                    "description": "Entity physical id",
+                                    "type": "string",
+                                    "example": "EE562168015FFCF14F940A513C63AA77"
+                                },
+                                "type": {
+                                    "description": "Basic type value",
+                                    "type": "string",
+                                    "example": "DBType"
+                                },
+                                "modified": {
+                                    "description": "Basic modified value",
+                                    "type": "string",
+                                    "example": "10/19/2021 10:58:01 PM"
+                                },
+                                "created": {
+                                    "description": "Object created value",
+                                    "type": "string",
+                                    "example": "10/19/2021 10:58:01 PM"
+                                },
+                                "revision": {
+                                    "description": "Object revision value",
+                                    "type": "string",
+                                    "example": "A.1"
+                                },
+                                "state": {
+                                    "description": "Object current state value",
+                                    "type": "string",
+                                    "example": "IN_WORK"
+                                },
+                                "owner": {
+                                    "description": "Object owner value",
+                                    "type": "string",
+                                    "example": "DB Owner"
+                                },
+                                "organization": {
+                                    "description": "Object organization value",
+                                    "type": "string",
+                                    "example": "MyCompany"
+                                },
+                                "collabspace": {
+                                    "description": "Object collabspace value",
+                                    "type": "string",
+                                    "example": "Default"
+                                },
+                                "preferpackagefootprint": {
+                                    "description": "Default footprint used on a layout",
+                                    "type": "string",
+                                    "example": ""
+                                },
+                                "preferphysicalcomponent": {
+                                    "description": "Physical component",
+                                    "type": "string",
+                                    "example": ""
+                                },
+                                "subtype": {
+                                    "description": "Subtype",
+                                    "type": "string",
+                                    "example": ""
+                                },
+                                "cestamp": {
+                                    "description": "Object cestamp value",
+                                    "type": "string",
+                                    "example": "2D70169432D84866A200F907881AC9B1"
+                                }
+                            }
+                        }
+                    },
+                    "nlsLabel": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "example": "My Id translated value"
+                            },
+                            "type": {
+                                "type": "string",
+                                "example": "My Type translated value"
+                            },
+                            "modified": {
+                                "type": "string",
+                                "example": "My Modification Date translated value"
+                            },
+                            "created": {
+                                "type": "string",
+                                "example": "My Creation Date translated value"
+                            },
+                            "revision": {
+                                "type": "string",
+                                "example": "My Revision translated value"
+                            },
+                            "state": {
+                                "type": "string",
+                                "example": "My State translated value"
+                            },
+                            "owner": {
+                                "type": "string",
+                                "example": "My Owner translated value"
+                            },
+                            "preferpackagefootprint": {
+                                "type": "string",
+                                "example": "My Prefer Package Footprint translated value"
+                            },
+                            "preferphysicalcomponent": {
+                                "type": "string",
+                                "example": "My Prefer Physical Component translated value"
+                            },
+                            "subtype": {
+                                "type": "string",
+                                "example": "My Subtype translated value"
+                            }
+                        }
+                    }
+                }
+            },
+            "dsmvcfg_ConfiguredBasics": {
+                "properties": {
+                    "totalItems": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "member": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "enabledCriteria": {
+                                    "description": "Get the list of Enabled Criteria on Configured Object",
+                                    "type": "string",
+                                    "example": "classReturnType is not proper. Please check the computed program return type"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "dsmvcfg_ConfiguredBasics_WithCEStamp": {
+                "properties": {
+                    "totalItems": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "member": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "enabledCriteria": {
+                                    "description": "Get the list of Enabled Criteria on Configured Object",
+                                    "type": "string",
+                                    "example": "classReturnType is not proper. Please check the computed program return type"
+                                },
+                                "cestamp": {
+                                    "description": "Object cestamp value",
+                                    "type": "string",
+                                    "example": "2D70169432D84866A200F907881AC9B1"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "dsmvlogpcb_PinMask": {
+                "properties": {
+                    "totalItems": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "member": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "name": {
+                                    "description": "Reference name",
+                                    "type": "string",
+                                    "example": "My name"
+                                },
+                                "title": {
+                                    "description": "Reference object title value",
+                                    "type": "string",
+                                    "example": "My title"
+                                },
+                                "description": {
+                                    "description": "Reference description value",
+                                    "type": "string",
+                                    "example": "My description"
+                                },
+                                "id": {
+                                    "description": "Entity physical id",
+                                    "type": "string",
+                                    "example": "EE562168015FFCF14F940A513C63AA77"
+                                },
+                                "type": {
+                                    "description": "Basic type value",
+                                    "type": "string",
+                                    "example": "DBType"
+                                },
+                                "modified": {
+                                    "description": "Basic modified value",
+                                    "type": "string",
+                                    "example": "10/19/2021 10:58:01 PM"
+                                },
+                                "created": {
+                                    "description": "Object created value",
+                                    "type": "string",
+                                    "example": "10/19/2021 10:58:01 PM"
+                                },
+                                "revision": {
+                                    "description": "Object revision value",
+                                    "type": "string",
+                                    "example": "A.1"
+                                },
+                                "state": {
+                                    "description": "Object current state value",
+                                    "type": "string",
+                                    "example": "IN_WORK"
+                                },
+                                "owner": {
+                                    "description": "Object owner value",
+                                    "type": "string",
+                                    "example": "DB Owner"
+                                },
+                                "organization": {
+                                    "description": "Object organization value",
+                                    "type": "string",
+                                    "example": "MyCompany"
+                                },
+                                "collabspace": {
+                                    "description": "Object collabspace value",
+                                    "type": "string",
+                                    "example": "Default"
+                                },
+                                "subtype": {
+                                    "description": "Subtype",
+                                    "type": "string",
+                                    "example": ""
+                                },
+                                "direction": {
+                                    "description": "Direction",
+                                    "type": "string",
+                                    "example": ""
+                                },
+                                "functionalname": {
+                                    "description": "Functional name",
+                                    "type": "string",
+                                    "example": ""
+                                }
+                            }
+                        }
+                    },
+                    "nlsLabel": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "example": "My Id translated value"
+                            },
+                            "type": {
+                                "type": "string",
+                                "example": "My Type translated value"
+                            },
+                            "modified": {
+                                "type": "string",
+                                "example": "My Modification Date translated value"
+                            },
+                            "created": {
+                                "type": "string",
+                                "example": "My Creation Date translated value"
+                            },
+                            "revision": {
+                                "type": "string",
+                                "example": "My Revision translated value"
+                            },
+                            "state": {
+                                "type": "string",
+                                "example": "My State translated value"
+                            },
+                            "owner": {
+                                "type": "string",
+                                "example": "My Owner translated value"
+                            },
+                            "subtype": {
+                                "type": "string",
+                                "example": "My Subtype translated value"
+                            },
+                            "direction": {
+                                "type": "string",
+                                "example": "My Direction translated value"
+                            },
+                            "functionalname": {
+                                "type": "string",
+                                "example": "My Functional Name translated value"
+                            }
+                        }
+                    }
+                }
+            },
+            "dsmvlogpcb_PinMask_WithCEStamp": {
+                "properties": {
+                    "totalItems": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "member": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "name": {
+                                    "description": "Reference name",
+                                    "type": "string",
+                                    "example": "My name"
+                                },
+                                "title": {
+                                    "description": "Reference object title value",
+                                    "type": "string",
+                                    "example": "My title"
+                                },
+                                "description": {
+                                    "description": "Reference description value",
+                                    "type": "string",
+                                    "example": "My description"
+                                },
+                                "id": {
+                                    "description": "Entity physical id",
+                                    "type": "string",
+                                    "example": "EE562168015FFCF14F940A513C63AA77"
+                                },
+                                "type": {
+                                    "description": "Basic type value",
+                                    "type": "string",
+                                    "example": "DBType"
+                                },
+                                "modified": {
+                                    "description": "Basic modified value",
+                                    "type": "string",
+                                    "example": "10/19/2021 10:58:01 PM"
+                                },
+                                "created": {
+                                    "description": "Object created value",
+                                    "type": "string",
+                                    "example": "10/19/2021 10:58:01 PM"
+                                },
+                                "revision": {
+                                    "description": "Object revision value",
+                                    "type": "string",
+                                    "example": "A.1"
+                                },
+                                "state": {
+                                    "description": "Object current state value",
+                                    "type": "string",
+                                    "example": "IN_WORK"
+                                },
+                                "owner": {
+                                    "description": "Object owner value",
+                                    "type": "string",
+                                    "example": "DB Owner"
+                                },
+                                "organization": {
+                                    "description": "Object organization value",
+                                    "type": "string",
+                                    "example": "MyCompany"
+                                },
+                                "collabspace": {
+                                    "description": "Object collabspace value",
+                                    "type": "string",
+                                    "example": "Default"
+                                },
+                                "subtype": {
+                                    "description": "Subtype",
+                                    "type": "string",
+                                    "example": ""
+                                },
+                                "direction": {
+                                    "description": "Direction",
+                                    "type": "string",
+                                    "example": ""
+                                },
+                                "functionalname": {
+                                    "description": "Functional name",
+                                    "type": "string",
+                                    "example": ""
+                                },
+                                "cestamp": {
+                                    "description": "Object cestamp value",
+                                    "type": "string",
+                                    "example": "2D70169432D84866A200F907881AC9B1"
+                                }
+                            }
+                        }
+                    },
+                    "nlsLabel": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "example": "My Id translated value"
+                            },
+                            "type": {
+                                "type": "string",
+                                "example": "My Type translated value"
+                            },
+                            "modified": {
+                                "type": "string",
+                                "example": "My Modification Date translated value"
+                            },
+                            "created": {
+                                "type": "string",
+                                "example": "My Creation Date translated value"
+                            },
+                            "revision": {
+                                "type": "string",
+                                "example": "My Revision translated value"
+                            },
+                            "state": {
+                                "type": "string",
+                                "example": "My State translated value"
+                            },
+                            "owner": {
+                                "type": "string",
+                                "example": "My Owner translated value"
+                            },
+                            "subtype": {
+                                "type": "string",
+                                "example": "My Subtype translated value"
+                            },
+                            "direction": {
+                                "type": "string",
+                                "example": "My Direction translated value"
+                            },
+                            "functionalname": {
+                                "type": "string",
+                                "example": "My Functional Name translated value"
+                            }
+                        }
+                    }
+                }
+            },
+            "dsmvpfl_ModelBaseMask": {
+                "properties": {
+                    "totalItems": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "member": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "name": {
+                                    "description": "object name",
+                                    "type": "string",
+                                    "example": "My name"
+                                },
+                                "title": {
+                                    "description": "Object Title value",
+                                    "type": "string",
+                                    "example": "My title"
+                                },
+                                "description": {
+                                    "description": "Object description value",
+                                    "type": "string",
+                                    "example": "My description"
+                                },
+                                "id": {
+                                    "description": "Entity physical id",
+                                    "type": "string",
+                                    "example": "EE562168015FFCF14F940A513C63AA77"
+                                },
+                                "type": {
+                                    "description": "Basic type value",
+                                    "type": "string",
+                                    "example": "DBType"
+                                },
+                                "modified": {
+                                    "description": "Basic modified value",
+                                    "type": "string",
+                                    "example": "Dec 15, 2017 11:17 PM"
+                                },
+                                "created": {
+                                    "description": "Object created value",
+                                    "type": "string",
+                                    "example": "Dec 11, 2017 12:53 PM"
+                                },
+                                "revision": {
+                                    "description": "Object revision value",
+                                    "type": "string",
+                                    "example": "A.1"
+                                },
+                                "state": {
+                                    "description": "Object current state value",
+                                    "type": "string",
+                                    "example": "IN_WORK"
+                                },
+                                "owner": {
+                                    "description": "Object owner value",
+                                    "type": "string",
+                                    "example": "John Doe"
+                                },
+                                "organization": {
+                                    "description": "Object organization value",
+                                    "type": "string",
+                                    "example": "MyCompany"
+                                },
+                                "collabspace": {
+                                    "description": "Object collabspace value",
+                                    "type": "string",
+                                    "example": "Default"
+                                },
+                                "source": {
+                                    "description": "computed property",
+                                    "type": "string",
+                                    "example": "String"
+                                },
+                                "identifier": {
+                                    "description": "Entity physical id",
+                                    "type": "string",
+                                    "example": "EE562168015FFCF14F940A513C63AA77"
+                                },
+                                "relativePath": {
+                                    "description": "computed property",
+                                    "type": "string",
+                                    "example": "String"
+                                }
+                            }
+                        }
+                    },
+                    "nlsLabel": {
+                        "type": "object",
+                        "properties": {
+                            "name": {
+                                "type": "string",
+                                "example": "My Name translated value"
+                            },
+                            "title": {
+                                "type": "string",
+                                "example": "My Title translated value"
+                            },
+                            "description": {
+                                "type": "string",
+                                "example": "My Description translated value"
+                            },
+                            "id": {
+                                "type": "string",
+                                "example": "My Id translated value"
+                            },
+                            "type": {
+                                "type": "string",
+                                "example": "My Type translated value"
+                            },
+                            "modified": {
+                                "type": "string",
+                                "example": "My Modification Date translated value"
+                            },
+                            "created": {
+                                "type": "string",
+                                "example": "My Creation Date translated value"
+                            },
+                            "revision": {
+                                "type": "string",
+                                "example": "My Revision translated value"
+                            },
+                            "state": {
+                                "type": "string",
+                                "example": "My State translated value"
+                            },
+                            "owner": {
+                                "type": "string",
+                                "example": "My Owner translated value"
+                            },
+                            "source": {
+                                "type": "string",
+                                "example": "My Source translated value"
+                            },
+                            "identifier": {
+                                "type": "string",
+                                "example": "My Identifier translated value"
+                            },
+                            "relativePath": {
+                                "type": "string",
+                                "example": "My RelativePath translated value"
+                            }
+                        }
+                    }
+                }
+            },
+            "dsmvpfl_ModelBaseMask_WithCEStamp": {
+                "properties": {
+                    "totalItems": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "member": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "name": {
+                                    "description": "object name",
+                                    "type": "string",
+                                    "example": "My name"
+                                },
+                                "title": {
+                                    "description": "Object Title value",
+                                    "type": "string",
+                                    "example": "My title"
+                                },
+                                "description": {
+                                    "description": "Object description value",
+                                    "type": "string",
+                                    "example": "My description"
+                                },
+                                "id": {
+                                    "description": "Entity physical id",
+                                    "type": "string",
+                                    "example": "EE562168015FFCF14F940A513C63AA77"
+                                },
+                                "type": {
+                                    "description": "Basic type value",
+                                    "type": "string",
+                                    "example": "DBType"
+                                },
+                                "modified": {
+                                    "description": "Basic modified value",
+                                    "type": "string",
+                                    "example": "Dec 15, 2017 11:17 PM"
+                                },
+                                "created": {
+                                    "description": "Object created value",
+                                    "type": "string",
+                                    "example": "Dec 11, 2017 12:53 PM"
+                                },
+                                "revision": {
+                                    "description": "Object revision value",
+                                    "type": "string",
+                                    "example": "A.1"
+                                },
+                                "state": {
+                                    "description": "Object current state value",
+                                    "type": "string",
+                                    "example": "IN_WORK"
+                                },
+                                "owner": {
+                                    "description": "Object owner value",
+                                    "type": "string",
+                                    "example": "John Doe"
+                                },
+                                "organization": {
+                                    "description": "Object organization value",
+                                    "type": "string",
+                                    "example": "MyCompany"
+                                },
+                                "collabspace": {
+                                    "description": "Object collabspace value",
+                                    "type": "string",
+                                    "example": "Default"
+                                },
+                                "source": {
+                                    "description": "computed property",
+                                    "type": "string",
+                                    "example": "String"
+                                },
+                                "identifier": {
+                                    "description": "Entity physical id",
+                                    "type": "string",
+                                    "example": "EE562168015FFCF14F940A513C63AA77"
+                                },
+                                "relativePath": {
+                                    "description": "computed property",
+                                    "type": "string",
+                                    "example": "String"
+                                },
+                                "cestamp": {
+                                    "description": "Object cestamp value",
+                                    "type": "string",
+                                    "example": "2D70169432D84866A200F907881AC9B1"
+                                }
+                            }
+                        }
+                    },
+                    "nlsLabel": {
+                        "type": "object",
+                        "properties": {
+                            "name": {
+                                "type": "string",
+                                "example": "My Name translated value"
+                            },
+                            "title": {
+                                "type": "string",
+                                "example": "My Title translated value"
+                            },
+                            "description": {
+                                "type": "string",
+                                "example": "My Description translated value"
+                            },
+                            "id": {
+                                "type": "string",
+                                "example": "My Id translated value"
+                            },
+                            "type": {
+                                "type": "string",
+                                "example": "My Type translated value"
+                            },
+                            "modified": {
+                                "type": "string",
+                                "example": "My Modification Date translated value"
+                            },
+                            "created": {
+                                "type": "string",
+                                "example": "My Creation Date translated value"
+                            },
+                            "revision": {
+                                "type": "string",
+                                "example": "My Revision translated value"
+                            },
+                            "state": {
+                                "type": "string",
+                                "example": "My State translated value"
+                            },
+                            "owner": {
+                                "type": "string",
+                                "example": "My Owner translated value"
+                            },
+                            "source": {
+                                "type": "string",
+                                "example": "My Source translated value"
+                            },
+                            "identifier": {
+                                "type": "string",
+                                "example": "My Identifier translated value"
+                            },
+                            "relativePath": {
+                                "type": "string",
+                                "example": "My RelativePath translated value"
+                            }
+                        }
+                    }
+                }
+            },
+            "dsmveno_DefaultBusMask.public": {
+                "properties": {
+                    "totalItems": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "member": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "name": {
+                                    "description": "Reference name",
+                                    "type": "string",
+                                    "example": "My name"
+                                },
+                                "title": {
+                                    "description": "Reference object title value",
+                                    "type": "string",
+                                    "example": "My title"
+                                },
+                                "description": {
+                                    "description": "Reference description value",
+                                    "type": "string",
+                                    "example": "My description"
+                                },
+                                "id": {
+                                    "description": "Entity physical id",
+                                    "type": "string",
+                                    "example": "EE562168015FFCF14F940A513C63AA77"
+                                },
+                                "type": {
+                                    "description": "Basic type value",
+                                    "type": "string",
+                                    "example": "DBType"
+                                },
+                                "modified": {
+                                    "description": "Basic modified value",
+                                    "type": "string",
+                                    "example": "10/19/2021 10:58:01 PM"
+                                },
+                                "created": {
+                                    "description": "Object created value",
+                                    "type": "string",
+                                    "example": "10/19/2021 10:58:01 PM"
+                                },
+                                "revision": {
+                                    "description": "Object revision value",
+                                    "type": "string",
+                                    "example": "A.1"
+                                },
+                                "state": {
+                                    "description": "Object current state value",
+                                    "type": "string",
+                                    "example": "IN_WORK"
+                                },
+                                "owner": {
+                                    "description": "Object owner value",
+                                    "type": "string",
+                                    "example": "DB Owner"
+                                },
+                                "organization": {
+                                    "description": "Object organization value",
+                                    "type": "string",
+                                    "example": "MyCompany"
+                                },
+                                "collabspace": {
+                                    "description": "Object collabspace value",
+                                    "type": "string",
+                                    "example": "Default"
+                                }
+                            }
+                        }
+                    },
+                    "nlsLabel": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "example": "My Id translated value"
+                            },
+                            "type": {
+                                "type": "string",
+                                "example": "My Type translated value"
+                            },
+                            "modified": {
+                                "type": "string",
+                                "example": "My Modification Date translated value"
+                            },
+                            "created": {
+                                "type": "string",
+                                "example": "My Creation Date translated value"
+                            },
+                            "revision": {
+                                "type": "string",
+                                "example": "My Revision translated value"
+                            },
+                            "state": {
+                                "type": "string",
+                                "example": "My State translated value"
+                            },
+                            "owner": {
+                                "type": "string",
+                                "example": "My Owner translated value"
+                            }
+                        }
+                    }
+                }
+            },
+            "dsmveno_DefaultBusMask.public_WithCEStamp": {
+                "properties": {
+                    "totalItems": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "member": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "name": {
+                                    "description": "Reference name",
+                                    "type": "string",
+                                    "example": "My name"
+                                },
+                                "title": {
+                                    "description": "Reference object title value",
+                                    "type": "string",
+                                    "example": "My title"
+                                },
+                                "description": {
+                                    "description": "Reference description value",
+                                    "type": "string",
+                                    "example": "My description"
+                                },
+                                "id": {
+                                    "description": "Entity physical id",
+                                    "type": "string",
+                                    "example": "EE562168015FFCF14F940A513C63AA77"
+                                },
+                                "type": {
+                                    "description": "Basic type value",
+                                    "type": "string",
+                                    "example": "DBType"
+                                },
+                                "modified": {
+                                    "description": "Basic modified value",
+                                    "type": "string",
+                                    "example": "10/19/2021 10:58:01 PM"
+                                },
+                                "created": {
+                                    "description": "Object created value",
+                                    "type": "string",
+                                    "example": "10/19/2021 10:58:01 PM"
+                                },
+                                "revision": {
+                                    "description": "Object revision value",
+                                    "type": "string",
+                                    "example": "A.1"
+                                },
+                                "state": {
+                                    "description": "Object current state value",
+                                    "type": "string",
+                                    "example": "IN_WORK"
+                                },
+                                "owner": {
+                                    "description": "Object owner value",
+                                    "type": "string",
+                                    "example": "DB Owner"
+                                },
+                                "organization": {
+                                    "description": "Object organization value",
+                                    "type": "string",
+                                    "example": "MyCompany"
+                                },
+                                "collabspace": {
+                                    "description": "Object collabspace value",
+                                    "type": "string",
+                                    "example": "Default"
+                                },
+                                "cestamp": {
+                                    "description": "Object cestamp value",
+                                    "type": "string",
+                                    "example": "2D70169432D84866A200F907881AC9B1"
+                                }
+                            }
+                        }
+                    },
+                    "nlsLabel": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "example": "My Id translated value"
+                            },
+                            "type": {
+                                "type": "string",
+                                "example": "My Type translated value"
+                            },
+                            "modified": {
+                                "type": "string",
+                                "example": "My Modification Date translated value"
+                            },
+                            "created": {
+                                "type": "string",
+                                "example": "My Creation Date translated value"
+                            },
+                            "revision": {
+                                "type": "string",
+                                "example": "My Revision translated value"
+                            },
+                            "state": {
+                                "type": "string",
+                                "example": "My State translated value"
+                            },
+                            "owner": {
+                                "type": "string",
+                                "example": "My Owner translated value"
+                            }
+                        }
+                    }
+                }
+            },
+            "dsmveno_DefaultRelMask.public": {
+                "properties": {
+                    "totalItems": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "member": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "id": {
+                                    "description": "Entity physical id",
+                                    "type": "string",
+                                    "example": "EE562168015FFCF14F940A513C63AA77"
+                                },
+                                "type": {
+                                    "description": "Basic type value",
+                                    "type": "string",
+                                    "example": "DBType"
+                                },
+                                "modified": {
+                                    "description": "Basic modified value",
+                                    "type": "string",
+                                    "example": "10/19/2021 10:58:01 PM"
+                                },
+                                "created": {
+                                    "description": "Object created value",
+                                    "type": "string",
+                                    "example": "10/19/2021 10:58:01 PM"
+                                },
+                                "name": {
+                                    "description": "Instance name",
+                                    "type": "string",
+                                    "example": "My name"
+                                },
+                                "description": {
+                                    "description": "Instance description vlaue",
+                                    "type": "string",
+                                    "example": "My description"
+                                }
+                            }
+                        }
+                    },
+                    "nlsLabel": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "example": "My Id translated value"
+                            },
+                            "type": {
+                                "type": "string",
+                                "example": "My Type translated value"
+                            },
+                            "modified": {
+                                "type": "string",
+                                "example": "My Modification Date translated value"
+                            },
+                            "created": {
+                                "type": "string",
+                                "example": "My Creation Date translated value"
+                            }
+                        }
+                    }
+                }
+            },
+            "dsmveno_DefaultRelMask.public_WithCEStamp": {
+                "properties": {
+                    "totalItems": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "member": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "id": {
+                                    "description": "Entity physical id",
+                                    "type": "string",
+                                    "example": "EE562168015FFCF14F940A513C63AA77"
+                                },
+                                "type": {
+                                    "description": "Basic type value",
+                                    "type": "string",
+                                    "example": "DBType"
+                                },
+                                "modified": {
+                                    "description": "Basic modified value",
+                                    "type": "string",
+                                    "example": "10/19/2021 10:58:01 PM"
+                                },
+                                "created": {
+                                    "description": "Object created value",
+                                    "type": "string",
+                                    "example": "10/19/2021 10:58:01 PM"
+                                },
+                                "name": {
+                                    "description": "Instance name",
+                                    "type": "string",
+                                    "example": "My name"
+                                },
+                                "description": {
+                                    "description": "Instance description vlaue",
+                                    "type": "string",
+                                    "example": "My description"
+                                },
+                                "cestamp": {
+                                    "description": "Object cestamp value",
+                                    "type": "string",
+                                    "example": "2D70169432D84866A200F907881AC9B1"
+                                }
+                            }
+                        }
+                    },
+                    "nlsLabel": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "example": "My Id translated value"
+                            },
+                            "type": {
+                                "type": "string",
+                                "example": "My Type translated value"
+                            },
+                            "modified": {
+                                "type": "string",
+                                "example": "My Modification Date translated value"
+                            },
+                            "created": {
+                                "type": "string",
+                                "example": "My Creation Date translated value"
+                            }
+                        }
+                    }
+                }
+            },
+            "dsmveno_DefaultExtensionMask.public": {
+                "properties": {
+                    "totalItems": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "member": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "modified": {
+                                    "description": "Basic modified value",
+                                    "type": "string",
+                                    "example": "10/19/2021 10:58:01 PM"
+                                },
+                                "created": {
+                                    "description": "Object created value",
+                                    "type": "string",
+                                    "example": "10/19/2021 10:58:01 PM"
+                                }
+                            }
+                        }
+                    },
+                    "nlsLabel": {
+                        "type": "object",
+                        "properties": {
+                            "modified": {
+                                "type": "string",
+                                "example": "My Modification Date translated value"
+                            },
+                            "created": {
+                                "type": "string",
+                                "example": "My Creation Date translated value"
+                            }
+                        }
+                    }
+                }
+            },
+            "dsmveno_DefaultExtensionMask.public_WithCEStamp": {
+                "properties": {
+                    "totalItems": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "member": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "modified": {
+                                    "description": "Basic modified value",
+                                    "type": "string",
+                                    "example": "10/19/2021 10:58:01 PM"
+                                },
+                                "created": {
+                                    "description": "Object created value",
+                                    "type": "string",
+                                    "example": "10/19/2021 10:58:01 PM"
+                                },
+                                "cestamp": {
+                                    "description": "Object cestamp value",
+                                    "type": "string",
+                                    "example": "2D70169432D84866A200F907881AC9B1"
+                                }
+                            }
+                        }
+                    },
+                    "nlsLabel": {
+                        "type": "object",
+                        "properties": {
+                            "modified": {
+                                "type": "string",
+                                "example": "My Modification Date translated value"
+                            },
+                            "created": {
+                                "type": "string",
+                                "example": "My Creation Date translated value"
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

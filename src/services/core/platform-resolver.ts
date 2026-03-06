@@ -38,9 +38,9 @@ function getPlatformUrls(): Promise<PlatformServices> {
   return pending;
 }
 
-export async function get3DSpaceUrl(): Promise<string> {
+export async function getPlatformURL(url: '3DSpace' | '3DSwym' | '3DPassport' | '3DCompass') {
   const urls = await getPlatformUrls();
-  const spaceUrl = urls['3DSpace'];
-  if (!spaceUrl) throw new Error('3DSpace URL not found in platform services');
+  const spaceUrl = urls[url];
+  if (!spaceUrl) throw new Error(`${url} URL not found in platform services`);
   return spaceUrl;
 }
