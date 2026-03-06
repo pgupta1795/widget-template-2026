@@ -1,9 +1,4 @@
-// -----------------------------------------------------
-// Global widget object
-// Docs: CAAWebAppsQrWidgetClass
-// -----------------------------------------------------
-
-export type WidgetEventName =
+type WidgetEventName =
 	| "endEdit"
 	| "onEdit"
 	| "onKeyboardAction"
@@ -13,18 +8,18 @@ export type WidgetEventName =
 	| "onViewChange"
 	| string;
 
-export interface WidgetKeyboardActionEvent {
+interface WidgetKeyboardActionEvent {
 	key: string;
 }
 
-export type WidgetViewChangeType = "windowed" | "maximized" | "minimized";
+type WidgetViewChangeType = "windowed" | "maximized" | "minimized";
 
-export interface WidgetViewChangeEvent {
+interface WidgetViewChangeEvent {
 	type: WidgetViewChangeType;
 	[key: string]: unknown;
 }
 
-export interface WidgetPreferenceDefinition {
+interface WidgetPreferenceDefinition {
 	name: string;
 	type: string;
 	label?: string;
@@ -36,11 +31,11 @@ export interface WidgetPreferenceDefinition {
 	[key: string]: string | undefined;
 }
 
-export interface WidgetPreference extends WidgetPreferenceDefinition {
+interface WidgetPreference extends WidgetPreferenceDefinition {
 	value?: string;
 }
 
-export interface Widget {
+export type Widget = {
 	/** Main HTML element of the widget; null until onLoad. */
 	body: HTMLElement | null;
 
@@ -118,5 +113,3 @@ export interface Widget {
 	 */
 	getPreference(name: string): WidgetPreference | undefined;
 }
-
-declare const widget: Widget;

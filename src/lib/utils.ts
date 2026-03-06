@@ -1,14 +1,14 @@
-import type { ClassValue } from "clsx";
-import { clsx } from "clsx";
-import { twMerge } from "tailwind-merge";
-import { logger } from "./logger";
-import { getAPIs, getWidget } from "./widget/api";
+import type {ClassValue} from "clsx";
+import {clsx} from "clsx";
+import {twMerge} from "tailwind-merge";
+import {logger} from "./logger";
+import {getAPIs,getWidget} from "./widget/api";
 
 export function cn(...inputs: ClassValue[]) {
 	return twMerge(clsx(inputs));
 }
 
-export const GET_CSRF_TOKEN_URL = "/resources/v1/application/CSRF";
+const GET_CSRF_TOKEN_URL = "/resources/v1/application/CSRF";
 
 export type CsrfResponse = {
 	csrf: {
@@ -43,10 +43,7 @@ export async function get3DSpaceUrl(): Promise<string> {
 	});
 }
 
-/**
- * Fetches a CSRF token from the 3DSpace application.
- */
-export async function fetchCsrfToken(): Promise<string> {
+export async function fetchCsrfToken(): Promise<CsrfResponse> {
 	const spaceUrl = await get3DSpaceUrl();
 	logger.info("spaceUrl : ", spaceUrl);
 	const { WAFData } = getAPIs();
@@ -60,7 +57,7 @@ export async function fetchCsrfToken(): Promise<string> {
 				try {
 					const response: CsrfResponse = JSON.parse(data);
 					logger.info("response : ", response);
-					resolve(response.csrf.value);
+					resolve(response);
 				} catch (e) {
 					logger.error("Failed to parse CSRF response", e);
 					reject(new Error("Failed to parse CSRF response"));

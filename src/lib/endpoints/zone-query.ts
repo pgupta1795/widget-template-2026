@@ -1,6 +1,4 @@
-import type { EndpointDefinition } from "@/types/config";
-
-export const ZONE_QUERY: EndpointDefinition = {
+export const ZONE_QUERY = {
 	id: "zone-query",
 	method: "POST",
 	url: "/cvservlet/zonequeries",

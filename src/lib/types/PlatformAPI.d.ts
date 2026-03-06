@@ -1,14 +1,8 @@
-// -----------------------------------------------------
-// DS/PlatformAPI/PlatformAPI
-// Docs: CAAWebAppsTaWidgetComm (Publish/Subscribe Protocol)
-// -----------------------------------------------------
+type PlatformTopic = string;
 
-export type PlatformTopic = string;
+type PlatformSubscription = string;
 
-/** Subscription token returned by subscribe, passed to unsubscribe. */
-export type PlatformSubscription = string;
-
-export interface PlatformAPI {
+export type PlatformAPI = {
 	/**
 	 * Publish an event with a topic and optional JSON-serializable payload.
 	 */
