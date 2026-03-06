@@ -70,4 +70,20 @@ describe('getToken', () => {
 
     await expect(getToken()).rejects.toThrow('500 Internal Server Error');
   });
+
+  it('allows re-fetch after a failed getToken()', async () => {
+    const { ServiceError } = await import('../types');
+    vi.mocked(wafAuthenticatedRequest)
+      .mockRejectedValueOnce(new ServiceError(500, 'Internal Server Error', null, {}))
+      .mockResolvedValue({
+        data: { csrf: { name: 'ENO_CSRF_TOKEN', value: 'fresh123' } },
+        status: 200, statusText: 'OK', headers: {}, time: 10, size: 50,
+      });
+
+    await expect(getToken()).rejects.toThrow('500 Internal Server Error');
+    // After failure, pending should be cleared — next call should succeed
+    const token = await getToken();
+    expect(token).toEqual({ name: 'ENO_CSRF_TOKEN', value: 'fresh123' });
+    expect(wafAuthenticatedRequest).toHaveBeenCalledTimes(2);
+  });
 });

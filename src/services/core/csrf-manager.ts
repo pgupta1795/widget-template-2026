@@ -34,7 +34,10 @@ export function getToken(): Promise<CsrfToken> {
     cached = response.data.csrf;
     pending = null;
     return cached;
-  })();
+  })().catch((err) => {
+    pending = null;
+    throw err;
+  });
 
   return pending;
 }
