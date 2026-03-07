@@ -7,54 +7,26 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import {Input} from '@/components/ui/input';
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@/components/ui/popover';
-import {ScrollArea} from '@/components/ui/scroll-area';
 import {Tabs,TabsContent,TabsList,TabsTrigger} from '@/components/ui/tabs';
+import {useApiExplorer} from '@/features/api-explorer/context/api-explorer-context';
+import {VALID_METHODS} from '@/features/api-explorer/openapi/parser';
+import type {HttpMethod} from '@/features/api-explorer/openapi/types';
 import {Braces,ChevronDown,ChevronRight,Code,Filter,Info,List,Loader2,Send} from 'lucide-react';
 import {Fragment,useState} from 'react';
-import {useApiExplorer} from '../../context/api-explorer-context';
-import type {HttpMethod,ParsedCollection,ParsedEndpoint} from '../../openapi/types';
 import {BodyEditor} from './body-editor';
 import {HeadersEditor} from './headers-editor';
 import {MethodBadge} from './method-badge';
 import {ParamsEditor} from './params-editor';
 
-const ALL_METHODS: HttpMethod[] = ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'];
-
 // --- Interactive Breadcrumbs ---
 function PathBreadcrumbs({ path }: { path: string }) {
-  const { activeCollections, loadEndpoint } = useApiExplorer();
   const segments = path.split('/').filter(Boolean);
-
-  const getSiblings = (upToIndex: number): { col: ParsedCollection; ep: ParsedEndpoint }[] => {
-    const prefix = '/' + segments.slice(0, upToIndex + 1).join('/');
-    const seen = new Set<string>();
-    const results: { col: ParsedCollection; ep: ParsedEndpoint }[] = [];
-    for (const col of activeCollections) {
-      for (const tag of col.tags) {
-        for (const ep of tag.endpoints) {
-          const key = `${ep.method}:${ep.path}`;
-          if (!seen.has(key) && ep.path.startsWith(prefix)) {
-            seen.add(key);
-            results.push({ col, ep });
-          }
-        }
-      }
-    }
-    return results.slice(0, 12);
-  };
 
   return (
     <div className="flex items-center gap-0 font-mono text-xs flex-wrap min-w-0">
       {segments.map((seg, i) => {
         const isParam = seg.startsWith('{');
         const isLast = i === segments.length - 1;
-        const siblings = getSiblings(i);
-
         const segEl = (
           <span
             className={
@@ -74,44 +46,7 @@ function PathBreadcrumbs({ path }: { path: string }) {
             {i > 0 && (
               <span className="text-muted-foreground/40 px-px select-none">/</span>
             )}
-            {!isParam && siblings.length > 1 ? (
-              <Popover>
-                <PopoverTrigger
-                  render={
-                    <button
-                      className={`px-0.5 rounded hover:bg-accent hover:text-foreground transition-colors cursor-pointer ${
-                        isLast ? 'text-foreground font-medium' : 'text-muted-foreground'
-                      }`}
-                    />
-                  }
-                >
-                  {segEl}
-                </PopoverTrigger>
-                <PopoverContent side="bottom" align="start" className="w-80 p-0 gap-0">
-                  <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground px-3 py-2 border-b border-border">
-                    Endpoints under /{segments.slice(0, i + 1).join('/')}
-                  </p>
-                  <ScrollArea className="max-h-52">
-                    <div className="p-1 space-y-px">
-                      {siblings.map(({ col, ep }) => (
-                        <button
-                          key={ep.operationId}
-                          onClick={() => loadEndpoint(col, ep)}
-                          className="w-full flex items-center gap-2 px-2 py-1.5 rounded-md hover:bg-accent text-xs transition-colors cursor-pointer text-left"
-                        >
-                          <MethodBadge method={ep.method} size="sm" />
-                          <span className="flex-1 font-mono text-[11px] text-muted-foreground truncate">
-                            {ep.path}
-                          </span>
-                        </button>
-                      ))}
-                    </div>
-                  </ScrollArea>
-                </PopoverContent>
-              </Popover>
-            ) : (
-              <span className="px-0.5">{segEl}</span>
-            )}
+            <span className="px-0.5">{segEl}</span>
           </Fragment>
         );
       })}
@@ -133,7 +68,7 @@ function MethodSelector() {
         <ChevronDown size={11} className="text-muted-foreground" />
       </DropdownMenuTrigger>
       <DropdownMenuContent side="bottom" align="start" className="min-w-28">
-        {ALL_METHODS.map(m => (
+        {VALID_METHODS.map(m => (
           <DropdownMenuItem
             key={m}
             onClick={() => setOverrideMethod(m === activeEndpoint?.method ? null : m)}

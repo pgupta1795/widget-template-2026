@@ -1,10 +1,10 @@
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import type { SchemaNode } from '../../openapi/schema-generator';
-import { ChevronDown, ChevronRight, Clipboard } from 'lucide-react';
-import { useState } from 'react';
+import {Badge} from '@/components/ui/badge';
+import {Button} from '@/components/ui/button';
+import {ScrollArea} from '@/components/ui/scroll-area';
+import {Tooltip,TooltipContent,TooltipProvider,TooltipTrigger} from '@/components/ui/tooltip';
+import {ChevronDown,ChevronRight,Clipboard} from 'lucide-react';
+import {useState} from 'react';
+import type {SchemaNode} from '../../openapi/schema-generator';
 
 function SchemaNodeRow({ node, depth = 0 }: { node: SchemaNode; depth?: number }) {
   const [open, setOpen] = useState(depth < 2);

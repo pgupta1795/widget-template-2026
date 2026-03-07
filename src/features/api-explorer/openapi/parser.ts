@@ -1,8 +1,5 @@
-import type { OpenAPIV3 } from 'openapi-types';
-import { generateExample } from './schema-generator';
-import {
-  OpenApiParseError,
-} from './types';
+import type {OpenAPIV3} from 'openapi-types';
+import {generateExample} from './schema-generator';
 import type {
   HttpMethod,
   OpenApiParameter,
@@ -12,8 +9,11 @@ import type {
   ParsedTag,
   ServiceType,
 } from './types';
+import {
+  OpenApiParseError,
+} from './types';
 
-const VALID_METHODS: HttpMethod[] = ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'];
+export const VALID_METHODS: HttpMethod[] = ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'];
 const DEFAULT_SERVICE_TYPE: ServiceType = '3DSpace';
 
 /** Resolves a $ref string like "#/components/parameters/SecurityContext" from the spec */

@@ -3,6 +3,7 @@ import {
   ResizablePanel,
   ResizablePanelGroup,
 } from '@/components/ui/resizable';
+import {ScrollArea} from '@/components/ui/scroll-area';
 import {
   Sidebar,
   SidebarContent,
@@ -11,16 +12,15 @@ import {
   SidebarProvider,
   SidebarTrigger,
 } from '@/components/ui/sidebar';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Clock, Globe, Layers } from 'lucide-react';
-import { ApiExplorerProvider } from '../context/api-explorer-context';
-import { CollectionTree } from './sidebar/collection-tree';
-import { DropZone } from './sidebar/drop-zone';
-import { HistoryPanel } from './sidebar/history-panel';
-import { SpecBrowser } from './sidebar/spec-browser';
-import { RequestPanel } from './request/request-panel';
-import { ResponsePanel } from './response/response-panel';
-import { ScrollArea } from '@/components/ui/scroll-area';
+import {Tabs,TabsContent,TabsList,TabsTrigger} from '@/components/ui/tabs';
+import {Clock,Globe,Layers} from 'lucide-react';
+import {ApiExplorerProvider} from '../context/api-explorer-context';
+import {RequestPanel} from './request/request-panel';
+import {ResponsePanel} from './response/response-panel';
+import {CollectionTree} from './sidebar/collection-tree';
+import {DropZone} from './sidebar/drop-zone';
+import {HistoryPanel} from './sidebar/history-panel';
+import {SpecBrowser} from './sidebar/spec-browser';
 
 function ExplorerSidebar() {
   return (
