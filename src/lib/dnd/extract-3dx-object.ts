@@ -15,6 +15,15 @@ export interface ExtractResult {
   rawData: unknown;
 }
 
+function isDropItem(x: unknown): x is DropItem {
+  return (
+    typeof x === 'object' &&
+    x !== null &&
+    typeof (x as Record<string, unknown>).objectId === 'string' &&
+    typeof (x as Record<string, unknown>).objectType === 'string'
+  );
+}
+
 /**
  * Parse and log a 3DXContent dataTransfer payload.
  * Tries every dataTransfer type, logs all content, returns structured result.
@@ -58,13 +67,24 @@ export function extract3dxObject(dataTransfer: DataTransfer | null): ExtractResu
 
   console.log('[DropZone] Full parsed payload:', JSON.stringify(parsed, null, 2));
 
+  if (typeof parsed !== 'object' || parsed === null || Array.isArray(parsed)) {
+    console.warn('[DropZone] Parsed payload is not an object:', parsed);
+    return { id: null, items: [], rawData: parsed };
+  }
+
   const dnd = parsed as Record<string, unknown>;
   if (dnd.protocol !== PROTOCOL) {
     console.warn(`[DropZone] Unexpected protocol: "${dnd.protocol}" (expected "${PROTOCOL}")`);
   }
 
-  const data = dnd.data as Record<string, unknown> | undefined;
-  const items: DropItem[] = Array.isArray(data?.items) ? (data.items as DropItem[]) : [];
+  const data = dnd.data;
+  const rawItems: unknown[] = typeof data === 'object' && data !== null && Array.isArray((data as Record<string, unknown>).items)
+    ? ((data as Record<string, unknown>).items as unknown[])
+    : [];
+  const items: DropItem[] = rawItems.filter(isDropItem);
+  if (items.length !== rawItems.length) {
+    console.warn('[DropZone] Some dropped items were malformed and filtered out:', rawItems);
+  }
 
   console.log('[DropZone] Extracted items:', items);
   return {
