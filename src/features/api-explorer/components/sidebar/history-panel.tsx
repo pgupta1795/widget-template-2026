@@ -3,53 +3,82 @@ import { Clock, Trash2 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { MethodBadge } from '../request/method-badge';
 import type { HttpMethod } from '../../openapi/types';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
 
 export function HistoryPanel() {
   const { history, clearHistory, loadHistoryEntry } = useApiExplorer();
 
   if (history.length === 0) {
     return (
-      <div className="text-center py-8 px-4">
-        <Clock size={32} className="mx-auto mb-3 text-muted-foreground/40" />
-        <p className="text-xs text-muted-foreground">Your request history will appear here</p>
+      <div className="flex flex-col items-center justify-center py-10 px-4 text-center">
+        <div className="w-10 h-10 rounded-full bg-muted/50 flex items-center justify-center mb-3">
+          <Clock size={18} className="text-muted-foreground/40" />
+        </div>
+        <p className="text-xs font-medium text-muted-foreground">No history yet</p>
+        <p className="text-[11px] text-muted-foreground/60 mt-1">Sent requests appear here</p>
       </div>
     );
   }
 
+  const displayed = history.slice(0, 10);
+
   return (
-    <div className="space-y-1 mt-1">
-      <div className="flex justify-end mb-2 px-2">
-        <button
-          onClick={clearHistory}
-          className="flex items-center gap-1 text-[10px] px-2 py-1 rounded bg-destructive/10 text-destructive hover:bg-destructive hover:text-destructive-foreground transition-colors"
-        >
-          <Trash2 size={10} /> Clear all
-        </button>
+    <div className="px-1 pb-2">
+      {/* Header row */}
+      <div className="flex items-center justify-between px-2 py-1.5 mb-1">
+        <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/50">
+          Recent ({displayed.length})
+        </span>
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger
+              render={
+                <button
+                  onClick={clearHistory}
+                  className="p-1 rounded hover:bg-destructive/10 text-muted-foreground/50 hover:text-destructive transition-colors cursor-pointer"
+                />
+              }
+            >
+              <Trash2 size={13} />
+            </TooltipTrigger>
+            <TooltipContent side="left">Clear all history</TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
       </div>
-      {history.map(entry => (
-        <button
-          key={entry.id}
-          onClick={() => loadHistoryEntry(entry)}
-          className="w-full flex items-center gap-2 px-2 py-2 rounded-md hover:bg-sidebar-accent text-xs group transition-colors"
-        >
-          <MethodBadge method={entry.method as HttpMethod} className="text-[10px] w-10 text-left shrink-0" />
-          <span className="flex-1 text-left truncate font-mono text-sidebar-foreground/80 text-[11px]">
-            {entry.path}
-          </span>
-          <div className="flex flex-col items-end shrink-0">
+
+      <div className="space-y-0.5">
+        {displayed.map(entry => (
+          <button
+            key={entry.id}
+            onClick={() => loadHistoryEntry(entry)}
+            className="w-full flex items-center gap-2 px-2 py-2 rounded-lg hover:bg-sidebar-accent border border-transparent hover:border-border/30 text-xs transition-all group cursor-pointer"
+          >
+            <MethodBadge method={entry.method as HttpMethod} size="sm" className="shrink-0" />
+            <div className="flex-1 min-w-0 text-left">
+              <p className="font-mono text-[11px] text-sidebar-foreground/80 truncate leading-tight">
+                {entry.path}
+              </p>
+              <p className="text-[10px] text-muted-foreground/50 leading-tight mt-0.5">
+                {formatDistanceToNow(entry.timestamp, { addSuffix: true })}
+              </p>
+            </div>
             {entry.status && (
-              <span className={`text-[10px] font-mono leading-none ${
-                entry.status < 300 ? 'text-green-500' : entry.status < 500 ? 'text-yellow-500' : 'text-destructive'
+              <span className={`text-[10px] font-mono font-semibold shrink-0 tabular-nums ${
+                entry.status < 300 ? 'text-emerald-600 dark:text-emerald-400'
+                : entry.status < 500 ? 'text-amber-600 dark:text-amber-400'
+                : 'text-red-600 dark:text-red-400'
               }`}>
                 {entry.status}
               </span>
             )}
-            <span className="text-[9px] text-muted-foreground/70 leading-none mt-1">
-              {formatDistanceToNow(entry.timestamp, { addSuffix: true })}
-            </span>
-          </div>
-        </button>
-      ))}
+          </button>
+        ))}
+      </div>
     </div>
   );
 }

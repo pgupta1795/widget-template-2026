@@ -1,7 +1,9 @@
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import type { SchemaNode } from '../../openapi/schema-generator';
-import { ChevronDown, ChevronRight } from 'lucide-react';
+import { ChevronDown, ChevronRight, Clipboard } from 'lucide-react';
 import { useState } from 'react';
 
 function SchemaNodeRow({ node, depth = 0 }: { node: SchemaNode; depth?: number }) {
@@ -11,26 +13,24 @@ function SchemaNodeRow({ node, depth = 0 }: { node: SchemaNode; depth?: number }
   return (
     <div>
       <div
-        className={`flex items-start gap-1.5 py-0.5 pr-2 rounded-sm text-xs hover:bg-muted/40 transition-colors cursor-default ${
-          hasChildren ? 'cursor-pointer' : ''
+        className={`flex items-start gap-1.5 py-0.5 pr-2 rounded-sm text-xs hover:bg-muted/40 transition-colors ${
+          hasChildren ? 'cursor-pointer' : 'cursor-default'
         }`}
         style={{ paddingLeft: `${8 + depth * 12}px` }}
         onClick={() => hasChildren && setOpen(o => !o)}
       >
         <span className="shrink-0 w-3 mt-0.5">
-          {hasChildren ? (
-            open ? <ChevronDown size={11} /> : <ChevronRight size={11} />
-          ) : null}
+          {hasChildren
+            ? open ? <ChevronDown size={11} /> : <ChevronRight size={11} />
+            : null}
         </span>
         <span className="font-mono text-foreground/90 font-medium">{node.name}</span>
-        <span className="text-muted-foreground/70 ml-0.5">{node.type}</span>
+        <span className="text-muted-foreground/60 ml-0.5 text-[10px]">{node.type}</span>
         {node.required && (
-          <Badge variant="outline" className="text-[9px] px-1 py-0 h-4 border-destructive/40 text-destructive ml-0.5">
-            req
-          </Badge>
+          <Badge variant="destructive" className="text-[9px] px-1 py-0 h-3.5 ml-0.5">req</Badge>
         )}
         {node.description && (
-          <span className="text-muted-foreground/50 truncate max-w-32 ml-1 hidden md:inline">
+          <span className="text-muted-foreground/50 truncate max-w-32 ml-1 hidden md:inline text-[10px]">
             {node.description}
           </span>
         )}
@@ -57,13 +57,24 @@ export function SchemaPanel({ root, exampleBody, onCopySample }: Props) {
     <div className="flex flex-col h-full border-l border-border w-56 shrink-0">
       <div className="flex items-center justify-between px-3 py-2 border-b border-border shrink-0">
         <span className="text-xs font-semibold text-foreground">{root.name}</span>
-        <button
-          onClick={onCopySample}
-          disabled={!exampleBody}
-          className="text-[10px] text-primary hover:text-primary/80 disabled:text-muted-foreground/40 transition-colors"
-        >
-          Copy sample
-        </button>
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger
+              render={
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={onCopySample}
+                  disabled={!exampleBody}
+                  className="h-6 w-6 text-muted-foreground hover:text-primary"
+                />
+              }
+            >
+              <Clipboard size={13} />
+            </TooltipTrigger>
+            <TooltipContent side="left">Copy sample body</TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
       </div>
       <ScrollArea className="flex-1">
         <div className="py-1">
@@ -73,7 +84,8 @@ export function SchemaPanel({ root, exampleBody, onCopySample }: Props) {
         </div>
         <div className="px-3 py-2 mt-1 border-t border-border/50">
           <span className="text-[9px] text-muted-foreground/50">
-            <span className="text-destructive">req</span> = required field
+            <Badge variant="destructive" className="text-[8px] px-1 py-0 h-3 mr-1">req</Badge>
+            = required field
           </span>
         </div>
       </ScrollArea>

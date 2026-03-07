@@ -73,9 +73,9 @@ export async function executePipeline<T>(
     const timeout = opts.timeout ?? config.defaultTimeout;
 
     if (useProxy) {
-      return wafProxifiedRequest<T>(builtUrl, { ...wafOpts, headers, proxyType, timeout });
+      return wafProxifiedRequest<T>(builtUrl, { ...wafOpts, headers, proxyType, timeout, method });
     }
-    return wafAuthenticatedRequest<T>(builtUrl, { ...wafOpts, headers, timeout });
+    return wafAuthenticatedRequest<T>(builtUrl, { ...wafOpts, headers, timeout, method });
   };
 
   return withRetry(async () => {

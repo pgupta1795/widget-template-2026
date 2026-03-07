@@ -53,6 +53,7 @@ export function HeadersEditor({ items, onChange }: Props) {
           <Input
             value={item.key}
             readOnly={item.readOnly}
+            onChange={e => !item.readOnly && update(item.id, 'key', e.target.value)}
             className={`h-8 font-mono text-xs ${item.readOnly ? 'bg-muted/30 cursor-not-allowed' : 'bg-card'}`}
             title={item.description}
           />

@@ -1,9 +1,9 @@
 import { getSecurityContext } from '@/services/core/security-context-manager';
 import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from 'react';
-import type { ParsedCollection, ParsedEndpoint } from '../openapi/types';
 import { useActiveSpecs } from '../hooks/use-active-specs';
 import { useBuiltInSpecs } from '../hooks/use-built-in-specs';
 import { useExecuteRequest } from '../hooks/use-execute-request';
+import type { HttpMethod, ParsedCollection, ParsedEndpoint } from '../openapi/types';
 
 export interface KeyValue {
   id: string;
@@ -64,6 +64,9 @@ interface ApiExplorerContextType {
   activeEndpoint: ParsedEndpoint | null;
   activeCollection: ParsedCollection | null;
   loadEndpoint: (collection: ParsedCollection, endpoint: ParsedEndpoint) => void;
+  // Method override (user can change from OpenAPI default)
+  overrideMethod: HttpMethod | null;
+  setOverrideMethod: (m: HttpMethod | null) => void;
   // Request editor state
   pathParams: KeyValue[];
   setPathParams: (v: KeyValue[]) => void;
@@ -99,6 +102,7 @@ export function ApiExplorerProvider({ children }: { children: ReactNode }) {
   const [customCollections, setCustomCollections] = useState<ParsedCollection[]>([]);
   const [activeEndpoint, setActiveEndpoint] = useState<ParsedEndpoint | null>(null);
   const [activeCollection, setActiveCollection] = useState<ParsedCollection | null>(null);
+  const [overrideMethod, setOverrideMethod] = useState<HttpMethod | null>(null);
   const [pathParams, setPathParams] = useState<KeyValue[]>([]);
   const [queryParams, setQueryParams] = useState<KeyValue[]>([newKv()]);
   const [headers, setHeaders] = useState<KeyValue[]>([]);
@@ -129,6 +133,7 @@ export function ApiExplorerProvider({ children }: { children: ReactNode }) {
   const loadEndpoint = useCallback((collection: ParsedCollection, endpoint: ParsedEndpoint) => {
     setActiveEndpoint(endpoint);
     setActiveCollection(collection);
+    setOverrideMethod(null);
     setResponse(null);
     setBody(endpoint.exampleBody ?? '');
 
@@ -165,6 +170,14 @@ export function ApiExplorerProvider({ children }: { children: ReactNode }) {
     if (!hParams.some(h => h.key === 'ENO_CSRF_TOKEN')) {
       hParams.unshift({ ...newKv('ENO_CSRF_TOKEN', '', true, 'Auto-managed by WAF pipeline'), readOnly: true });
     }
+    
+    // Add default Content-Type for endpoints with a body
+    if (['POST', 'PUT', 'PATCH'].includes(endpoint.method)) {
+      if (!hParams.some(h => h.key.toLowerCase() === 'content-type')) {
+        hParams.push(newKv('Content-Type', 'application/json', false, 'Format of the request body'));
+      }
+    }
+    
     setHeaders(hParams);
   }, []);
 
@@ -187,9 +200,10 @@ export function ApiExplorerProvider({ children }: { children: ReactNode }) {
     }
 
     setResponse(null);
+    const effectiveMethod = overrideMethod ?? activeEndpoint.method;
     executeMutation.mutate(
       {
-        method: activeEndpoint.method,
+        method: effectiveMethod,
         path: activeEndpoint.path,
         serviceType: activeCollection.serviceType,
         pathParams: pParams,
@@ -208,14 +222,14 @@ export function ApiExplorerProvider({ children }: { children: ReactNode }) {
             timestamp: Date.now(),
             status: res.status,
             time: res.time,
-          }, ...prev].slice(0, 100));
+          }, ...prev].slice(0, 10));
         },
         onError: (err) => {
           setResponse({ status: 0, statusText: 'Error', headers: {}, data: { error: err.message }, time: 0, size: 0 });
         },
       },
     );
-  }, [activeEndpoint, activeCollection, pathParams, queryParams, headers, body, executeMutation]);
+  }, [activeEndpoint, activeCollection, overrideMethod, pathParams, queryParams, headers, body, executeMutation]);
 
   const clearHistory = useCallback(() => setHistory([]), []);
 
@@ -238,6 +252,7 @@ export function ApiExplorerProvider({ children }: { children: ReactNode }) {
       activeIds, toggleActive, isActive,
       activeCollections,
       activeEndpoint, activeCollection, loadEndpoint,
+      overrideMethod, setOverrideMethod,
       pathParams, setPathParams,
       queryParams, setQueryParams,
       headers, setHeaders,

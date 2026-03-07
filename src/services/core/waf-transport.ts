@@ -1,7 +1,9 @@
 import { getAPIs } from '@/lib/widget/api';
 import { ServiceError, type RequestOptions, type ServiceResponse } from '../types';
 
-type WAFDataUserOptions = Omit<RequestOptions, 'params' | 'csrfOverride' | 'useProxy' | 'proxyType' | 'retry'>;
+type WAFDataUserOptions = Omit<RequestOptions, 'params' | 'csrfOverride' | 'useProxy' | 'proxyType' | 'retry'> & {
+  method?: string;
+};
 
 function buildSize(data: unknown): number {
   if (data == null) return 0;
