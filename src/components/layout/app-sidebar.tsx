@@ -9,9 +9,11 @@ import {
   SidebarMenuItem,
 } from '@/components/ui/sidebar';
 import { NAV_ITEMS } from './nav-items';
+import { useSidebarSlot } from './sidebar-slot-context';
 
 export function AppSidebar() {
   const { location } = useRouterState();
+  const { registerSlot } = useSidebarSlot();
 
   return (
     <Sidebar collapsible="icon">
@@ -40,6 +42,7 @@ export function AppSidebar() {
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
+        <div ref={registerSlot} className="flex-1 flex flex-col overflow-hidden min-h-0" />
       </SidebarContent>
     </Sidebar>
   );

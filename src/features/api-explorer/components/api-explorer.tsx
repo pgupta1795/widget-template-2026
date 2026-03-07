@@ -1,3 +1,4 @@
+import { createPortal } from 'react-dom';
 import {
   ResizableHandle,
   ResizablePanel,
@@ -5,15 +6,12 @@ import {
 } from '@/components/ui/resizable';
 import {ScrollArea} from '@/components/ui/scroll-area';
 import {
-  Sidebar,
-  SidebarContent,
-  SidebarHeader,
-  SidebarInset,
-  SidebarProvider,
-  SidebarTrigger,
+  SidebarGroup,
+  SidebarGroupContent,
 } from '@/components/ui/sidebar';
 import {Tabs,TabsContent,TabsList,TabsTrigger} from '@/components/ui/tabs';
 import {Clock,Globe,Layers} from 'lucide-react';
+import {useSidebarSlot} from '@/components/layout/sidebar-slot-context';
 import {ApiExplorerProvider} from '../context/api-explorer-context';
 import {RequestPanel} from './request/request-panel';
 import {ResponsePanel} from './response/response-panel';
@@ -21,20 +19,11 @@ import {CollectionTree} from './sidebar/collection-tree';
 import {HistoryPanel} from './sidebar/history-panel';
 import {SpecBrowser} from './sidebar/spec-browser';
 
-function ExplorerSidebar() {
+function ExplorerSidebarContent() {
   return (
-    <Sidebar>
-      <SidebarHeader className="border-b border-border p-0">
-        <div className="flex items-center gap-2 px-4 h-11 shrink-0">
-          <div className="w-5 h-5 rounded bg-primary/15 flex items-center justify-center shrink-0">
-            <Globe size={11} className="text-primary" />
-          </div>
-          <span className="font-semibold text-sm text-foreground tracking-tight">3DX API Explorer</span>
-        </div>
-      </SidebarHeader>
-
-      <SidebarContent className="overflow-hidden">
-        <Tabs defaultValue="active" className="h-full flex flex-col gap-0">
+    <SidebarGroup className="flex-1 overflow-hidden p-0 min-h-0 gap-0">
+      <SidebarGroupContent className="flex-1 flex flex-col overflow-hidden min-h-0">
+        <Tabs defaultValue="active" className="flex-1 flex flex-col gap-0 overflow-hidden">
           <TabsList
             variant="line"
             className="w-full rounded-none border-b border-border h-9 px-2 justify-start gap-0 shrink-0"
@@ -74,31 +63,26 @@ function ExplorerSidebar() {
             </ScrollArea>
           </TabsContent>
         </Tabs>
-      </SidebarContent>
-    </Sidebar>
+      </SidebarGroupContent>
+    </SidebarGroup>
   );
 }
 
 export function ApiExplorer() {
+  const { slotEl } = useSidebarSlot();
+
   return (
     <ApiExplorerProvider>
-      <SidebarProvider className="h-full overflow-hidden bg-background">
-        <ExplorerSidebar />
-        <SidebarInset className="flex-1 flex flex-col overflow-hidden min-w-0 bg-background">
-          <div className="flex items-center px-3 h-9 border-b border-border shrink-0 bg-card/40">
-            <SidebarTrigger className="-ml-1" />
-          </div>
-          <ResizablePanelGroup orientation="vertical" className="flex-1">
-            <ResizablePanel defaultSize={55} minSize={25}>
-              <RequestPanel />
-            </ResizablePanel>
-            <ResizableHandle className="bg-border hover:bg-primary/30 transition-colors data-resize-handle-active:bg-primary/50" />
-            <ResizablePanel defaultSize={45} minSize={20}>
-              <ResponsePanel />
-            </ResizablePanel>
-          </ResizablePanelGroup>
-        </SidebarInset>
-      </SidebarProvider>
+      {slotEl && createPortal(<ExplorerSidebarContent />, slotEl)}
+      <ResizablePanelGroup orientation="vertical" className="h-full">
+        <ResizablePanel defaultSize={55} minSize={25}>
+          <RequestPanel />
+        </ResizablePanel>
+        <ResizableHandle className="bg-border hover:bg-primary/30 transition-colors data-resize-handle-active:bg-primary/50" />
+        <ResizablePanel defaultSize={45} minSize={20}>
+          <ResponsePanel />
+        </ResizablePanel>
+      </ResizablePanelGroup>
     </ApiExplorerProvider>
   );
 }
