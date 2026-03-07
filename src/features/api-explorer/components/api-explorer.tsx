@@ -18,7 +18,6 @@ import {ApiExplorerProvider} from '../context/api-explorer-context';
 import {RequestPanel} from './request/request-panel';
 import {ResponsePanel} from './response/response-panel';
 import {CollectionTree} from './sidebar/collection-tree';
-import {DropZone} from './sidebar/drop-zone';
 import {HistoryPanel} from './sidebar/history-panel';
 import {SpecBrowser} from './sidebar/spec-browser';
 
@@ -80,33 +79,26 @@ function ExplorerSidebar() {
   );
 }
 
-function ExplorerLayout() {
-  return (
-    <SidebarProvider className="h-screen overflow-hidden bg-background">
-      <DropZone />
-      <ExplorerSidebar />
-      <SidebarInset className="flex-1 flex flex-col overflow-hidden min-w-0 bg-background">
-        <div className="flex items-center px-3 h-9 border-b border-border shrink-0 bg-card/40">
-          <SidebarTrigger className="-ml-1" />
-        </div>
-        <ResizablePanelGroup orientation="vertical" className="flex-1">
-          <ResizablePanel defaultSize={55} minSize={25}>
-            <RequestPanel />
-          </ResizablePanel>
-          <ResizableHandle className="bg-border hover:bg-primary/30 transition-colors data-resize-handle-active:bg-primary/50" />
-          <ResizablePanel defaultSize={45} minSize={20}>
-            <ResponsePanel />
-          </ResizablePanel>
-        </ResizablePanelGroup>
-      </SidebarInset>
-    </SidebarProvider>
-  );
-}
-
 export function ApiExplorer() {
   return (
     <ApiExplorerProvider>
-      <ExplorerLayout />
+      <SidebarProvider className="h-screen overflow-hidden bg-background">
+        <ExplorerSidebar />
+        <SidebarInset className="flex-1 flex flex-col overflow-hidden min-w-0 bg-background">
+          <div className="flex items-center px-3 h-9 border-b border-border shrink-0 bg-card/40">
+            <SidebarTrigger className="-ml-1" />
+          </div>
+          <ResizablePanelGroup orientation="vertical" className="flex-1">
+            <ResizablePanel defaultSize={55} minSize={25}>
+              <RequestPanel />
+            </ResizablePanel>
+            <ResizableHandle className="bg-border hover:bg-primary/30 transition-colors data-resize-handle-active:bg-primary/50" />
+            <ResizablePanel defaultSize={45} minSize={20}>
+              <ResponsePanel />
+            </ResizablePanel>
+          </ResizablePanelGroup>
+        </SidebarInset>
+      </SidebarProvider>
     </ApiExplorerProvider>
   );
 }
