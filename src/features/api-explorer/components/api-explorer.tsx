@@ -82,7 +82,7 @@ function ExplorerSidebar() {
 export function ApiExplorer() {
   return (
     <ApiExplorerProvider>
-      <SidebarProvider className="h-screen overflow-hidden bg-background">
+      <SidebarProvider className="h-full overflow-hidden bg-background">
         <ExplorerSidebar />
         <SidebarInset className="flex-1 flex flex-col overflow-hidden min-w-0 bg-background">
           <div className="flex items-center px-3 h-9 border-b border-border shrink-0 bg-card/40">
