@@ -53,6 +53,11 @@ export function use3dxDropZone<T extends HTMLElement>(
       return;
     }
 
+    if (!dnd) {
+      console.warn('[use3dxDropZone] DataDragAndDrop is not available on this platform');
+      return;
+    }
+
     dnd.droppable(el, {
       enter: () => {
         setIsDragOver(true);
