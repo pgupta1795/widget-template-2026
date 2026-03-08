@@ -1,10 +1,12 @@
-import { getSecurityContext } from '@/services/core/security-context-manager';
-import type { ExtractResult } from '@/lib/dnd/extract-3dx-object';
-import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from 'react';
-import { useActiveSpecs } from '../hooks/use-active-specs';
-import { useBuiltInSpecs } from '../hooks/use-built-in-specs';
-import { useExecuteRequest } from '../hooks/use-execute-request';
-import type { HttpMethod, ParsedCollection, ParsedEndpoint } from '../openapi/types';
+import type {HttpMethod,ParsedCollection,ParsedEndpoint} from '@/features/api-explorer/openapi/types';
+import type {DropItem} from '@/hooks/use-3dx-drop-zone';
+import logger from '@/lib/logger';
+import {getSecurityContext} from '@/services/core/security-context-manager';
+import {createContext,useCallback,useContext,useEffect,useState,type ReactNode} from 'react';
+import {toast} from 'sonner';
+import {useActiveSpecs} from '../hooks/use-active-specs';
+import {useBuiltInSpecs} from '../hooks/use-built-in-specs';
+import {useExecuteRequest} from '../hooks/use-execute-request';
 
 export interface KeyValue {
   id: string;
@@ -28,23 +30,23 @@ export interface HistoryEntry {
 export interface ResponseState {
   status: number;
   statusText: string;
-  headers: Record<string, string>;
+  headers: Record<string,string>;
   data: unknown;
   time: number;
   size: number;
 }
 
-const newKv = (key = '', value = '', readOnly = false, description = ''): KeyValue => ({
-  id: crypto.randomUUID(), key, value, enabled: true, readOnly, description,
+const newKv=(key='',value='',readOnly=false,description=''): KeyValue => ({
+  id: crypto.randomUUID(),key,value,enabled: true,readOnly,description,
 });
 
-const HISTORY_KEY = 'ae_history';
+const HISTORY_KEY='ae_history';
 
 function loadHistory(): HistoryEntry[] {
   try {
-    const s = localStorage.getItem(HISTORY_KEY);
-    return s ? JSON.parse(s) : [];
-  } catch { return []; }
+    const s=localStorage.getItem(HISTORY_KEY);
+    return s? JSON.parse(s):[];
+  } catch {return [];}
 }
 
 interface ApiExplorerContextType {
@@ -62,12 +64,12 @@ interface ApiExplorerContextType {
   // Active collections (built-in + custom that are activated)
   activeCollections: ParsedCollection[];
   // Active endpoint
-  activeEndpoint: ParsedEndpoint | null;
-  activeCollection: ParsedCollection | null;
-  loadEndpoint: (collection: ParsedCollection, endpoint: ParsedEndpoint) => void;
+  activeEndpoint: ParsedEndpoint|null;
+  activeCollection: ParsedCollection|null;
+  loadEndpoint: (collection: ParsedCollection,endpoint: ParsedEndpoint) => void;
   // Method override (user can change from OpenAPI default)
-  overrideMethod: HttpMethod | null;
-  setOverrideMethod: (m: HttpMethod | null) => void;
+  overrideMethod: HttpMethod|null;
+  setOverrideMethod: (m: HttpMethod|null) => void;
   // Request editor state
   pathParams: KeyValue[];
   setPathParams: (v: KeyValue[]) => void;
@@ -80,141 +82,161 @@ interface ApiExplorerContextType {
   // Execute
   sendRequest: () => void;
   loading: boolean;
-  response: ResponseState | null;
+  response: ResponseState|null;
   // History
   history: HistoryEntry[];
   clearHistory: () => void;
   loadHistoryEntry: (entry: HistoryEntry) => void;
-  onObjectDrop: (result: ExtractResult) => void;
+  onObjectDrop: (result: DropItem[]) => void;
 }
 
 /** Recursively replaces string values of keys containing 'id' (case-insensitive) with the given value. */
-function fillIdFields(obj: Record<string, unknown>, value: string): Record<string, unknown> {
+function fillIdFields(obj: Record<string,unknown>,value: string): Record<string,unknown> {
   return Object.fromEntries(
-    Object.entries(obj).map(([k, v]) => {
-      if (k.toLowerCase().includes('id') && typeof v === 'string') return [k, value];
-      if (typeof v === 'object' && v !== null && !Array.isArray(v))
-        return [k, fillIdFields(v as Record<string, unknown>, value)];
-      return [k, v];
+    Object.entries(obj).map(([k,v]) => {
+      if (k.toLowerCase().includes('id')&&typeof v==='string') return [k,value];
+      if (typeof v==='object'&&v!==null&&!Array.isArray(v))
+        return [k,fillIdFields(v as Record<string,unknown>,value)];
+      return [k,v];
     }),
   );
 }
 
-const ApiExplorerContext = createContext<ApiExplorerContextType | null>(null);
+const ApiExplorerContext=createContext<ApiExplorerContextType|null>(null);
 
 export function useApiExplorer() {
-  const ctx = useContext(ApiExplorerContext);
+  const ctx=useContext(ApiExplorerContext);
   if (!ctx) throw new Error('useApiExplorer must be used within ApiExplorerProvider');
   return ctx;
 }
 
-export function ApiExplorerProvider({ children }: { children: ReactNode }) {
-  const { data: builtInCollections = [], isLoading: builtInLoading } = useBuiltInSpecs();
-  const { activeIds, toggle: toggleActive, isActive } = useActiveSpecs();
-  const executeMutation = useExecuteRequest();
+export function ApiExplorerProvider({children}: {children: ReactNode}) {
+  const {data: builtInCollections=[],isLoading: builtInLoading}=useBuiltInSpecs();
+  const {activeIds,toggle: toggleActive,isActive}=useActiveSpecs();
+  const executeMutation=useExecuteRequest();
 
-  const [customCollections, setCustomCollections] = useState<ParsedCollection[]>([]);
-  const [activeEndpoint, setActiveEndpoint] = useState<ParsedEndpoint | null>(null);
-  const [activeCollection, setActiveCollection] = useState<ParsedCollection | null>(null);
-  const [overrideMethod, setOverrideMethod] = useState<HttpMethod | null>(null);
-  const [pathParams, setPathParams] = useState<KeyValue[]>([]);
-  const [queryParams, setQueryParams] = useState<KeyValue[]>([newKv()]);
-  const [headers, setHeaders] = useState<KeyValue[]>([]);
-  const [body, setBody] = useState('');
-  const [response, setResponse] = useState<ResponseState | null>(null);
-  const [history, setHistory] = useState<HistoryEntry[]>(() => loadHistory());
+  const [customCollections,setCustomCollections]=useState<ParsedCollection[]>([]);
+  const [activeEndpoint,setActiveEndpoint]=useState<ParsedEndpoint|null>(null);
+  const [activeCollection,setActiveCollection]=useState<ParsedCollection|null>(null);
+  const [overrideMethod,setOverrideMethod]=useState<HttpMethod|null>(null);
+  const [pathParams,setPathParams]=useState<KeyValue[]>([]);
+  const [queryParams,setQueryParams]=useState<KeyValue[]>([newKv()]);
+  const [headers,setHeaders]=useState<KeyValue[]>([]);
+  const [body,setBody]=useState('');
+  const [response,setResponse]=useState<ResponseState|null>(null);
+  const [history,setHistory]=useState<HistoryEntry[]>(() => loadHistory());
 
   useEffect(() => {
-    localStorage.setItem(HISTORY_KEY, JSON.stringify(history));
-  }, [history]);
+    localStorage.setItem(HISTORY_KEY,JSON.stringify(history));
+  },[history]);
 
-  const allCollections = [...builtInCollections, ...customCollections];
-  const activeCollections = allCollections.filter(c => activeIds.has(c.id));
+  const allCollections=[...builtInCollections,...customCollections];
+  const activeCollections=allCollections.filter(c => activeIds.has(c.id));
 
-  const addCustomCollection = useCallback((col: ParsedCollection) => {
+  const addCustomCollection=useCallback((col: ParsedCollection) => {
     setCustomCollections(prev => {
-      const filtered = prev.filter(c => c.id !== col.id);
-      return [...filtered, col];
+      const filtered=prev.filter(c => c.id!==col.id);
+      return [...filtered,col];
     });
     // Auto-activate custom collections
     if (!activeIds.has(col.id)) toggleActive(col.id);
-  }, [activeIds, toggleActive]);
+  },[activeIds,toggleActive]);
 
-  const removeCustomCollection = useCallback((id: string) => {
-    setCustomCollections(prev => prev.filter(c => c.id !== id));
-  }, []);
+  const removeCustomCollection=useCallback((id: string) => {
+    setCustomCollections(prev => prev.filter(c => c.id!==id));
+  },[]);
 
-  const loadEndpoint = useCallback((collection: ParsedCollection, endpoint: ParsedEndpoint) => {
+  const loadEndpoint=useCallback((collection: ParsedCollection,endpoint: ParsedEndpoint) => {
     setActiveEndpoint(endpoint);
     setActiveCollection(collection);
     setOverrideMethod(null);
     setResponse(null);
-    setBody(endpoint.exampleBody ?? '');
+    setBody(endpoint.exampleBody??'');
 
     // Path params
     setPathParams(
-      endpoint.pathParams.map(p => newKv(p.name, '', false, p.description)),
+      endpoint.pathParams.map(p => newKv(p.name,'',false,p.description)),
     );
 
     // Query params: SecurityContext pre-populated from platform, then other params
-    const sc = getSecurityContext() ?? '';
-    const scParam = endpoint.queryParams.find(p => p.name === 'SecurityContext');
-    const otherParams = endpoint.queryParams.filter(p => p.name !== 'SecurityContext');
+    const sc=getSecurityContext()??'';
+    const scParam=endpoint.queryParams.find(p => p.name==='SecurityContext');
+    const otherParams=endpoint.queryParams.filter(p => p.name!=='SecurityContext');
 
-    const qParams: KeyValue[] = [];
-    if (scParam !== undefined) {
-      qParams.push(newKv('SecurityContext', sc, false, 'Platform security context (editable)'));
+    const qParams: KeyValue[]=[];
+    if (scParam!==undefined) {
+      qParams.push(newKv('SecurityContext',sc,false,'Platform security context (editable)'));
     }
     for (const p of otherParams) {
-      qParams.push(newKv(p.name, p.enum?.[0] ?? '', false, p.description));
+      qParams.push(newKv(p.name,p.enum?.[0]??'',false,p.description));
     }
-    if (qParams.length === 0) qParams.push(newKv());
+    if (qParams.length===0) qParams.push(newKv());
     setQueryParams(qParams);
 
     // Headers: ENO_CSRF_TOKEN is read-only, plus other headers
-    const hParams: KeyValue[] = [];
+    const hParams: KeyValue[]=[];
     for (const h of endpoint.headers) {
-      if (h.name === 'ENO_CSRF_TOKEN') {
-        hParams.push({ ...newKv('ENO_CSRF_TOKEN', '', true, 'Auto-managed by WAF pipeline'), readOnly: true });
+      if (h.name==='ENO_CSRF_TOKEN') {
+        hParams.push({...newKv('ENO_CSRF_TOKEN','',true,'Auto-managed by WAF pipeline'),readOnly: true});
       } else {
-        hParams.push(newKv(h.name, '', false, h.description));
+        hParams.push(newKv(h.name,'',false,h.description));
       }
     }
     // Always show ENO_CSRF_TOKEN even if not in spec
-    if (!hParams.some(h => h.key === 'ENO_CSRF_TOKEN')) {
-      hParams.unshift({ ...newKv('ENO_CSRF_TOKEN', '', true, 'Auto-managed by WAF pipeline'), readOnly: true });
+    if (!hParams.some(h => h.key==='ENO_CSRF_TOKEN')) {
+      hParams.unshift({...newKv('ENO_CSRF_TOKEN','',true,'Auto-managed by WAF pipeline'),readOnly: true});
     }
-    
+
     // Add default Content-Type for endpoints with a body
-    if (['POST', 'PUT', 'PATCH'].includes(endpoint.method)) {
-      if (!hParams.some(h => h.key.toLowerCase() === 'content-type')) {
-        hParams.push(newKv('Content-Type', 'application/json', false, 'Format of the request body'));
+    if (['POST','PUT','PATCH'].includes(endpoint.method)) {
+      if (!hParams.some(h => h.key.toLowerCase()==='content-type')) {
+        hParams.push(newKv('Content-Type','application/json',false,'Format of the request body'));
       }
     }
-    
+
     setHeaders(hParams);
-  }, []);
+  },[]);
 
-  const sendRequest = useCallback(() => {
-    if (!activeEndpoint || !activeCollection) return;
+  const sendRequest=useCallback(() => {
+    if (!activeEndpoint||!activeCollection) return;
 
-    const pParams: Record<string, string> = {};
+    let qUpdated=false;
+    const nextQParams=queryParams.map(p => {
+      if (p.enabled&&(!p.key.trim()||!p.value.trim())) {
+        qUpdated=true;
+        return {...p,enabled: false};
+      }
+      return p;
+    });
+    if (qUpdated) setQueryParams(nextQParams);
+
+    let hUpdated=false;
+    const nextHeaders=headers.map(h => {
+      if (h.enabled&&!h.readOnly&&(!h.key.trim()||!h.value.trim())) {
+        hUpdated=true;
+        return {...h,enabled: false};
+      }
+      return h;
+    });
+    if (hUpdated) setHeaders(nextHeaders);
+
+    const pParams: Record<string,string>={};
     for (const p of pathParams) {
-      if (p.key) pParams[p.key] = p.value;
+      if (p.key) pParams[p.key]=p.value;
     }
 
-    const qParams: Record<string, string> = {};
-    for (const p of queryParams) {
-      if (p.enabled && p.key && p.key !== 'ENO_CSRF_TOKEN') qParams[p.key] = p.value;
+    const qParams: Record<string,string>={};
+    for (const p of nextQParams) {
+      if (p.enabled&&p.key&&p.key!=='ENO_CSRF_TOKEN') qParams[p.key]=p.value;
     }
 
-    const extraHeaders: Record<string, string> = {};
-    for (const h of headers) {
-      if (h.enabled && h.key && !h.readOnly) extraHeaders[h.key] = h.value;
+    const extraHeaders: Record<string,string>={};
+    for (const h of nextHeaders) {
+      if (h.enabled&&h.key&&!h.readOnly) extraHeaders[h.key]=h.value;
     }
 
     setResponse(null);
-    const effectiveMethod = overrideMethod ?? activeEndpoint.method;
+    const effectiveMethod=overrideMethod??activeEndpoint.method;
     executeMutation.mutate(
       {
         method: effectiveMethod,
@@ -223,7 +245,7 @@ export function ApiExplorerProvider({ children }: { children: ReactNode }) {
         pathParams: pParams,
         queryParams: qParams,
         extraHeaders,
-        body: body.trim() || undefined,
+        body: body.trim()||undefined,
       },
       {
         onSuccess: (res) => {
@@ -236,37 +258,44 @@ export function ApiExplorerProvider({ children }: { children: ReactNode }) {
             timestamp: Date.now(),
             status: res.status,
             time: res.time,
-          }, ...prev].slice(0, 10));
+          },...prev].slice(0,10));
         },
         onError: (err) => {
-          setResponse({ status: 0, statusText: 'Error', headers: {}, data: { error: err.message }, time: 0, size: 0 });
+          setResponse({status: 0,statusText: 'Error',headers: {},data: {error: err.message},time: 0,size: 0});
         },
       },
     );
-  }, [activeEndpoint, activeCollection, overrideMethod, pathParams, queryParams, headers, body, executeMutation]);
+  },[activeEndpoint,activeCollection,overrideMethod,pathParams,queryParams,headers,body,executeMutation]);
 
-  const clearHistory = useCallback(() => setHistory([]), []);
+  const clearHistory=useCallback(() => setHistory([]),[]);
 
-  const loadHistoryEntry = useCallback((entry: HistoryEntry) => {
+  const loadHistoryEntry=useCallback((entry: HistoryEntry) => {
     // Find matching endpoint across all collections and load it
     for (const col of allCollections) {
       for (const tag of col.tags) {
-        const ep = tag.endpoints.find(
-          e => e.path === entry.path && e.method === entry.method,
+        const ep=tag.endpoints.find(
+          e => e.path===entry.path&&e.method===entry.method,
         );
-        if (ep) { loadEndpoint(col, ep); return; }
+        if (ep) {loadEndpoint(col,ep); return;}
       }
     }
-  }, [allCollections, loadEndpoint]);
+  },[allCollections,loadEndpoint]);
 
-  const onObjectDrop = useCallback((result: ExtractResult) => {
-    const { id } = result;
-    if (!id) return;
+  const onObjectDrop=useCallback((result: DropItem[]) => {
+    const item=result[0];
+    const id=item?.objectId;
+
+    if (!id) {
+      toast.error('Failed to drop object');
+      return;
+    }
+
+    toast.success(`Object with name ${item.displayName} having type ${item.objectType} and id ${id} is dropped successfully`);
 
     // Fill path params whose key contains 'id' (case-insensitive)
     setPathParams(prev =>
       prev.map(p =>
-        p.key.toLowerCase().includes('id') ? { ...p, value: id } : p,
+        p.key.toLowerCase().includes('id')? {...p,value: id}:p,
       ),
     );
 
@@ -274,31 +303,31 @@ export function ApiExplorerProvider({ children }: { children: ReactNode }) {
     setBody(prev => {
       if (!prev.trim()) return prev;
       try {
-        const parsed = JSON.parse(prev) as unknown;
-        if (typeof parsed === 'object' && parsed !== null && !Array.isArray(parsed)) {
-          return JSON.stringify(fillIdFields(parsed as Record<string, unknown>, id), null, 2);
+        const parsed=JSON.parse(prev) as unknown;
+        if (typeof parsed==='object'&&parsed!==null&&!Array.isArray(parsed)) {
+          return JSON.stringify(fillIdFields(parsed as Record<string,unknown>,id),null,2);
         }
-      } catch {
-        // body is not valid JSON — leave as-is
+      } catch (error) {
+        logger.warn('Error parsing body:',error);
       }
       return prev;
     });
-  }, []);
+  },[]);
 
   return (
     <ApiExplorerContext.Provider value={{
-      builtInCollections, builtInLoading,
-      customCollections, addCustomCollection, removeCustomCollection,
-      activeIds, toggleActive, isActive,
+      builtInCollections,builtInLoading,
+      customCollections,addCustomCollection,removeCustomCollection,
+      activeIds,toggleActive,isActive,
       activeCollections,
-      activeEndpoint, activeCollection, loadEndpoint,
-      overrideMethod, setOverrideMethod,
-      pathParams, setPathParams,
-      queryParams, setQueryParams,
-      headers, setHeaders,
-      body, setBody,
-      sendRequest, loading: executeMutation.isPending, response,
-      history, clearHistory, loadHistoryEntry,
+      activeEndpoint,activeCollection,loadEndpoint,
+      overrideMethod,setOverrideMethod,
+      pathParams,setPathParams,
+      queryParams,setQueryParams,
+      headers,setHeaders,
+      body,setBody,
+      sendRequest,loading: executeMutation.isPending,response,
+      history,clearHistory,loadHistoryEntry,
       onObjectDrop,
     }}>
       {children}

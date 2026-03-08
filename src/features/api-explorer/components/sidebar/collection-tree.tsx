@@ -1,14 +1,15 @@
+import {Input} from '@/components/ui/input';
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
-import {ChevronDown,ChevronRight,Layers} from 'lucide-react';
-import {useState} from 'react';
-import {useApiExplorer} from '../../context/api-explorer-context';
-import type {ParsedCollection,ParsedEndpoint,ParsedTag} from '../../openapi/types';
-import {MethodBadge} from '../request/method-badge';
+import {MethodBadge} from '@/features/api-explorer/components/request/method-badge';
+import {useApiExplorer} from '@/features/api-explorer/context/api-explorer-context';
+import type {ParsedCollection,ParsedEndpoint,ParsedTag} from '@/features/api-explorer/openapi/types';
+import {ChevronDown,ChevronRight,Layers,Search} from 'lucide-react';
+import {useMemo,useState} from 'react';
 
 function EndpointItem({
   ep,
@@ -107,6 +108,7 @@ function TagGroup({
 export function CollectionTree() {
   const {activeCollections,loadEndpoint,activeEndpoint}=useApiExplorer();
   const [expandedCollections,setExpandedCollections]=useState<Set<string>>(new Set());
+  const [search,setSearch]=useState('');
 
   const toggleCollection=(id: string) => {
     setExpandedCollections(prev => {
@@ -115,6 +117,29 @@ export function CollectionTree() {
       return next;
     });
   };
+
+  const filteredCollections=useMemo(() => {
+    if (!search.trim()) return activeCollections;
+    const lowerSearch=search.toLowerCase();
+
+    return activeCollections.map(col => {
+      if (col.name.toLowerCase().includes(lowerSearch)) return col;
+
+      const matchingTags=col.tags.map(tag => {
+        if (tag.name.toLowerCase().includes(lowerSearch)) return tag;
+        const matchingEndpoints=tag.endpoints.filter(ep =>
+          ep.path.toLowerCase().includes(lowerSearch)||
+          ep.summary?.toLowerCase().includes(lowerSearch)||
+          ep.method.toLowerCase().includes(lowerSearch)
+        );
+        if (matchingEndpoints.length>0) return {...tag,endpoints: matchingEndpoints};
+        return null;
+      }).filter(Boolean) as ParsedTag[];
+
+      if (matchingTags.length>0) return {...col,tags: matchingTags};
+      return null;
+    }).filter(Boolean) as ParsedCollection[];
+  },[activeCollections,search]);
 
   if (activeCollections.length===0) {
     return (
@@ -129,37 +154,53 @@ export function CollectionTree() {
   }
 
   return (
-    <div className="space-y-1 px-1 pb-2">
-      {activeCollections.map(col => (
-        <div key={col.id} className="rounded-lg border border-border/50 overflow-hidden">
-          <button
-            onClick={() => toggleCollection(col.id)}
-            className="w-full flex items-start gap-2 px-3 py-2 bg-card hover:bg-accent/30 transition-colors text-sm group cursor-pointer"
-          >
-            {expandedCollections.has(col.id)? <ChevronDown size={13} className="mt-0.5 shrink-0" />:<ChevronRight size={13} className="mt-0.5 shrink-0" />}
-            <span className="flex-1 text-left wrap-break-word whitespace-normal text-sidebar-foreground font-semibold text-xs leading-snug">
-              {col.name}
-            </span>
-            <span className="text-[9px] text-muted-foreground/60 bg-muted/60 px-1.5 py-0.5 rounded shrink-0 font-medium mt-px">
-              {col.serviceType}
-            </span>
-            <span className="text-[9px] text-muted-foreground/40 tabular-nums">{col.endpointCount}</span>
-          </button>
-          {expandedCollections.has(col.id)&&(
-            <div className="px-1 py-1 space-y-0.5 bg-sidebar/50">
-              {col.tags.map(tag => (
-                <TagGroup
-                  key={tag.name}
-                  tag={tag}
-                  collection={col}
-                  onSelect={loadEndpoint}
-                  activeEndpointId={activeEndpoint?.operationId}
-                />
-              ))}
-            </div>
-          )}
+    <div className="flex flex-col gap-2 pb-2">
+      <div className="px-3 mb-1 mt-1">
+        <div className="relative">
+          <Search size={11} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground/50" />
+          <Input
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+            placeholder="Search Active APIs..."
+            className="h-7 pl-8 text-xs bg-muted/20"
+          />
         </div>
-      ))}
+      </div>
+      <div className="space-y-1 px-1">
+        {filteredCollections.map(col => {
+          const isExpanded=expandedCollections.has(col.id)||search.trim().length>0;
+          return (
+            <div key={col.id} className="rounded-lg border border-border/50 overflow-hidden min-w-0">
+              <button
+                onClick={() => toggleCollection(col.id)}
+                className="w-full flex items-start gap-2 px-3 py-2 bg-card hover:bg-accent/30 transition-colors text-sm group cursor-pointer"
+              >
+                {isExpanded? <ChevronDown size={13} className="mt-0.5 shrink-0" />:<ChevronRight size={13} className="mt-0.5 shrink-0" />}
+                <span className="flex-1 text-left break-all text-sidebar-foreground font-semibold text-xs leading-snug min-w-0">
+                  {col.name}
+                </span>
+                <span className="text-[9px] text-muted-foreground/60 bg-muted/60 px-1.5 py-0.5 rounded shrink-0 font-medium mt-px">
+                  {col.serviceType}
+                </span>
+                <span className="text-[9px] text-muted-foreground/40 tabular-nums shrink-0">{col.endpointCount}</span>
+              </button>
+              {isExpanded&&(
+                <div className="px-1 py-1 space-y-0.5 bg-sidebar/50">
+                  {col.tags.map(tag => (
+                    <TagGroup
+                      key={tag.name}
+                      tag={tag}
+                      collection={col}
+                      onSelect={loadEndpoint}
+                      activeEndpointId={activeEndpoint?.operationId}
+                    />
+                  ))}
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
     </div>
   );
 }
