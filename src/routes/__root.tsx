@@ -1,4 +1,5 @@
 import {AppShell} from "@/components/layout/app-shell";
+import {DropZoneProvider} from "@/components/dnd/drop-zone-provider";
 import TanStackQueryProvider from "@/components/root-provider";
 import {Toaster} from "@/components/ui/sonner";
 import type {QueryClient} from "@tanstack/react-query";
@@ -16,7 +17,9 @@ export const Route=createRootRouteWithContext<MyRouterContext>()({
 function RootComponent() {
 	return (
 		<TanStackQueryProvider>
-			<AppShell />
+			<DropZoneProvider>
+				<AppShell />
+			</DropZoneProvider>
 			<Toaster position="top-right" closeButton />
 			<TanStackRouterDevtools />
 		</TanStackQueryProvider>
