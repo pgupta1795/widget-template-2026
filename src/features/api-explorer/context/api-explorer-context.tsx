@@ -1,4 +1,5 @@
 import { getSecurityContext } from '@/services/core/security-context-manager';
+import type { ExtractResult } from '@/lib/dnd/extract-3dx-object';
 import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from 'react';
 import { useActiveSpecs } from '../hooks/use-active-specs';
 import { useBuiltInSpecs } from '../hooks/use-built-in-specs';
@@ -84,6 +85,19 @@ interface ApiExplorerContextType {
   history: HistoryEntry[];
   clearHistory: () => void;
   loadHistoryEntry: (entry: HistoryEntry) => void;
+  onObjectDrop: (result: ExtractResult) => void;
+}
+
+/** Recursively replaces string values of keys containing 'id' (case-insensitive) with the given value. */
+function fillIdFields(obj: Record<string, unknown>, value: string): Record<string, unknown> {
+  return Object.fromEntries(
+    Object.entries(obj).map(([k, v]) => {
+      if (k.toLowerCase().includes('id') && typeof v === 'string') return [k, value];
+      if (typeof v === 'object' && v !== null && !Array.isArray(v))
+        return [k, fillIdFields(v as Record<string, unknown>, value)];
+      return [k, v];
+    }),
+  );
 }
 
 const ApiExplorerContext = createContext<ApiExplorerContextType | null>(null);
@@ -245,6 +259,32 @@ export function ApiExplorerProvider({ children }: { children: ReactNode }) {
     }
   }, [allCollections, loadEndpoint]);
 
+  const onObjectDrop = useCallback((result: ExtractResult) => {
+    const { id } = result;
+    if (!id) return;
+
+    // Fill path params whose key contains 'id' (case-insensitive)
+    setPathParams(prev =>
+      prev.map(p =>
+        p.key.toLowerCase().includes('id') ? { ...p, value: id } : p,
+      ),
+    );
+
+    // Fill body JSON keys containing 'id' (case-insensitive)
+    setBody(prev => {
+      if (!prev.trim()) return prev;
+      try {
+        const parsed = JSON.parse(prev) as unknown;
+        if (typeof parsed === 'object' && parsed !== null && !Array.isArray(parsed)) {
+          return JSON.stringify(fillIdFields(parsed as Record<string, unknown>, id), null, 2);
+        }
+      } catch {
+        // body is not valid JSON — leave as-is
+      }
+      return prev;
+    });
+  }, []);
+
   return (
     <ApiExplorerContext.Provider value={{
       builtInCollections, builtInLoading,
@@ -259,6 +299,7 @@ export function ApiExplorerProvider({ children }: { children: ReactNode }) {
       body, setBody,
       sendRequest, loading: executeMutation.isPending, response,
       history, clearHistory, loadHistoryEntry,
+      onObjectDrop,
     }}>
       {children}
     </ApiExplorerContext.Provider>

@@ -12,7 +12,9 @@ import {
 import {Tabs,TabsContent,TabsList,TabsTrigger} from '@/components/ui/tabs';
 import {Clock,Globe,Layers} from 'lucide-react';
 import {useSidebarSlot} from '@/components/layout/sidebar-slot-context';
-import {ApiExplorerProvider} from '../context/api-explorer-context';
+import {DropZoneOverlay} from '@/components/dnd/drop-zone-overlay';
+import {use3dxDropZone} from '@/hooks/use-3dx-drop-zone';
+import {ApiExplorerProvider, useApiExplorer} from '../context/api-explorer-context';
 import {RequestPanel} from './request/request-panel';
 import {ResponsePanel} from './response/response-panel';
 import {CollectionTree} from './sidebar/collection-tree';
@@ -68,21 +70,34 @@ function ExplorerSidebarContent() {
   );
 }
 
-export function ApiExplorer() {
+function ApiExplorerContent() {
   const { slotEl } = useSidebarSlot();
+  const { onObjectDrop } = useApiExplorer();
+  const { ref, isDragOver } = use3dxDropZone<HTMLDivElement>({ onDrop: onObjectDrop });
 
   return (
-    <ApiExplorerProvider>
+    <>
       {slotEl && createPortal(<ExplorerSidebarContent />, slotEl)}
-      <ResizablePanelGroup orientation="vertical" className="h-full">
-        <ResizablePanel defaultSize={55} minSize={25}>
-          <RequestPanel />
-        </ResizablePanel>
-        <ResizableHandle className="bg-border hover:bg-primary/30 transition-colors data-resize-handle-active:bg-primary/50" />
-        <ResizablePanel defaultSize={45} minSize={20}>
-          <ResponsePanel />
-        </ResizablePanel>
-      </ResizablePanelGroup>
+      <div ref={ref} className="relative h-full">
+        {isDragOver && <DropZoneOverlay />}
+        <ResizablePanelGroup orientation="vertical" className="h-full">
+          <ResizablePanel defaultSize={55} minSize={25}>
+            <RequestPanel />
+          </ResizablePanel>
+          <ResizableHandle className="bg-border hover:bg-primary/30 transition-colors data-resize-handle-active:bg-primary/50" />
+          <ResizablePanel defaultSize={45} minSize={20}>
+            <ResponsePanel />
+          </ResizablePanel>
+        </ResizablePanelGroup>
+      </div>
+    </>
+  );
+}
+
+export function ApiExplorer() {
+  return (
+    <ApiExplorerProvider>
+      <ApiExplorerContent />
     </ApiExplorerProvider>
   );
 }
