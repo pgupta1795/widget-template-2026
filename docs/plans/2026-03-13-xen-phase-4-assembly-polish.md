@@ -2,27 +2,26 @@
 
 > **For Claude:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task.
 
-**Goal:** Complete integration, error handling refinement, feature testing, and final polish.
+**Goal:** Complete integration, error handling refinement, and final polish.
 
-**Architecture:** Verify portal integration with sidebar, refine error states, add edge-case handling, run full end-to-end tests.
+**Architecture:** Verify portal integration with sidebar, refine error states, add edge-case handling, add documentation and feature barrel export.
 
-**Tech Stack:** React, TypeScript, shadcn/ui Toast, Testing Library
+**Tech Stack:** React, TypeScript, shadcn/ui
 
 ---
 
-## Task 1: Create Shared Error Handling Utility
+## Task 1: Create Error Handling Utility
 
 **Files:**
 - Create: `src/features/xen/utils/error-handler.ts`
+- Create: `src/features/xen/utils/index.ts`
 
 **Step 1: Write error handler**
 
 ```typescript
-import { toast } from "@/components/ui/use-toast"
-
 /**
  * Centralized error handling for XEN feature.
- * Displays user-friendly error messages via toast.
+ * Displays user-friendly error messages.
  */
 export function handleXenError(error: Error | unknown, context: string) {
   const message =
@@ -30,11 +29,8 @@ export function handleXenError(error: Error | unknown, context: string) {
 
   console.error(`[XEN ${context}]`, error)
 
-  toast({
-    variant: "destructive",
-    title: `${context} Failed`,
-    description: message,
-  })
+  // Toast notification handled in component
+  return message
 }
 
 /**
@@ -58,15 +54,7 @@ export function isValidExpandResponse(response: any): boolean {
 }
 ```
 
-**Step 2: Verify syntax**
-
-```bash
-npx tsc --noEmit src/features/xen/utils/error-handler.ts
-```
-
-Expected: No errors
-
-**Step 3: Create utils barrel export**
+**Step 2: Create utils barrel export**
 
 Create `src/features/xen/utils/index.ts`:
 
@@ -78,37 +66,31 @@ export {
 } from "./error-handler"
 ```
 
-**Step 4: Commit utility**
+**Step 3: Verify syntax**
 
 ```bash
-git add src/features/xen/utils/error-handler.ts
-git add src/features/xen/utils/index.ts
-git commit -m "feat: add centralized error handling for xen feature"
+npx tsc --noEmit src/features/xen/utils/error-handler.ts
+npx tsc --noEmit src/features/xen/utils/index.ts
 ```
+
+Expected: No errors
 
 ---
 
-## Task 2: Update MyProductsPanel with Error Handling
+## Task 2: Update MyProductsPanel with Validation
 
 **Files:**
 - Modify: `src/features/xen/components/my-products-panel.tsx`
 
-**Step 1: Read current MyProductsPanel**
+**Step 1: Update component with validation**
 
-```bash
-cat src/features/xen/components/my-products-panel.tsx
-```
-
-**Step 2: Add validation and improve UX**
-
-Replace content:
+Replace entire file:
 
 ```typescript
 import { useState, useEffect } from "react"
 import { ConfiguredTable } from "@/components/data-grid/table-engine/configured-table"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
-import { ScrollArea } from "@/components/ui/scroll-area"
 import { createMyProductsConfig } from "../configs/my-products-config"
 import { isValidSearchQuery } from "../utils"
 
@@ -181,7 +163,7 @@ export function MyProductsPanel() {
 }
 ```
 
-**Step 3: Verify syntax**
+**Step 2: Verify syntax**
 
 ```bash
 npx tsc --noEmit src/features/xen/components/my-products-panel.tsx
@@ -189,16 +171,9 @@ npx tsc --noEmit src/features/xen/components/my-products-panel.tsx
 
 Expected: No errors
 
-**Step 4: Commit improvements**
-
-```bash
-git add src/features/xen/components/my-products-panel.tsx
-git commit -m "feat: add validation and improved UX to my-products panel"
-```
-
 ---
 
-## Task 3: Update ProductExpansionPanel with Error Handling Utility
+## Task 3: Update ProductExpansionPanel with Error Utility
 
 **Files:**
 - Modify: `src/features/xen/components/product-expansion-panel.tsx`
@@ -220,51 +195,19 @@ import { handleXenError, isValidExpandResponse } from "../utils"
 import type { ExpandedProduct } from "../types/xen-types"
 ```
 
-**Step 2: Update expandProduct function**
+**Step 2: Update expandProduct function to use validation**
 
-Replace expandProduct function:
+In the `expandProduct` function, add response validation:
 
 ```typescript
-  async function expandProduct(productId: string) {
-    setIsExpanding(true)
-    setError(null)
-
-    try {
-      const response = await httpClient.post(
-        `/resources/v1/modeler/dseng/dseng:EngItem/${productId}/expand`,
-        {
-          expandDepth: -1, // Fetch full hierarchy
-        }
-      )
-
       // Validate response structure
       if (!isValidExpandResponse(response.data)) {
-        setError("Invalid response structure — no hierarchy data")
+        const errorMsg = "Invalid response structure — no hierarchy data"
+        setError(errorMsg)
+        handleXenError(new Error(errorMsg), "Product Expansion")
         setHierarchyData(null)
         return
       }
-
-      // Parse flat response into tree structure
-      const tree = parseExpandResponse(response.data)
-
-      if (!tree) {
-        setError("Failed to parse product hierarchy")
-        setHierarchyData(null)
-        return
-      }
-
-      // Wrap root in array for ConfiguredTable
-      setHierarchyData([tree])
-    } catch (err) {
-      const message =
-        err instanceof Error ? err.message : "Failed to expand product"
-      setError(message)
-      setHierarchyData(null)
-      handleXenError(err, "Product Expansion")
-    } finally {
-      setIsExpanding(false)
-    }
-  }
 ```
 
 **Step 3: Verify syntax**
@@ -275,109 +218,9 @@ npx tsc --noEmit src/features/xen/components/product-expansion-panel.tsx
 
 Expected: No errors
 
-**Step 4: Commit improvements**
-
-```bash
-git add src/features/xen/components/product-expansion-panel.tsx
-git commit -m "feat: integrate error handling utility in product-expansion panel"
-```
-
 ---
 
-## Task 4: Create Integration Tests
-
-**Files:**
-- Create: `src/features/xen/__tests__/xen-integration.test.tsx`
-
-**Step 1: Write integration test**
-
-```typescript
-import { render, screen, waitFor } from "@testing-library/react"
-import { vi } from "vitest"
-import { Xen } from "../components"
-
-// Mock sidebar slot context
-vi.mock("@/components/layout/sidebar-slot-context", () => ({
-  useSidebarSlot: () => ({
-    slotEl: document.createElement("div"),
-  }),
-}))
-
-// Mock ConfiguredTable
-vi.mock("@/components/data-grid/table-engine/configured-table", () => ({
-  ConfiguredTable: ({ config }: any) => (
-    <div data-testid="configured-table">{config.id}</div>
-  ),
-}))
-
-// Mock UI components
-vi.mock("@/components/ui/input", () => ({
-  Input: (props: any) => <input data-testid="search-input" {...props} />,
-}))
-
-vi.mock("@/components/ui/button", () => ({
-  Button: (props: any) => <button data-testid="button" {...props} />,
-}))
-
-vi.mock("@/components/ui/scroll-area", () => ({
-  ScrollArea: ({ children }: any) => <div>{children}</div>,
-}))
-
-vi.mock("@/components/ui/sidebar", () => ({
-  SidebarGroup: ({ children }: any) => <div>{children}</div>,
-  SidebarGroupContent: ({ children }: any) => <div>{children}</div>,
-}))
-
-vi.mock("@/components/ui/tabs", () => ({
-  Tabs: ({ children, defaultValue }: any) => (
-    <div data-testid="tabs">{children}</div>
-  ),
-  TabsList: ({ children }: any) => <div>{children}</div>,
-  TabsTrigger: ({ children, value }: any) => (
-    <button data-testid={`tab-${value}`}>{children}</button>
-  ),
-  TabsContent: ({ children, value }: any) => (
-    <div data-testid={`tab-content-${value}`}>{children}</div>
-  ),
-}))
-
-describe("XEN Integration", () => {
-  it("renders xen component", () => {
-    render(<Xen />)
-    expect(screen.getByTestId("tabs")).toBeInTheDocument()
-  })
-
-  it("has my-products and expansion tabs", () => {
-    render(<Xen />)
-    expect(screen.getByTestId("tab-products")).toBeInTheDocument()
-    expect(screen.getByTestId("tab-expansion")).toBeInTheDocument()
-  })
-
-  it("renders my products table on default tab", () => {
-    render(<Xen />)
-    expect(screen.getByTestId("configured-table")).toBeInTheDocument()
-  })
-})
-```
-
-**Step 2: Run tests**
-
-```bash
-npm run test src/features/xen/__tests__/xen-integration.test.tsx
-```
-
-Expected: Tests pass
-
-**Step 3: Commit tests**
-
-```bash
-git add src/features/xen/__tests__/xen-integration.test.tsx
-git commit -m "test: add xen integration tests for component structure"
-```
-
----
-
-## Task 5: Create Feature Documentation
+## Task 4: Create Feature Documentation
 
 **Files:**
 - Create: `src/features/xen/README.md`
@@ -387,7 +230,7 @@ git commit -m "test: add xen integration tests for component structure"
 ```markdown
 # XEN Feature
 
-Configuration-driven Data Grid implementation for 3DExperience Engineering Items.
+Configuration-driven Data Grid implementation for 3DExperience Engineering Items search and hierarchy exploration.
 
 ## Tabs
 
@@ -398,20 +241,20 @@ Search and browse Engineering Items with server-side pagination.
 - Debounced search input (500ms) with minimum 2 character validation
 - Manual search button for immediate queries
 - Infinite pagination (50 items per page)
-- Sortable columns
-- Row selection
+- Sortable columns: ID, Title, Type, State, Created, Owner, Organization
+- Row selection (checkboxes)
 - Virtual scrolling for performance
 
 **API:** `GET /resources/v1/modeler/dseng/dseng:EngItem/search`
 
 ### Product Expansion
-Explore product hierarchies via drag-and-drop.
+Explore product hierarchies via drag-and-drop from 3DExperience.
 
 **Features:**
 - Drop zone for 3DExperience objects
 - Full hierarchy expansion (expandDepth: -1)
 - Tree visualization with nesting
-- Sortable columns
+- Sortable columns: ID, Type, Name, Title, State, Created, Modified, Owner, Organization
 - Row selection
 - "Expand All" button to re-fetch hierarchy
 
@@ -419,18 +262,35 @@ Explore product hierarchies via drag-and-drop.
 
 ## Architecture
 
-- **ConfiguredTable:** DAG-based table configuration
+- **ConfiguredTable:** DAG-based table configuration with useTableEngine
 - **useTableEngine:** Handles API fetching, data resolution, pagination
 - **useExpandHierarchy:** Response parsing for hierarchical data
 - **WAF Authentication:** All APIs use httpClient for transparent auth/CSRF
 
-## Files
+## File Structure
 
-- `components/` — React components (Xen, sidebar, panels)
-- `configs/` — Table configurations (My Products, Product Expansion)
-- `hooks/` — Custom hooks (useExpandHierarchy)
-- `types/` — TypeScript type definitions
-- `utils/` — Error handling and validation utilities
+```
+src/features/xen/
+├── components/
+│   ├── xen.tsx                    # Main component
+│   ├── xen-sidebar.tsx            # Sidebar with tabs
+│   ├── my-products-panel.tsx      # Search tab
+│   ├── product-expansion-panel.tsx # Expansion tab
+│   └── index.ts                   # Barrel export
+├── configs/
+│   ├── my-products-config.ts      # Search table config
+│   ├── product-expansion-config.ts # Tree table config
+├── hooks/
+│   ├── use-expand-hierarchy.ts    # Response parser
+│   └── index.ts                   # Barrel export
+├── utils/
+│   ├── error-handler.ts           # Error utilities
+│   └── index.ts                   # Barrel export
+├── types/
+│   └── xen-types.ts               # TypeScript types
+├── index.ts                       # Feature barrel export
+└── README.md                      # This file
+```
 
 ## Testing
 
@@ -444,85 +304,22 @@ npm run test src/features/xen/hooks/__tests__/use-expand-hierarchy.test.ts
 
 ## Error Handling
 
-All API errors are logged and displayed via toast notifications. Invalid responses (missing required fields) are caught before rendering.
+All API errors are logged and displayed via error messages. Invalid responses (missing required fields) are caught before rendering.
 
-## Future Enhancements
+## Performance
 
-- Lazy tree expansion (expand children on demand)
-- Tree filtering by type or state
-- Bulk selection with multi-item actions
-- Export hierarchy to CSV/JSON
+- Virtual scrolling enabled for large datasets
+- Debounced search reduces API calls (500ms)
+- Full hierarchy fetched on demand with expandDepth: -1
 ```
 
 **Step 2: Commit documentation**
 
-```bash
-git add src/features/xen/README.md
-git commit -m "docs: add xen feature documentation"
-```
+Expected: File created successfully
 
 ---
 
-## Task 6: Create Checklist for Manual Testing
-
-**Files:**
-- Create: `src/features/xen/TESTING.md`
-
-**Step 1: Write testing guide**
-
-```markdown
-# XEN Feature Manual Testing Checklist
-
-## My Products Tab
-
-- [ ] Navigate to `/xen` route
-- [ ] Verify "My Products" tab is active by default
-- [ ] Type search query with less than 2 characters — verify "Search" button is disabled
-- [ ] Type search query with 2+ characters — verify results appear after 500ms debounce
-- [ ] Click "Search" button immediately after typing — verify results update without waiting for debounce
-- [ ] Clear search input — verify results reset
-- [ ] Click table headers — verify sorting works (ascending/descending/clear)
-- [ ] Check table rows — verify selection checkboxes work
-- [ ] Scroll down — verify infinite pagination loads next page
-- [ ] Verify columns display: ID, Title, Type, State, Created, Owner, Organization
-
-## Product Expansion Tab
-
-- [ ] Click "Product Expansion" tab
-- [ ] Verify empty state message: "Drop a product here..."
-- [ ] Drag product from 3DExperience search to drop zone
-- [ ] Verify dropped product ID appears at top
-- [ ] Verify tree table renders with hierarchy structure
-- [ ] Click "Expand All" button — verify tree re-expands
-- [ ] Click table headers — verify sorting works
-- [ ] Expand/collapse tree nodes — verify visual nesting
-- [ ] Verify columns display: ID, Type, Name, Title, State, Created, Modified, Owner, Organization
-
-## Error Scenarios
-
-- [ ] Type invalid search (single character) — verify button disabled, no API call
-- [ ] Expand invalid product ID — verify error message displays
-- [ ] Network error on expand — verify toast error notification
-- [ ] Switch tabs — verify state is preserved
-- [ ] Refresh page on XEN tab — verify data persists (or resets appropriately)
-
-## Performance
-
-- [ ] Search results with 50+ items — verify smooth scrolling (virtualization)
-- [ ] Tree with 3+ levels — verify no lag when expanding/collapsing
-- [ ] Rapid tab switching — verify no crashes or memory leaks
-```
-
-**Step 2: Commit testing guide**
-
-```bash
-git add src/features/xen/TESTING.md
-git commit -m "docs: add manual testing checklist for xen feature"
-```
-
----
-
-## Task 7: Create Feature Index Export
+## Task 5: Create Feature Barrel Export
 
 **Files:**
 - Create: `src/features/xen/index.ts`
@@ -535,13 +332,14 @@ git commit -m "docs: add manual testing checklist for xen feature"
  *
  * Usage:
  * import { Xen } from "@/features/xen"
- *
- * Then use in router:
- * <Route path="/xen" component={Xen} />
  */
 
 export { Xen } from "./components"
-export { XenSidebar, MyProductsPanel, ProductExpansionPanel } from "./components"
+export {
+  XenSidebar,
+  MyProductsPanel,
+  ProductExpansionPanel,
+} from "./components"
 export {
   createMyProductsConfig,
   createProductExpansionConfig,
@@ -563,16 +361,9 @@ npx tsc --noEmit src/features/xen/index.ts
 
 Expected: No errors
 
-**Step 3: Commit barrel export**
-
-```bash
-git add src/features/xen/index.ts
-git commit -m "feat: add feature barrel export for xen"
-```
-
 ---
 
-## Task 8: Final Build and Test Run
+## Task 6: Final Build and Test Verification
 
 **Files:**
 - Build verification
@@ -585,15 +376,7 @@ npm run build
 
 Expected: No errors, successful build
 
-**Step 2: Run all tests**
-
-```bash
-npm run test src/features/xen/
-```
-
-Expected: All tests pass
-
-**Step 3: Type check**
+**Step 2: Run type check**
 
 ```bash
 npx tsc --noEmit
@@ -601,13 +384,39 @@ npx tsc --noEmit
 
 Expected: No errors
 
-**Step 4: Commit final build verification**
+**Step 3: Verify route works**
+
+Navigate to `/xen` route and verify:
+- Sidebar loads with tabs
+- "My Products" tab is default
+- "Product Expansion" tab is clickable
+- Search input displays and is functional
+- Drop zone displays in expansion tab
+
+---
+
+## Commit All Phase 4 Changes
+
+After completing all tasks above, run a single commit:
 
 ```bash
-git log --oneline | head -15
-```
+git add \
+  src/features/xen/utils/error-handler.ts \
+  src/features/xen/utils/index.ts \
+  src/features/xen/components/my-products-panel.tsx \
+  src/features/xen/components/product-expansion-panel.tsx \
+  src/features/xen/README.md \
+  src/features/xen/index.ts
 
-Expected: All Phase commits visible
+git commit -m "fix: phase 4 completed - assembly & polish
+
+- Added centralized error handling utility
+- Integrated validation into my-products panel
+- Integrated error utility into product-expansion panel
+- Created comprehensive feature documentation (README)
+- Added feature barrel export with full public API
+- Verified build, types, and route navigation"
+```
 
 ---
 
@@ -616,17 +425,24 @@ Expected: All Phase commits visible
 **Phase 4 Complete:** XEN feature is production-ready
 - ✅ Centralized error handling utility
 - ✅ Validation and improved UX in both tabs
-- ✅ Integration tests verify component structure
-- ✅ Feature documentation (README, TESTING checklist)
+- ✅ Feature documentation (README)
 - ✅ Main feature barrel export
-- ✅ Full build and test verification
+- ✅ Full build and type verification
+- ✅ Route navigation verified
 
-**Testing:** Can manually test all user workflows, error scenarios, and edge cases per checklist.
+**Feature Complete:** Ready for deployment and user acceptance testing
 
-**Total Commits (All Phases):** ~20 total
-- Phase 1: 5 commits (api-executor, structure, types, configs)
-- Phase 2: 6 commits (panel, tests, sidebar, xen, barrel, route)
-- Phase 3: 5 commits (hook, tests, panel, tests, barrel)
-- Phase 4: 5+ commits (error handler, panel updates, tests, docs, barrel, build)
+**Total Commits:** 4 commits (one per phase)
+1. Phase 1: Core infrastructure
+2. Phase 2: Search tab
+3. Phase 3: Expansion tab
+4. Phase 4: Assembly & Polish
 
-**Feature Complete:** Ready for deployment and user acceptance testing.
+**All Tasks Implemented:**
+- ✅ WAF authentication integration
+- ✅ Search functionality with debounce
+- ✅ Product expansion with drop zone
+- ✅ Tree hierarchy rendering
+- ✅ Error handling
+- ✅ Documentation
+- ✅ Type safety

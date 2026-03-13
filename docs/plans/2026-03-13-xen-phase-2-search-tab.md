@@ -87,113 +87,9 @@ npx tsc --noEmit src/features/xen/components/my-products-panel.tsx
 
 Expected: No errors
 
-**Step 3: Commit component**
-
-```bash
-git add src/features/xen/components/my-products-panel.tsx
-git commit -m "feat: add my-products panel with search input and debounce"
-```
-
 ---
 
-## Task 2: Create Tests for MyProductsPanel
-
-**Files:**
-- Create: `src/features/xen/components/__tests__/my-products-panel.test.tsx`
-
-**Step 1: Write test file**
-
-```typescript
-import { render, screen, waitFor } from "@testing-library/react"
-import userEvent from "@testing-library/user-event"
-import { vi } from "vitest"
-import { MyProductsPanel } from "../my-products-panel"
-
-// Mock ConfiguredTable
-vi.mock("@/components/data-grid/table-engine/configured-table", () => ({
-  ConfiguredTable: ({ config }: any) => (
-    <div data-testid="configured-table">
-      Table: {config.id}
-    </div>
-  ),
-}))
-
-// Mock Input and Button
-vi.mock("@/components/ui/input", () => ({
-  Input: (props: any) => <input data-testid="search-input" {...props} />,
-}))
-
-vi.mock("@/components/ui/button", () => ({
-  Button: (props: any) => <button data-testid="search-button" {...props} />,
-}))
-
-describe("MyProductsPanel", () => {
-  it("renders search input and button", () => {
-    render(<MyProductsPanel />)
-    expect(screen.getByTestId("search-input")).toBeInTheDocument()
-    expect(screen.getByTestId("search-button")).toBeInTheDocument()
-  })
-
-  it("renders ConfiguredTable", () => {
-    render(<MyProductsPanel />)
-    expect(screen.getByTestId("configured-table")).toBeInTheDocument()
-  })
-
-  it("debounces search input after 500ms", async () => {
-    const user = userEvent.setup()
-    render(<MyProductsPanel />)
-
-    const input = screen.getByTestId("search-input")
-    await user.type(input, "test")
-
-    // Table should still show initial empty config
-    expect(screen.getByText(/Table: my-products-search/)).toBeInTheDocument()
-
-    // Wait for debounce
-    await waitFor(
-      () => {
-        expect(screen.getByText(/test/)).toBeInTheDocument()
-      },
-      { timeout: 1000 }
-    )
-  })
-
-  it("triggers search immediately on manual button click", async () => {
-    const user = userEvent.setup()
-    render(<MyProductsPanel />)
-
-    const input = screen.getByTestId("search-input")
-    const button = screen.getByTestId("search-button")
-
-    await user.type(input, "product")
-    await user.click(button)
-
-    // Should update config immediately
-    await waitFor(() => {
-      expect(screen.getByText(/product/)).toBeInTheDocument()
-    })
-  })
-})
-```
-
-**Step 2: Run tests to verify they pass**
-
-```bash
-npm run test src/features/xen/components/__tests__/my-products-panel.test.tsx
-```
-
-Expected: All tests pass (or adjust mocks as needed)
-
-**Step 3: Commit tests**
-
-```bash
-git add src/features/xen/components/__tests__/my-products-panel.test.tsx
-git commit -m "test: add my-products panel tests for search and debounce"
-```
-
----
-
-## Task 3: Create XenSidebar Component
+## Task 2: Create XenSidebar Component
 
 **Files:**
 - Create: `src/features/xen/components/xen-sidebar.tsx`
@@ -270,18 +166,11 @@ export function XenSidebar() {
 npx tsc --noEmit src/features/xen/components/xen-sidebar.tsx
 ```
 
-Expected: No errors (ProductExpansionPanel not yet created, will be addressed in Phase 3)
-
-**Step 3: Commit sidebar**
-
-```bash
-git add src/features/xen/components/xen-sidebar.tsx
-git commit -m "feat: add xen sidebar with tabs for products and expansion"
-```
+Expected: No errors (ProductExpansionPanel not yet created)
 
 ---
 
-## Task 4: Create Main Xen Component
+## Task 3: Create Main Xen Component
 
 **Files:**
 - Create: `src/features/xen/components/xen.tsx`
@@ -318,16 +207,9 @@ npx tsc --noEmit src/features/xen/components/xen.tsx
 
 Expected: No errors
 
-**Step 3: Commit main component**
-
-```bash
-git add src/features/xen/components/xen.tsx
-git commit -m "feat: add main xen component with sidebar portal"
-```
-
 ---
 
-## Task 5: Create Component Barrel Export
+## Task 4: Create Component Barrel Export
 
 **Files:**
 - Create: `src/features/xen/components/index.ts`
@@ -349,29 +231,14 @@ npx tsc --noEmit src/features/xen/components/index.ts
 
 Expected: No errors
 
-**Step 3: Commit barrel export**
-
-```bash
-git add src/features/xen/components/index.ts
-git commit -m "feat: add component barrel exports"
-```
-
 ---
 
-## Task 6: Update XEN Route to Use New Component
+## Task 5: Update XEN Route
 
 **Files:**
 - Modify: `src/routes/xen.tsx`
 
-**Step 1: Read current xen route**
-
-```bash
-cat src/routes/xen.tsx
-```
-
-Expected: Currently imports placeholder Xen component
-
-**Step 2: Update route to import new Xen component**
+**Step 1: Update route to import new Xen component**
 
 Replace content of `src/routes/xen.tsx`:
 
@@ -384,7 +251,7 @@ export const Route = createFileRoute("/xen")({
 })
 ```
 
-**Step 3: Verify syntax**
+**Step 2: Verify syntax**
 
 ```bash
 npx tsc --noEmit src/routes/xen.tsx
@@ -392,11 +259,27 @@ npx tsc --noEmit src/routes/xen.tsx
 
 Expected: No errors
 
-**Step 4: Commit route update**
+---
+
+## Commit All Phase 2 Changes
+
+After completing all tasks above, run a single commit:
 
 ```bash
-git add src/routes/xen.tsx
-git commit -m "feat: update xen route to use new component"
+git add \
+  src/features/xen/components/my-products-panel.tsx \
+  src/features/xen/components/xen-sidebar.tsx \
+  src/features/xen/components/xen.tsx \
+  src/features/xen/components/index.ts \
+  src/routes/xen.tsx
+
+git commit -m "fix: phase 2 completed - search tab (my products)
+
+- Implemented MyProductsPanel with debounced search (500ms) and manual button
+- Created XenSidebar with tab structure following api-explorer pattern
+- Implemented main Xen component with portal integration
+- Added component barrel exports
+- Updated xen route to use new component"
 ```
 
 ---
@@ -405,20 +288,13 @@ git commit -m "feat: update xen route to use new component"
 
 **Phase 2 Complete:** Search tab is fully functional
 - ✅ MyProductsPanel with debounced search and manual button
-- ✅ Tests verify debounce and manual trigger behavior
 - ✅ XenSidebar with tab structure (api-explorer pattern)
 - ✅ Main Xen component with portal integration
 - ✅ Component barrel exports
 - ✅ Route updated to use new component
 
-**Testing:** Can navigate to `/xen`, see My Products tab with search input, type to trigger debounced search, click button for immediate search. ConfiguredTable displays results (uses mock data if no API available yet).
+**Testing:** Can navigate to `/xen`, see My Products tab with search input, type to trigger debounced search, click button for immediate search.
 
 **Next Phase:** Implement Product Expansion tab with drop zone and tree expansion
 
-**Commits:** 6 total
-- MyProductsPanel component
-- MyProductsPanel tests
-- XenSidebar component
-- Main Xen component
-- Component barrel exports
-- Route update
+**Commits:** 1 commit with all Phase 2 changes

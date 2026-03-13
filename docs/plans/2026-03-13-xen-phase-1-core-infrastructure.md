@@ -100,13 +100,6 @@ Run: `npm run build 2>&1 | grep -E "(error|warning)" | head -20`
 
 Expected: No errors related to api-executor
 
-**Step 5: Commit api-executor enhancement**
-
-```bash
-git add src/components/data-grid/table-engine/api-executor.ts
-git commit -m "feat: integrate WAF httpClient into table engine api-executor for authenticated requests"
-```
-
 ---
 
 ## Task 2: Create XEN Feature Directory Structure
@@ -138,13 +131,6 @@ components/
 configs/
 hooks/
 types/
-```
-
-**Step 3: Commit directory structure**
-
-```bash
-git add src/features/xen/
-git commit -m "feat: create xen feature directory structure"
 ```
 
 ---
@@ -216,13 +202,6 @@ ls -la src/features/xen/types/xen-types.ts
 ```
 
 Expected: File exists
-
-**Step 3: Commit types**
-
-```bash
-git add src/features/xen/types/xen-types.ts
-git commit -m "feat: add shared types for xen feature"
-```
 
 ---
 
@@ -333,13 +312,6 @@ npx tsc --noEmit src/features/xen/configs/my-products-config.ts
 ```
 
 Expected: No errors
-
-**Step 3: Commit config**
-
-```bash
-git add src/features/xen/configs/my-products-config.ts
-git commit -m "feat: add my-products search config factory"
-```
 
 ---
 
@@ -454,11 +426,26 @@ npx tsc --noEmit src/features/xen/configs/product-expansion-config.ts
 
 Expected: No errors
 
-**Step 3: Commit config**
+---
+
+## Commit All Phase 1 Changes
+
+After completing all tasks above, run a single commit:
 
 ```bash
-git add src/features/xen/configs/product-expansion-config.ts
-git commit -m "feat: add product-expansion tree config"
+git add \
+  src/components/data-grid/table-engine/api-executor.ts \
+  src/features/xen/types/xen-types.ts \
+  src/features/xen/configs/my-products-config.ts \
+  src/features/xen/configs/product-expansion-config.ts
+
+git commit -m "fix: phase 1 completed - core infrastructure
+
+- Integrated WAF httpClient into api-executor for authenticated requests
+- Created xen feature directory structure
+- Added shared EngItem, ExpandedProduct, and ExpandResponse types
+- Implemented my-products search config factory with infinite pagination
+- Implemented product-expansion tree config factory"
 ```
 
 ---
@@ -473,9 +460,4 @@ git commit -m "feat: add product-expansion tree config"
 
 **Next Phase:** Implement search tab components and hooks
 
-**Commits:** 5 total
-- api-executor WAF integration
-- Directory structure
-- Shared types
-- My Products config
-- Product Expansion config
+**Commits:** 1 commit with all Phase 1 changes

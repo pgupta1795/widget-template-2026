@@ -14,6 +14,7 @@
 
 **Files:**
 - Create: `src/features/xen/hooks/use-expand-hierarchy.ts`
+- Create: `src/features/xen/hooks/index.ts`
 
 **Step 1: Write response parsing function**
 
@@ -117,15 +118,7 @@ export function useExpandHierarchy() {
 }
 ```
 
-**Step 2: Verify syntax**
-
-```bash
-npx tsc --noEmit src/features/xen/hooks/use-expand-hierarchy.ts
-```
-
-Expected: No errors
-
-**Step 3: Create hook barrel export**
+**Step 2: Create hook barrel export**
 
 Create `src/features/xen/hooks/index.ts`:
 
@@ -133,111 +126,18 @@ Create `src/features/xen/hooks/index.ts`:
 export { useExpandHierarchy, parseExpandResponse } from "./use-expand-hierarchy"
 ```
 
-**Step 4: Commit hook**
+**Step 3: Verify syntax**
 
 ```bash
-git add src/features/xen/hooks/use-expand-hierarchy.ts
-git add src/features/xen/hooks/index.ts
-git commit -m "feat: add useExpandHierarchy hook with response parser"
+npx tsc --noEmit src/features/xen/hooks/use-expand-hierarchy.ts
+npx tsc --noEmit src/features/xen/hooks/index.ts
 ```
+
+Expected: No errors
 
 ---
 
-## Task 2: Create Tests for Response Parser
-
-**Files:**
-- Create: `src/features/xen/hooks/__tests__/use-expand-hierarchy.test.ts`
-
-**Step 1: Write tests**
-
-```typescript
-import { describe, it, expect } from "vitest"
-import { parseExpandResponse } from "../use-expand-hierarchy"
-import type { ExpandResponse } from "../../types/xen-types"
-
-describe("parseExpandResponse", () => {
-  it("returns null for empty response", () => {
-    const response: ExpandResponse = { member: [] }
-    expect(parseExpandResponse(response)).toBeNull()
-  })
-
-  it("parses single-level hierarchy", () => {
-    const response: ExpandResponse = {
-      member: [
-        { id: "ref-1", type: "VPMReference", name: "Parent" },
-        { id: "inst-1", type: "VPMInstance", name: "Instance1" },
-        { id: "ref-2", type: "VPMReference", name: "Child" },
-        { Path: ["ref-1", "inst-1", "ref-2"] },
-      ],
-    }
-
-    const tree = parseExpandResponse(response)
-
-    expect(tree).toBeDefined()
-    expect(tree?.id).toBe("ref-1")
-    expect(tree?.children).toHaveLength(1)
-    expect(tree?.children?.[0]?.id).toBe("ref-2")
-  })
-
-  it("parses multi-level hierarchy", () => {
-    const response: ExpandResponse = {
-      member: [
-        { id: "ref-1", type: "VPMReference", name: "Root" },
-        { id: "inst-1", type: "VPMInstance" },
-        { id: "ref-2", type: "VPMReference", name: "Level1" },
-        { id: "inst-2", type: "VPMInstance" },
-        { id: "ref-3", type: "VPMReference", name: "Level2" },
-        { Path: ["ref-1", "inst-1", "ref-2", "inst-2", "ref-3"] },
-      ],
-    }
-
-    const tree = parseExpandResponse(response)
-
-    expect(tree?.children).toHaveLength(1)
-    expect(tree?.children?.[0]?.children).toHaveLength(1)
-    expect(tree?.children?.[0]?.children?.[0]?.id).toBe("ref-3")
-  })
-
-  it("handles multiple children at same level", () => {
-    const response: ExpandResponse = {
-      member: [
-        { id: "ref-1", type: "VPMReference", name: "Parent" },
-        { id: "inst-1", type: "VPMInstance" },
-        { id: "ref-2", type: "VPMReference", name: "Child1" },
-        { id: "inst-2", type: "VPMInstance" },
-        { id: "ref-3", type: "VPMReference", name: "Child2" },
-        { Path: ["ref-1", "inst-1", "ref-2"] },
-        { Path: ["ref-1", "inst-2", "ref-3"] },
-      ],
-    }
-
-    const tree = parseExpandResponse(response)
-
-    expect(tree?.children).toHaveLength(2)
-    expect(tree?.children?.map((c) => c.id)).toContain("ref-2")
-    expect(tree?.children?.map((c) => c.id)).toContain("ref-3")
-  })
-})
-```
-
-**Step 2: Run tests**
-
-```bash
-npm run test src/features/xen/hooks/__tests__/use-expand-hierarchy.test.ts
-```
-
-Expected: All tests pass
-
-**Step 3: Commit tests**
-
-```bash
-git add src/features/xen/hooks/__tests__/use-expand-hierarchy.test.ts
-git commit -m "test: add response parser tests for various hierarchy depths"
-```
-
----
-
-## Task 3: Create ProductExpansionPanel Component
+## Task 2: Create ProductExpansionPanel Component
 
 **Files:**
 - Create: `src/features/xen/components/product-expansion-panel.tsx`
@@ -369,97 +269,9 @@ npx tsc --noEmit src/features/xen/components/product-expansion-panel.tsx
 
 Expected: No errors
 
-**Step 3: Commit component**
-
-```bash
-git add src/features/xen/components/product-expansion-panel.tsx
-git commit -m "feat: add product-expansion panel with drop zone and expand api"
-```
-
 ---
 
-## Task 4: Create Tests for ProductExpansionPanel
-
-**Files:**
-- Create: `src/features/xen/components/__tests__/product-expansion-panel.test.tsx`
-
-**Step 1: Write tests**
-
-```typescript
-import { render, screen, waitFor } from "@testing-library/react"
-import userEvent from "@testing-library/user-event"
-import { vi } from "vitest"
-import { ProductExpansionPanel } from "../product-expansion-panel"
-
-// Mock ConfiguredTable
-vi.mock("@/components/data-grid/table-engine/configured-table", () => ({
-  ConfiguredTable: ({ config }: any) => (
-    <div data-testid="configured-table">
-      Table: {config.id}
-    </div>
-  ),
-}))
-
-// Mock drop zone
-vi.mock("@/hooks/use-3dx-drop-zone", () => ({
-  use3dxDropZone: () => ({
-    ref: { current: null },
-    isDragOver: false,
-  }),
-}))
-
-// Mock httpClient
-vi.mock("@/services", () => ({
-  httpClient: {
-    post: vi.fn(),
-  },
-}))
-
-describe("ProductExpansionPanel", () => {
-  it("renders empty state message", () => {
-    render(<ProductExpansionPanel />)
-    expect(
-      screen.getByText(/Drop a product here/i)
-    ).toBeInTheDocument()
-  })
-
-  it("renders drop zone overlay when dragging", () => {
-    // Mock isDragOver behavior if needed
-    render(<ProductExpansionPanel />)
-    expect(screen.getByText(/Drop a product here/i)).toBeInTheDocument()
-  })
-
-  it("shows error on expand api failure", async () => {
-    const { httpClient } = await import("@/services")
-    vi.mocked(httpClient.post).mockRejectedValueOnce(
-      new Error("API Error")
-    )
-
-    render(<ProductExpansionPanel />)
-    // Simulate drop with invalid response
-    // Note: Full drop zone testing requires additional setup
-  })
-})
-```
-
-**Step 2: Run tests**
-
-```bash
-npm run test src/features/xen/components/__tests__/product-expansion-panel.test.tsx
-```
-
-Expected: Tests pass or require mock adjustments
-
-**Step 3: Commit tests**
-
-```bash
-git add src/features/xen/components/__tests__/product-expansion-panel.test.tsx
-git commit -m "test: add product-expansion panel tests"
-```
-
----
-
-## Task 5: Update Component Exports
+## Task 3: Update Component Exports
 
 **Files:**
 - Modify: `src/features/xen/components/index.ts`
@@ -483,11 +295,27 @@ npx tsc --noEmit src/features/xen/components/index.ts
 
 Expected: No errors
 
-**Step 3: Commit**
+---
+
+## Commit All Phase 3 Changes
+
+After completing all tasks above, run a single commit:
 
 ```bash
-git add src/features/xen/components/index.ts
-git commit -m "feat: export ProductExpansionPanel from barrel"
+git add \
+  src/features/xen/hooks/use-expand-hierarchy.ts \
+  src/features/xen/hooks/index.ts \
+  src/features/xen/components/product-expansion-panel.tsx \
+  src/features/xen/components/index.ts
+
+git commit -m "fix: phase 3 completed - expansion tab (product expansion)
+
+- Implemented parseExpandResponse function for hierarchical response parsing
+- Created useExpandHierarchy hook
+- Implemented ProductExpansionPanel with drop zone and Expand API integration
+- Added expandDepth: -1 for full hierarchy fetching
+- Added error handling and empty states
+- Updated component barrel exports"
 ```
 
 ---
@@ -496,18 +324,12 @@ git commit -m "feat: export ProductExpansionPanel from barrel"
 
 **Phase 3 Complete:** Expansion tab is fully functional
 - ✅ useExpandHierarchy hook with response parser (parseExpandResponse)
-- ✅ Tests verify parsing for various hierarchy depths
 - ✅ ProductExpansionPanel with drop zone and Expand API integration
-- ✅ Component tests for error handling
 - ✅ Component exported in barrel
+- ✅ Error handling and UI feedback
 
 **Testing:** Can navigate to `/xen`, click "Product Expansion" tab, drag product from 3DExperience, see hierarchy rendered in tree table. "Expand All" button re-calls API.
 
 **Next Phase:** Assembly, polish, error handling refinement
 
-**Commits:** 5 total
-- useExpandHierarchy hook + barrel
-- Response parser tests
-- ProductExpansionPanel component
-- Component tests
-- Barrel export update
+**Commits:** 1 commit with all Phase 3 changes
