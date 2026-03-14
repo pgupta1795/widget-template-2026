@@ -97,7 +97,7 @@ function DataGridBody() {
   } = useDataGridContext()
 
   React.useEffect(() => {
-    if (mode !== "infinite") return
+    if (!fetchNextPage) return
     const container = tableContainerRef.current
     if (!container) return
 
@@ -114,7 +114,7 @@ function DataGridBody() {
 
     container.addEventListener("scroll", handleScroll)
     return () => container.removeEventListener("scroll", handleScroll)
-  }, [mode, hasNextPage, isFetchingNextPage, fetchNextPage, tableContainerRef])
+  }, [hasNextPage, isFetchingNextPage, fetchNextPage, tableContainerRef])
 
   const isVirtualized = features?.virtualization?.enabled ?? false
   const isTreeMode = mode === "tree"
@@ -341,6 +341,10 @@ export interface DataGridProps<TData extends GridRow> {
   isFetchingNextPage?: boolean
   /** Indicates if data is currently loading */
   isLoading?: boolean
+  /** For infinite mode: whether more pages are available to load. */
+  hasNextPage?: boolean
+  /** For infinite mode: callback to fetch the next page of data. */
+  fetchNextPage?: () => Promise<unknown> | void
   /** Callback fired when the user clicks the refresh button. */
   onRefresh?: () => void
   /**

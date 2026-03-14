@@ -90,6 +90,10 @@ export interface DataGridConfig<TData extends GridRow> {
   isFetchingNextPage?: boolean
   /** Indicates if data is currently loading */
   isLoading?: boolean
+  /** For infinite mode: whether more pages are available. Used with flat mode when data is pre-paginated. */
+  hasNextPage?: boolean
+  /** For infinite mode: callback to fetch next page. Used with flat mode when data is pre-paginated. */
+  fetchNextPage?: () => Promise<unknown> | void
   /** Action handler for the toolbar refresh button */
   onRefresh?: () => void
   /** Required QueryKey for query-driven modes (paginated, infinite) */
@@ -467,8 +471,10 @@ export function useDataGrid<TData extends GridRow>(
       setPagination,
       paginatedTotal: paginatedQuery.data?.total,
       // Infinite
-      hasNextPage: infiniteQuery.hasNextPage,
-      fetchNextPage: infiniteQuery.fetchNextPage,
+      // Use prop values if provided (for pre-paginated data from ConfiguredTable),
+      // otherwise use infiniteQuery values
+      hasNextPage: config.hasNextPage ?? infiniteQuery.hasNextPage,
+      fetchNextPage: config.fetchNextPage ?? infiniteQuery.fetchNextPage,
     }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [
@@ -501,6 +507,8 @@ export function useDataGrid<TData extends GridRow>(
       pagination,
       setPagination,
       paginatedQuery.data?.total,
+      config.hasNextPage,
+      config.fetchNextPage,
       orderingHook.columnOrder,
       columnPinningHook.columnPinning,
       groupingHook.grouping,
