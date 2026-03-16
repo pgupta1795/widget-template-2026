@@ -23,3 +23,9 @@ export {
 	DEFAULT_ADD_ROW,
 	TOOLBAR_DEFAULTS,
 } from "./toolbar-defaults";
+
+// Renderers
+export { ToolbarRenderer } from './toolbar-renderer'
+export { CommandButton } from './command-button'
+export { CommandMenu } from './command-menu'
+export { CommandSearch } from './command-search'
