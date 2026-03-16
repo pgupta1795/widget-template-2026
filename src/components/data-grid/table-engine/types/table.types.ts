@@ -80,6 +80,10 @@ export interface ColumnDef {
 	hidden?: boolean;
 	selectOptions?: SelectOption[];
 	depthRules?: DepthRule[];
+	/** Tailwind CSS classes for the column header */
+	classNameHeader?: string;
+	/** Tailwind CSS classes for the column cells */
+	classNameCell?: string;
 }
 
 export interface ColumnNodeConfig {

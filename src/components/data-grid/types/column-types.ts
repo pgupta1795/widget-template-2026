@@ -35,6 +35,9 @@ export interface ColumnMeta {
   maxLines?: number
   saveOnBlur?: boolean
   renderEditor?: (props: EditorProps) => React.ReactNode
+  renderType?: 'badge' | 'boolean' | 'date' | 'code' | 'custom'
+  classNameHeader?: string
+  classNameCell?: string
   [key: string]: unknown
 }
 

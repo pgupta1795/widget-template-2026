@@ -75,6 +75,8 @@ export const engSearchConfig: DAGTableConfig = {
 							field: "state",
 							header: "State",
 							renderType: "badge",
+							classNameCell: "text-sm text-red-600",
+							classNameHeader: "font-bold",
 						},
 						{ field: "owner", header: "Owner" },
 						{ field: "organization", header: "Organization" },

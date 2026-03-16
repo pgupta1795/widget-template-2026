@@ -2,6 +2,7 @@ import type {
   ColumnMeta,
   GridColumnDef,
 } from "@/components/data-grid/types/column-types"
+import { cn } from "@/components/data-grid/utils/grid-utils"
 import { formatDate } from "@/components/data-grid/utils/formatters"
 import { CalendarIcon } from "lucide-react"
 
@@ -39,9 +40,15 @@ export function dateColumn(options: DateColumnOptions): GridColumnDef {
     ...rest
   } = options
 
+  const classNameHeader = extraMeta?.classNameHeader as string | undefined
+
   return {
     accessorKey,
-    header,
+    header: classNameHeader
+      ? ({ column }) => (
+          <div className={classNameHeader}>{header}</div>
+        )
+      : header,
     size: width ?? 160,
     meta: {
       type: "date",
@@ -49,12 +56,14 @@ export function dateColumn(options: DateColumnOptions): GridColumnDef {
       dateFormat,
       ...extraMeta,
     },
-    cell: ({ getValue }) => {
+    cell: ({ getValue, column }) => {
       const value = getValue<Date | string | number | null>()
       if (!value) return null
+      const meta = column.columnDef.meta as any
+      const classNameCell = meta?.classNameCell as string | undefined
       const display = formatDate(value, dateFormat)
       return (
-        <div className="-mx-1.5 flex items-center gap-1.5 rounded bg-orange-500/5 px-1.5">
+        <div className={cn("-mx-1.5 flex items-center gap-1.5 rounded bg-orange-500/5 px-1.5", classNameCell)}>
           <CalendarIcon className="h-3.5 w-3.5 shrink-0 text-orange-400" />
           <span className="text-sm">{display}</span>
         </div>

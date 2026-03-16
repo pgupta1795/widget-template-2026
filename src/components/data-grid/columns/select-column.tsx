@@ -51,9 +51,15 @@ export function selectColumn(options: SelectColumnOptions): GridColumnDef {
     ...rest
   } = options
 
+  const classNameHeader = extraMeta?.classNameHeader as string | undefined
+
   return {
     accessorKey,
-    header,
+    header: classNameHeader
+      ? ({ column }) => (
+          <div className={classNameHeader}>{header}</div>
+        )
+      : header,
     size: width ?? 140,
     meta: {
       type: "select",
@@ -61,16 +67,18 @@ export function selectColumn(options: SelectColumnOptions): GridColumnDef {
       options: selectOptions,
       ...extraMeta,
     },
-    cell: ({ getValue }) => {
+    cell: ({ getValue, column }) => {
       const value = getValue<string>()
       if (!value) return null
+      const meta = column.columnDef.meta as any
+      const classNameCell = meta?.classNameCell as string | undefined
       const opt = selectOptions.find((o) => o.value === value)
       const label = opt?.label ?? value
       const colorClass = opt?.color ?? DEFAULT_COLORS[value] ?? ""
       return (
         <Badge
           variant="outline"
-          className={cn("text-xs font-medium capitalize", colorClass)}
+          className={cn("text-xs font-medium capitalize", colorClass, classNameCell)}
         >
           {label}
         </Badge>

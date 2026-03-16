@@ -76,9 +76,15 @@ export function codeColumn(options: CodeColumnOptions): GridColumnDef {
     ...rest
   } = options
 
+  const classNameHeader = extraMeta?.classNameHeader as string | undefined
+
   return {
     accessorKey,
-    header,
+    header: classNameHeader
+      ? ({ column }) => (
+          <div className={classNameHeader}>{header}</div>
+        )
+      : header,
     size: width ?? 220,
     filterFn: "includesString",
     meta: {
@@ -89,9 +95,12 @@ export function codeColumn(options: CodeColumnOptions): GridColumnDef {
       maxLines,
       ...extraMeta,
     },
-    cell: ({ getValue }) => {
+    cell: ({ getValue, column }) => {
       const raw = getValue<string>() ?? ""
       if (!raw) return null
+
+      const meta = column.columnDef.meta as any
+      const classNameCell = meta?.classNameCell as string | undefined
 
       const lines = raw.split("\n")
       const isTruncated = lines.length > maxLines
@@ -100,7 +109,7 @@ export function codeColumn(options: CodeColumnOptions): GridColumnDef {
         : raw
 
       const codeBlock = (
-        <div className="flex min-w-0 items-center">
+        <div className={cn("flex min-w-0 items-center", classNameCell)}>
           <code
             className={cn(
               "max-w-full truncate rounded bg-muted/40 px-1.5 py-0.5 font-mono text-[12px]"

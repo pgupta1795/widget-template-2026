@@ -1,6 +1,8 @@
 import type { ColumnMeta, GridColumnDef } from '@/components/data-grid/types/column-types'
+import { Badge } from '@/components/ui/badge'
 import { Copy, Check } from 'lucide-react'
 import { useState } from 'react'
+import { cn } from '@/components/data-grid/utils/grid-utils'
 
 interface StringColumnOptions {
   accessorKey: string
@@ -51,9 +53,15 @@ function CopyButton({ value }: { value: string }) {
 export function stringColumn(options: StringColumnOptions): GridColumnDef {
   const { accessorKey, header, editable, copyable, width, minWidth, meta: extraMeta, ...rest } = options
 
+  const classNameHeader = extraMeta?.classNameHeader as string | undefined
+
   return {
     accessorKey,
-    header,
+    header: classNameHeader
+      ? ({ column }) => (
+          <div className={classNameHeader}>{header}</div>
+        )
+      : header,
     size: width ?? 200,
     minSize: minWidth ?? 80,
     filterFn: 'includesString',
@@ -63,10 +71,25 @@ export function stringColumn(options: StringColumnOptions): GridColumnDef {
       copyable: copyable ?? false,
       ...extraMeta,
     },
-    cell: ({ getValue }) => {
+    cell: ({ getValue, column }) => {
       const value = getValue<string>() ?? ''
+      const meta = column.columnDef.meta as ColumnMeta | undefined
+      const isRenderingBadge = meta?.renderType === 'badge'
+      const classNameCell = meta?.classNameCell as string | undefined
+
+      if (isRenderingBadge) {
+        return (
+          <Badge
+            variant="outline"
+            className={cn('text-xs font-medium capitalize', classNameCell)}
+          >
+            {value}
+          </Badge>
+        )
+      }
+
       return (
-        <div className="flex items-center group truncate">
+        <div className={cn('flex items-center group truncate', classNameCell)}>
           <span className="truncate">{value}</span>
           {copyable && value && <CopyButton value={value} />}
         </div>

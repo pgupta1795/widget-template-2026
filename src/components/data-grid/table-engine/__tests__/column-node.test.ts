@@ -76,4 +76,48 @@ describe("ColumnNodeExecutor", () => {
 		expect(result.columns).toHaveLength(3);
 		expect(result.visibility).toEqual({ c: false });
 	});
+
+	it("renderType is included in column meta", async () => {
+		const config: ColumnNodeConfig = {
+			columns: [{ field: "state", header: "State", type: "string", renderType: "badge" }],
+		};
+		const result = await executor.execute(config, ctx, []);
+		expect(result.columns[0].meta?.renderType).toBe("badge");
+	});
+
+	it("classNameHeader is included in column meta", async () => {
+		const config: ColumnNodeConfig = {
+			columns: [{ field: "name", header: "Name", classNameHeader: "font-bold text-blue-600" }],
+		};
+		const result = await executor.execute(config, ctx, []);
+		expect(result.columns[0].meta?.classNameHeader).toBe("font-bold text-blue-600");
+	});
+
+	it("classNameCell is included in column meta", async () => {
+		const config: ColumnNodeConfig = {
+			columns: [{ field: "name", header: "Name", classNameCell: "text-sm italic" }],
+		};
+		const result = await executor.execute(config, ctx, []);
+		expect(result.columns[0].meta?.classNameCell).toBe("text-sm italic");
+	});
+
+	it("string column with renderType:badge has badge rendering meta", async () => {
+		const config: ColumnNodeConfig = {
+			columns: [
+				{
+					field: "state",
+					header: "State",
+					type: "string",
+					renderType: "badge",
+					classNameCell: "text-xs",
+				},
+			],
+		};
+		const result = await executor.execute(config, ctx, []);
+		const col = result.columns[0];
+		expect(col.meta?.renderType).toBe("badge");
+		expect(col.meta?.classNameCell).toBe("text-xs");
+		// Verify cell renderer is a function (stringColumn creates it)
+		expect(typeof col.cell).toBe("function");
+	});
 });

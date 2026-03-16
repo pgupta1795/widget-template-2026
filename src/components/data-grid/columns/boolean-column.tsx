@@ -47,9 +47,15 @@ export function booleanColumn(options: BooleanColumnOptions): GridColumnDef {
     ...rest
   } = options
 
+  const classNameHeader = extraMeta?.classNameHeader as string | undefined
+
   return {
     accessorKey,
-    header,
+    header: classNameHeader
+      ? ({ column }) => (
+          <div className={classNameHeader}>{header}</div>
+        )
+      : header,
     size: width ?? 100,
     enableSorting: true,
     meta: {
@@ -60,12 +66,14 @@ export function booleanColumn(options: BooleanColumnOptions): GridColumnDef {
       renderAs,
       ...extraMeta,
     },
-    cell: ({ getValue }) => {
+    cell: ({ getValue, column }) => {
       const value = Boolean(getValue())
+      const meta = column.columnDef.meta as any
+      const classNameCell = meta?.classNameCell as string | undefined
 
       if (renderAs === "checkbox") {
         return (
-          <div className="pointer-events-none flex justify-center">
+          <div className={cn("pointer-events-none flex justify-center", classNameCell)}>
             <Checkbox
               checked={value}
               disabled
@@ -76,13 +84,17 @@ export function booleanColumn(options: BooleanColumnOptions): GridColumnDef {
       }
 
       if (renderAs === "icon") {
-        return value ? (
-          <Check className="h-4 w-4 text-emerald-500" aria-label={trueLabel} />
-        ) : (
-          <X
-            className="h-4 w-4 text-muted-foreground"
-            aria-label={falseLabel}
-          />
+        return (
+          <div className={cn("flex justify-center", classNameCell)}>
+            {value ? (
+              <Check className="h-4 w-4 text-emerald-500" aria-label={trueLabel} />
+            ) : (
+              <X
+                className="h-4 w-4 text-muted-foreground"
+                aria-label={falseLabel}
+              />
+            )}
+          </div>
         )
       }
 
@@ -94,7 +106,8 @@ export function booleanColumn(options: BooleanColumnOptions): GridColumnDef {
             "text-xs font-medium",
             value
               ? "border-emerald-200 bg-emerald-500/10 text-emerald-700 dark:border-emerald-800 dark:text-emerald-400"
-              : "text-muted-foreground"
+              : "text-muted-foreground",
+            classNameCell
           )}
         >
           {value ? trueLabel : falseLabel}

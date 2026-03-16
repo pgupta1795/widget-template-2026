@@ -84,6 +84,9 @@ export class ColumnNodeExecutor implements INodeExecutor<"column"> {
 				...editableFnMeta,
 				...(def.pinned ? { pinned: def.pinned } : {}),
 				...(def.selectOptions ? { options: def.selectOptions } : {}),
+				...(def.renderType ? { renderType: def.renderType } : {}),
+				...(def.classNameHeader ? { classNameHeader: def.classNameHeader } : {}),
+				...(def.classNameCell ? { classNameCell: def.classNameCell } : {}),
 			};
 
 			const factory = getFactory(def.type);

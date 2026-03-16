@@ -2,6 +2,7 @@ import type {
   ColumnMeta,
   GridColumnDef,
 } from "@/components/data-grid/types/column-types"
+import { cn } from "@/components/data-grid/utils/grid-utils"
 import { formatNumber } from "@/components/data-grid/utils/formatters"
 
 interface NumberColumnOptions {
@@ -44,9 +45,15 @@ export function numberColumn(options: NumberColumnOptions): GridColumnDef {
     ...rest
   } = options
 
+  const classNameHeader = extraMeta?.classNameHeader as string | undefined
+
   return {
     accessorKey,
-    header,
+    header: classNameHeader
+      ? ({ column }) => (
+          <div className={classNameHeader}>{header}</div>
+        )
+      : header,
     size: width ?? 120,
     enableSorting: true,
     meta: {
@@ -57,13 +64,19 @@ export function numberColumn(options: NumberColumnOptions): GridColumnDef {
       locale,
       ...extraMeta,
     },
-    cell: ({ getValue }) => {
+    cell: ({ getValue, column }) => {
       const value = getValue<number>()
       if (value === null || value === undefined) return null
+      const meta = column.columnDef.meta as any
+      const classNameCell = meta?.classNameCell as string | undefined
       const display = format
         ? formatNumber(value, format, locale, currency)
         : String(value)
-      return <div className="text-right font-mono tabular-nums">{display}</div>
+      return (
+        <div className={cn("text-right font-mono tabular-nums", classNameCell)}>
+          {display}
+        </div>
+      )
     },
     ...rest,
   } as GridColumnDef

@@ -3,7 +3,7 @@ import type {
   GridColumnDef,
   SelectOption,
 } from "@/components/data-grid/types/column-types"
-import { toArray } from "@/components/data-grid/utils/grid-utils"
+import { cn, toArray } from "@/components/data-grid/utils/grid-utils"
 import { Badge } from "@/components/ui/badge"
 
 interface MultiValueColumnOptions {
@@ -45,9 +45,15 @@ export function multiValueColumn(
     ...rest
   } = options
 
+  const classNameHeader = extraMeta?.classNameHeader as string | undefined
+
   return {
     accessorKey,
-    header,
+    header: classNameHeader
+      ? ({ column }) => (
+          <div className={classNameHeader}>{header}</div>
+        )
+      : header,
     size: width ?? 240,
     meta: {
       type: "multi-value",
@@ -56,13 +62,15 @@ export function multiValueColumn(
       maxVisible,
       ...extraMeta,
     },
-    cell: ({ getValue }) => {
+    cell: ({ getValue, column }) => {
       const values = toArray<string>(getValue<string | string[] | null>())
       if (!values.length) return null
+      const meta = column.columnDef.meta as any
+      const classNameCell = meta?.classNameCell as string | undefined
       const visible = values.slice(0, maxVisible)
       const remaining = values.length - visible.length
       return (
-        <div className="flex flex-wrap items-center gap-1">
+        <div className={cn("flex flex-wrap items-center gap-1", classNameCell)}>
           {visible.map((v, i) => (
             <Badge
               key={i}
