@@ -1,4 +1,5 @@
 import type { DataGridContextValue } from "@/components/data-grid/data-grid-context"
+import type { ToolbarCommand } from "@/components/data-grid/toolbar/toolbar.types"
 import { useEditing } from "@/components/data-grid/features/editing/use-editing"
 import { filterFnForType } from "@/components/data-grid/features/filtering/filter-functions"
 import { useFiltering } from "@/components/data-grid/features/filtering/use-filtering"
@@ -96,6 +97,17 @@ export interface DataGridConfig<TData extends GridRow> {
   fetchNextPage?: () => Promise<unknown> | void
   /** Action handler for the toolbar refresh button */
   onRefresh?: () => void
+  /** Toolbar command definitions. undefined = no toolbar rendered. */
+  toolbarCommands?: ToolbarCommand[]
+  /** CSS classes for the toolbar bar element */
+  toolbarClassName?: string
+  /**
+   * Fires a DAG ActionDef by id. Signature matches useDAGTable's onAction return.
+   * At toolbar level row is always undefined.
+   */
+  onAction?: (actionId: string, row?: GridRow) => Promise<void>
+  /** Server-side search callback. Wired by ConfiguredTable to update searchParams state. */
+  onSearch?: (paramName: string, query: string) => void
   /** Required QueryKey for query-driven modes (paginated, infinite) */
   queryKey?: QueryKey
   /** Data fetching query function for server modes */
@@ -141,8 +153,17 @@ export function useDataGrid<TData extends GridRow>(
     isFetchingNextPage: externalIsFetchingNextPage = false,
     isLoading: externalIsLoading = false,
     onRefresh,
+    toolbarCommands,
+    toolbarClassName,
+    onAction,
+    onSearch,
     initialColumnVisibility,
   } = config
+
+  const executeApiNode = React.useCallback(
+    (actionId: string) => onAction?.(actionId, undefined) ?? Promise.resolve(),
+    [onAction],
+  )
 
   const [density, setDensity] = React.useState<GridDensity>(initialDensity)
   const [columnVisibility, setColumnVisibility] = React.useState<
@@ -454,6 +475,10 @@ export function useDataGrid<TData extends GridRow>(
       mode,
       slots,
       onRefresh,
+      toolbarCommands,
+      toolbarClassName,
+      executeApiNode,
+      onSearch,
       handleExpand: handleExpand as (
         row: import("@tanstack/react-table").Row<GridRow>
       ) => Promise<void>,
@@ -494,6 +519,10 @@ export function useDataGrid<TData extends GridRow>(
       features,
       slots,
       onRefresh,
+      toolbarCommands,
+      toolbarClassName,
+      executeApiNode,
+      onSearch,
       handleExpand,
       loadingRowIds,
       rowVirtualizer,

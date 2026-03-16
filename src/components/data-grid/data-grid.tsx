@@ -1,6 +1,7 @@
 import { Table, TableBody, TableCell, TableRow } from "@/components/ui/table"
 import type { InfiniteQueryFn, PaginatedQueryFn } from "@/components/data-grid/hooks/use-data-grid"
 import { useDataGrid } from "@/components/data-grid/hooks/use-data-grid"
+import type { ToolbarCommand } from "@/components/data-grid/toolbar/toolbar.types"
 import { cn } from "@/lib/utils"
 import type { GridSlots } from "@/components/data-grid/types"
 import type { GridColumnDef } from "@/components/data-grid/types/column-types"
@@ -230,7 +231,7 @@ function DataGridBody() {
 }
 
 function DataGridInner() {
-  const { table, isLoading, features, slots, tableContainerRef, mode } =
+  const { table, isLoading, features, tableContainerRef, mode } =
     useDataGridContext()
 
   const skeletonRows = features?.loading?.skeletonRows ?? 8
@@ -272,7 +273,7 @@ function DataGridInner() {
 
   return (
     <div className="flex min-h-0 flex-1 flex-col">
-      {slots?.toolbar ? slots.toolbar({ table }) : <DataGridToolbar />}
+      <DataGridToolbar />
 
       <div
         ref={tableContainerRef}
@@ -352,6 +353,25 @@ export interface DataGridProps<TData extends GridRow> {
    * Produced by the table engine — no need to set manually when using ConfiguredTable.
    */
   initialColumnVisibility?: Record<string, boolean>
+  /**
+   * Toolbar command definitions.
+   * - undefined: no toolbar bar rendered
+   * - []: empty toolbar bar (height preserved)
+   * - [...]: render only enabled:true commands
+   */
+  toolbarCommands?: ToolbarCommand[]
+  /** CSS classes merged onto the toolbar bar element only (not SelectionActionBar) */
+  toolbarClassName?: string
+  /**
+   * Fires a DAG ActionDef by id. Provided by ConfiguredTable from useDAGTable.
+   * Toolbar handlers call ctx.executeApiNode(actionId) which wraps this.
+   */
+  onAction?: (actionId: string, row?: GridRow) => Promise<void>
+  /**
+   * Server-side search callback. Called by search commands when apiNodeId is set.
+   * Signature: (paramName, query) — paramName defaults to 'q'.
+   */
+  onSearch?: (paramName: string, query: string) => void
 }
 
 /**

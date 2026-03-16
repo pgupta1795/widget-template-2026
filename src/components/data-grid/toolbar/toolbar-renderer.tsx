@@ -33,13 +33,6 @@ import { CommandMenu } from './command-menu'
 import { CommandSearch } from './command-search'
 import type { ToolbarCommand, ToolbarContext } from './toolbar.types'
 
-// Phase 3 will add executeApiNode and onSearch to DataGridContextValue.
-// Until then, access them safely via this type cast to avoid compile errors.
-type FutureContext = {
-  executeApiNode?: (id: string) => Promise<void>
-  onSearch?: (paramName: string, query: string) => void
-}
-
 // ─── Built-in: Column Visibility ─────────────────────────────────────────────
 
 const BuiltInColumnVisibility = memo(function BuiltInColumnVisibility({
@@ -307,7 +300,6 @@ export const ToolbarRenderer = memo(function ToolbarRenderer({
   commands,
   className,
 }: ToolbarRendererProps) {
-  // Destructure fields available in Phase 2
   const {
     table,
     globalFilter,
@@ -315,17 +307,13 @@ export const ToolbarRenderer = memo(function ToolbarRenderer({
     density,
     setDensity,
     isRefetching,
+    executeApiNode,
     onRefresh,
     handleExpand,
+    onSearch,
     mode,
     features,
   } = useDataGridContext()
-
-  // executeApiNode and onSearch are added to context in Phase 3.
-  // Access them via a safe type cast so this file compiles in Phase 2 too.
-  const futureCtx = useDataGridContext() as ReturnType<typeof useDataGridContext> & FutureContext
-  const executeApiNode = futureCtx.executeApiNode ?? ((_id: string) => Promise.resolve())
-  const onSearch = futureCtx.onSearch
 
   const ctx = useMemo<ToolbarContext>(
     () => ({

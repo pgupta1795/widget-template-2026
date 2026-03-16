@@ -1,4 +1,5 @@
 import type { ActiveEdit } from "@/components/data-grid/features/editing/use-editing"
+import type { ToolbarCommand } from "@/components/data-grid/toolbar/toolbar.types"
 import type {
   ColVirtualizerInstance,
   RowVirtualizerInstance,
@@ -27,6 +28,13 @@ export interface DataGridContextValue {
   mode?: GridMode
   slots?: GridSlots
   onRefresh?: () => void
+  // Toolbar
+  toolbarCommands?: ToolbarCommand[]
+  toolbarClassName?: string
+  /** Fires a DAG action by id. No-op when DataGrid is standalone (no onAction prop). */
+  executeApiNode: (actionId: string) => Promise<void>
+  /** Server-side search relay. Undefined when DataGrid has no onSearch prop wired. */
+  onSearch?: (paramName: string, query: string) => void
   // Tree features
   handleExpand: (row: Row<GridRow>) => Promise<void>
   loadingRowIds: Set<string>

@@ -39,7 +39,6 @@ export type {
 } from './sort-types'
 
 export type {
-  ToolbarSlotProps,
   GridSlots,
 } from './slot-types'
 
