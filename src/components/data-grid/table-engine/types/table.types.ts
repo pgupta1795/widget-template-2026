@@ -16,6 +16,7 @@ import type {
 	DAGValidationError,
 } from "../core/dag-validator";
 import type { DAGConfig, JsonataExpr, JsonValue } from "./dag.types";
+import type { SerializableToolbarCommand } from "@/components/data-grid/toolbar/toolbar.types";
 
 // Re-export for consumers of table.types
 export type { GridRow, GridColumnDef, ColumnType, SelectOption };
@@ -145,13 +146,11 @@ export interface ActionDef {
 
 export interface ActionNodeConfig {
 	rowActions?: ActionDef[];
-	toolbarActions?: ActionDef[];
 	cellActions?: ActionDef[];
 }
 
 export interface ActionOutput {
 	rowActions: ActionDef[];
-	toolbarActions: ActionDef[];
 	cellActions: ActionDef[];
 }
 
@@ -182,6 +181,12 @@ export interface DAGTableConfig {
 	dag: DAGConfig;
 	features?: DAGFeaturesConfig;
 	density?: GridDensity;
+	/**
+	 * Toolbar commands for this table.
+	 * Use action: 'apiNodeId' to wire to a DAG API node.
+	 * Consumer toolbarCommands on ConfiguredTable are merged on top (consumer wins on matching id).
+	 */
+	toolbarCommands?: SerializableToolbarCommand[];
 }
 
 // ── Hook result ───────────────────────────────────────────────────────────────
