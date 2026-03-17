@@ -1,5 +1,5 @@
 // src/components/data-grid/toolbar/merge-toolbar-commands.ts
-import type { ToolbarCommand } from "./toolbar.types";
+import type { SerializableToolbarCommand } from "./toolbar.types";
 
 /**
  * Merges override commands into a base command list.
@@ -11,9 +11,9 @@ import type { ToolbarCommand } from "./toolbar.types";
  * 4. undefined or empty overrides: returns base copy unchanged.
  */
 export function mergeToolbarCommands(
-	base: ToolbarCommand[],
-	overrides?: ToolbarCommand[],
-): ToolbarCommand[] {
+	base: SerializableToolbarCommand[] = [],
+	overrides?: SerializableToolbarCommand[],
+): SerializableToolbarCommand[] {
 	if (!overrides || overrides.length === 0) return [...base];
 
 	const result = [...base];
