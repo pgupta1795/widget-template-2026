@@ -208,4 +208,5 @@ export interface DAGTableResult {
 	fetchNextPage?: () => void;
 	onExpand?: (row: GridRow) => Promise<GridRow[]>;
 	onAction?: (actionId: string, row?: GridRow) => Promise<void>;
+	executeNode: (nodeId: string) => Promise<void>;
 }

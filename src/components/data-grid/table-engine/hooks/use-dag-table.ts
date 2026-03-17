@@ -156,8 +156,35 @@ export function useDAGTable(
 		return expandOutput.expandHandler;
 	}, [dag.nodes, mode, flatQuery.data]);
 
-	// ── onAction handler ─────────────────────────────────────────────────────
+	// ── executeNode handler ──────────────────────────────────────────────────
 	const queryClient = useQueryClient();
+
+	const executeNode = useCallback(
+		async (nodeId: string) => {
+			const ctx = ctxRef.current;
+			if (!ctx) return;
+
+			// Find the lazy ApiNode by nodeId
+			const lazyApiNode = config.dag.nodes.find(
+				(n) => n.id === nodeId && n.type === "api",
+			);
+			if (!lazyApiNode) return;
+
+			// Execute the lazy ApiNode without row context
+			const apiExecutor = new ApiNodeExecutor(engine.getAuthRegistry());
+			await apiExecutor.execute(
+				lazyApiNode.config as import("../types/table.types").ApiNodeConfig,
+				ctx,
+				config.dag.nodes,
+			);
+
+			// Invalidate query cache to trigger re-fetch
+			await queryClient.invalidateQueries({ queryKey: [config.tableId] });
+		},
+		[config, engine, queryClient],
+	);
+
+	// ── onAction handler ─────────────────────────────────────────────────────
 
 	const onAction = useCallback(
 		async (actionId: string, row?: GridRow) => {
@@ -171,7 +198,6 @@ export function useDAGTable(
 			const actionOutput = ctx.get(actionNode.id, "action");
 			const allActions = [
 				...actionOutput.rowActions,
-				...actionOutput.toolbarActions,
 				...actionOutput.cellActions,
 			];
 			const actionDef = allActions.find((a) => a.id === actionId);
@@ -226,5 +252,6 @@ export function useDAGTable(
 			mode === "infinite" ? infiniteQuery.fetchNextPage : undefined,
 		onExpand,
 		onAction,
+		executeNode,
 	};
 }
