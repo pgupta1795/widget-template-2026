@@ -6,7 +6,7 @@ import { useCallback, useMemo, useState } from 'react'
 import { createDefaultEngine } from './bootstrap'
 import { useDAGTable } from './hooks/use-dag-table'
 import type { JsonPrimitive } from './types/dag.types'
-import type { ActionDef, DAGTableConfig } from './types/table.types'
+import type { DAGTableConfig } from './types/table.types'
 
 export interface ConfiguredTableProps {
   config: DAGTableConfig
@@ -20,26 +20,6 @@ export interface ConfiguredTableProps {
   toolbarCommands?: ToolbarCommand[]
   /** CSS classes for the toolbar bar element */
   toolbarClassName?: string
-}
-
-/**
- * Converts a DAG ActionDef to a ToolbarCommand.
- * Icon is a string in DAG config — resolved to a Lucide component at render time.
- */
-function actionDefToToolbarCommand(
-  action: ActionDef,
-  onAction: (actionId: string) => Promise<void>,
-): ToolbarCommand {
-  return {
-    id: action.id,
-    type: 'command',
-    enabled: true,
-    label: action.label,
-    // String icon — resolveLucideIcon handles the lookup at render time in ToolbarRenderer.
-    // We store the string here (JSON-serializable, works with DAG config).
-    icon: action.icon,
-    handler: async () => onAction(action.id),
-  }
 }
 
 /**
@@ -88,6 +68,7 @@ export function ConfiguredTable({
     fetchNextPage,
     onExpand,
     onAction,
+    executeNode,
   } = useDAGTable(
     config,
     engine,
@@ -95,23 +76,14 @@ export function ConfiguredTable({
     { ...params, ...searchParams },
   )
 
-  // Convert DAG toolbarActions → ToolbarCommand[]
-  // onAction is stable (useCallback in useDAGTable), so this memo re-runs only on config change
-  const dagToolbarCommands = useMemo<ToolbarCommand[]>(() => {
-    const actionNode = config.dag.nodes.find((n) => n.type === 'action')
-    if (!actionNode || actionNode.type !== 'action') return []
-    const toolbarActions: ActionDef[] = actionNode.config.toolbarActions ?? []
-    return toolbarActions.map((action) =>
-      actionDefToToolbarCommand(action, (id) =>
-        onAction ? onAction(id) : Promise.resolve(),
-      ),
-    )
-  }, [config.dag.nodes, onAction])
-
-  // Merge DAG commands with consumer overrides (consumer wins on matching id)
+  // Merge DAG toolbar commands with consumer overrides (consumer wins on matching id)
   const mergedToolbarCommands = useMemo(
-    () => mergeToolbarCommands(dagToolbarCommands, consumerToolbarCommands),
-    [dagToolbarCommands, consumerToolbarCommands],
+    () =>
+      mergeToolbarCommands(
+        config.toolbarCommands ?? [],
+        consumerToolbarCommands ?? [],
+      ),
+    [config.toolbarCommands, consumerToolbarCommands],
   )
 
   // Strip engine-only feature fields before passing to DataGrid
@@ -161,6 +133,7 @@ export function ConfiguredTable({
       }
       toolbarClassName={toolbarClassName}
       onAction={onAction}
+      onExecuteNode={executeNode}
       onSearch={handleSearch}
     />
   )
