@@ -8,21 +8,17 @@ import type {
 	GridRow,
 } from "@/components/data-grid/types/grid-types";
 
-export type ToolbarCommandType =
-	| "command"
-	| "menu"
-	| "search"
-	| "spacer"
-	| "separator";
-export type ToolbarAlign = "left" | "right";
+// ── Shared base ───────────────────────────────────────────────────────────────
 
-export interface ToolbarCommand {
+export interface ToolbarCommandBase {
 	id: string;
-	type: ToolbarCommandType;
-	/** Default: false — must explicitly set true to render */
+	/**
+	 * When absent or false, the command is not rendered.
+	 * Must be explicitly set to true to opt in.
+	 */
 	enabled?: boolean;
 	/** Default: 'left' */
-	align?: ToolbarAlign;
+	align?: "left" | "right";
 	label?: string;
 	/**
 	 * React component reference OR lucide icon name string.
@@ -31,37 +27,95 @@ export interface ToolbarCommand {
 	icon?: ComponentType<{ className?: string }> | string;
 	/** Applied to the button/trigger/input element */
 	className?: string;
-	/** Static disabled state */
 	disabled?: boolean;
+}
 
-	// ── type: 'command' ──────────────────────────────────────────────────────
+// ── Command ───────────────────────────────────────────────────────────────────
+
+export interface CommandToolbarCommand extends ToolbarCommandBase {
+	type: "command";
+	/**
+	 * Direct DAG API node ID. Fires ctx.executeApiNode(action) when clicked.
+	 * No-op in standalone DataGrid — use handler instead for programmatic use.
+	 */
+	action?: string;
+	/**
+	 * Full custom handler. Takes precedence over action when both present.
+	 * Receives full ToolbarContext — table, rows, columns, all state.
+	 */
 	handler?: (
 		ctx: ToolbarContext,
 		params?: Record<string, unknown>,
 	) => Promise<void>;
-	/** Static params passed as second argument to handler */
+	/** Static params passed as second argument to handler. Ignored when only action is set. */
 	handlerParams?: Record<string, unknown>;
+}
 
-	// ── type: 'menu' ─────────────────────────────────────────────────────────
-	/** Flat list of sub-commands — NO nesting within sub-commands (1 level max) */
-	commands?: ToolbarCommand[];
-	/** Applied to DropdownMenuContent element */
+// ── Menu ──────────────────────────────────────────────────────────────────────
+
+export interface MenuToolbarCommand extends ToolbarCommandBase {
+	type: "menu";
+	/** Sub-items are CommandToolbarCommands — support action and handler. 1 level max. */
+	commands: CommandToolbarCommand[];
 	menuClassName?: string;
+}
 
-	// ── type: 'search' ───────────────────────────────────────────────────────
+// ── Search ────────────────────────────────────────────────────────────────────
+
+export interface SearchToolbarCommand extends ToolbarCommandBase {
+	type: "search";
 	/**
-	 * When set: server-side search via ctx.onSearch(queryParamName, value).
-	 * When omitted: client-side filter via ctx.setGlobalFilter(value).
+	 * When set → server-side mode: ctx.onSearch(queryParamName, value) on debounce.
+	 * When omitted → client-side mode: ctx.setGlobalFilter(value) on debounce.
 	 */
-	apiNodeId?: string;
-	/** Query param key sent to onSearch. Default: 'q' */
+	action?: string;
+	/** Query param key passed to onSearch. Default: 'q' */
 	queryParamName?: string;
 	/** Debounce delay in ms. Default: 300 */
 	debounceMs?: number;
 	placeholder?: string;
-	/** Applied to the Input element */
 	inputClassName?: string;
 }
+
+// ── Layout primitives — intentionally do NOT extend ToolbarCommandBase ────────
+
+/** Flexible spacer — pushes subsequent items to the right */
+export interface SpacerToolbarCommand {
+	id: string;
+	type: "spacer";
+	enabled?: boolean;
+}
+
+/** Visual divider between commands */
+export interface SeparatorToolbarCommand {
+	id: string;
+	type: "separator";
+	enabled?: boolean;
+}
+
+// ── Union ─────────────────────────────────────────────────────────────────────
+
+export type ToolbarCommand =
+	| CommandToolbarCommand
+	| MenuToolbarCommand
+	| SearchToolbarCommand
+	| SpacerToolbarCommand
+	| SeparatorToolbarCommand;
+
+/**
+ * Config-safe subset — handler and handlerParams omitted (not JSON-serializable).
+ * Use this type in DAGTableConfig.toolbarCommands.
+ */
+export type SerializableToolbarCommand =
+	| Omit<CommandToolbarCommand, "handler" | "handlerParams">
+	| (Omit<MenuToolbarCommand, "commands"> & {
+			commands: Omit<CommandToolbarCommand, "handler" | "handlerParams">[];
+	  })
+	| SearchToolbarCommand
+	| SpacerToolbarCommand
+	| SeparatorToolbarCommand;
+
+// ── ToolbarContext ─────────────────────────────────────────────────────────────
 
 export interface ToolbarContext {
 	/** Full TanStack Table instance — all state, sorting, filtering, visibility */
@@ -82,10 +136,11 @@ export interface ToolbarContext {
 	isRefetching: boolean;
 
 	/**
-	 * Execute a DAG ActionDef by its id. No-op when DataGrid is standalone.
-	 * Maps to onAction(actionId, undefined) — no row context at toolbar level.
+	 * Fires a DAG API node directly by nodeId (bypasses ActionNode).
+	 * In ConfiguredTable: wired to useDAGTable's executeNode(nodeId).
+	 * In standalone DataGrid: no-op (use handler for programmatic logic instead).
 	 */
-	executeApiNode: (actionId: string) => Promise<void>;
+	executeApiNode: (nodeId: string) => Promise<void>;
 
 	/** Trigger a data refetch (maps to onRefresh prop) */
 	refetch?: () => void;
@@ -96,7 +151,7 @@ export interface ToolbarContext {
 	collapseAll?: () => void;
 
 	/**
-	 * Server-side search relay. Called by command-search when apiNodeId is set.
+	 * Server-side search relay. Called by SearchToolbarCommand when action is set.
 	 * paramName = command.queryParamName ?? 'q'
 	 * ConfiguredTable wires this to update its searchParams state.
 	 */
