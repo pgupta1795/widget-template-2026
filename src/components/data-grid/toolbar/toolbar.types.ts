@@ -103,14 +103,37 @@ export type ToolbarCommand =
 	| SeparatorToolbarCommand;
 
 /**
+ * Extracts the union of all type discriminants from ToolbarCommand.
+ * Useful for type-narrowing dispatches or route-based rendering.
+ */
+export type ToolbarCommandType = ToolbarCommand["type"];
+
+/**
+ * Alignment position for toolbar commands.
+ */
+export type ToolbarAlign = "left" | "right";
+
+/**
  * Config-safe subset — handler and handlerParams omitted (not JSON-serializable).
  * Use this type in DAGTableConfig.toolbarCommands.
  */
+
+// Define serializable variants inline for clarity and maintainability
+export type SerializableCommandToolbarCommand = Omit<
+	CommandToolbarCommand,
+	"handler" | "handlerParams"
+>;
+
+export type SerializableMenuToolbarCommand = Omit<
+	MenuToolbarCommand,
+	"commands"
+> & {
+	commands: SerializableCommandToolbarCommand[];
+};
+
 export type SerializableToolbarCommand =
-	| Omit<CommandToolbarCommand, "handler" | "handlerParams">
-	| (Omit<MenuToolbarCommand, "commands"> & {
-			commands: Omit<CommandToolbarCommand, "handler" | "handlerParams">[];
-	  })
+	| SerializableCommandToolbarCommand
+	| SerializableMenuToolbarCommand
 	| SearchToolbarCommand
 	| SpacerToolbarCommand
 	| SeparatorToolbarCommand;
