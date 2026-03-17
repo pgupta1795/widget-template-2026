@@ -65,7 +65,9 @@ describe("mergeToolbarCommands", () => {
 				inputClassName: "old-class",
 			},
 		];
-		const overrides: SerializableToolbarCommand[] = [{ id: "search", type: "search" }];
+		const overrides: SerializableToolbarCommand[] = [
+			{ id: "search", type: "search" },
+		];
 		const result = mergeToolbarCommands(base, overrides);
 		// All base fields except id/type are gone — the override object is used wholesale
 		expect((result[0] as any).enabled).toBeUndefined();
@@ -110,13 +112,23 @@ describe("mergeToolbarCommands", () => {
 
 	it("merges SerializableToolbarCommand base with consumer overrides (mixed types)", () => {
 		const base: SerializableToolbarCommand[] = [
-			{ id: "refresh", type: "command", label: "Refresh", action: "api-refresh" },
+			{
+				id: "refresh",
+				type: "command",
+				label: "Refresh",
+				action: "api-refresh",
+			},
 			{ id: "search", type: "search", placeholder: "Search..." },
 			{ id: "spacer-1", type: "spacer" },
 		];
 
 		const consumer: SerializableToolbarCommand[] = [
-			{ id: "refresh", type: "command", label: "Custom Refresh", action: "api-custom-refresh" },
+			{
+				id: "refresh",
+				type: "command",
+				label: "Custom Refresh",
+				action: "api-custom-refresh",
+			},
 			{ id: "delete", type: "command", label: "Delete" },
 		];
 

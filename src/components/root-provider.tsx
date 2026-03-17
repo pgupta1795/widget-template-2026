@@ -1,5 +1,5 @@
-import {QueryClient,QueryClientProvider} from "@tanstack/react-query";
-import type {ReactNode} from "react";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import type { ReactNode } from "react";
 
 let context: { queryClient: QueryClient } | undefined;
 
@@ -8,9 +8,9 @@ export function getContext() {
 	const queryClient = new QueryClient({
 		defaultOptions: {
 			queries: {
-				refetchOnWindowFocus:false,
+				refetchOnWindowFocus: false,
 				// retry:false,
-				refetchOnMount:false,
+				refetchOnMount: false,
 				// refetchOnReconnect:false
 			},
 		},

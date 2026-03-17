@@ -1,5 +1,5 @@
 // src/features/xen/configs/eng-expand.config.ts
-import type {DAGTableConfig} from "@/components/data-grid/table-engine";
+import type { DAGTableConfig } from "@/components/data-grid/table-engine";
 
 /**
  * Engineering Item expand tree config.
@@ -61,7 +61,7 @@ export const engExpandConfig: DAGTableConfig = {
 					responseTransform: EXPAND_RESPONSE_TRANSFORM,
 					headers: {
 						"Content-Type": "application/json",
-						"Accept": "application/json",
+						Accept: "application/json",
 					},
 				},
 			},
@@ -122,7 +122,26 @@ export const engExpandConfig: DAGTableConfig = {
 					responseTransform: EXPAND_RESPONSE_TRANSFORM,
 					headers: {
 						"Content-Type": "application/json",
-						"Accept": "application/json",
+						Accept: "application/json",
+					},
+				},
+			},
+
+			// ─── Toolbar action nodes ─────────────────────────────────────────────
+
+			{
+				id: "expand-all-api",
+				type: "api",
+				config: {
+					// Expand all nodes in the tree recursively
+					url: '$:"/resources/v1/modeler/dseng/dseng:EngItem/" & $params.nodeId & "/expand"',
+					method: "POST",
+					authAdapterId: "wafdata",
+					body: { expandDepth: 10, withPath: true },
+					responseTransform: EXPAND_RESPONSE_TRANSFORM,
+					headers: {
+						"Content-Type": "application/json",
+						Accept: "application/json",
 					},
 				},
 			},
@@ -143,4 +162,15 @@ export const engExpandConfig: DAGTableConfig = {
 		columnVisibility: { enabled: true },
 		selection: { enabled: true, mode: "multi" },
 	},
+
+	toolbarCommands: [
+		{
+			id: "expand-all",
+			type: "command",
+			action: "expand-all-api",
+			enabled: true,
+			label: "Expand All",
+			icon: "ChevronDownSquare",
+		},
+	],
 };

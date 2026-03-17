@@ -1,14 +1,14 @@
-import type {DSPlatformAPIs} from "@/lib/types";
-import {RouterProvider} from "@tanstack/react-router";
-import ReactDOM,{type Root} from "react-dom/client";
+import type { DSPlatformAPIs } from "@/lib/types";
+import { RouterProvider } from "@tanstack/react-router";
+import ReactDOM, { type Root } from "react-dom/client";
 import "./index.css";
-import {logger} from "./lib/logger";
-import {loadModules} from "./lib/modules/loader";
-import {getModule} from "./lib/modules/registry";
-import {init} from "./lib/widget/api";
-import {WidgetProvider} from "./lib/widget/context";
-import {getRouter} from "./router";
-import {initSecurityContext} from "./services/core/security-context-manager";
+import { logger } from "./lib/logger";
+import { loadModules } from "./lib/modules/loader";
+import { getModule } from "./lib/modules/registry";
+import { init } from "./lib/widget/api";
+import { WidgetProvider } from "./lib/widget/context";
+import { getRouter } from "./router";
+import { initSecurityContext } from "./services/core/security-context-manager";
 
 const waitFor = (predicate: () => boolean, timeout: number) => {
 	return new Promise<boolean>((resolve, reject) => {

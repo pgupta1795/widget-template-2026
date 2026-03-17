@@ -54,10 +54,10 @@ export default defineConfig({
 		port: 3999,
 	},
 	test: {
-		environment: 'jsdom',
+		environment: "jsdom",
 		globals: true,
 		setupFiles: [],
-		include: ['src/**/*.test.ts', 'src/**/*.test.tsx'],
+		include: ["src/**/*.test.ts", "src/**/*.test.tsx"],
 	},
 	build: {
 		emptyOutDir: true,

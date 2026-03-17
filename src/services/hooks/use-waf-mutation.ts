@@ -1,6 +1,11 @@
-import {httpClient} from '@/services/http/client';
-import type {HttpMethod,RequestOptions,ServiceError,ServiceResponse} from '@/services/types';
-import {useMutation,type UseMutationResult} from '@tanstack/react-query';
+import { httpClient } from "@/services/http/client";
+import type {
+	HttpMethod,
+	RequestOptions,
+	ServiceError,
+	ServiceResponse,
+} from "@/services/types";
+import { useMutation, type UseMutationResult } from "@tanstack/react-query";
 
 /**
  * Reactive mutation hook for 3DEXPERIENCE (WAFData) services.
@@ -134,12 +139,12 @@ import {useMutation,type UseMutationResult} from '@tanstack/react-query';
  * ```
  */
 export function useWafMutation<TData = unknown, TBody = unknown>(
-  method: Exclude<HttpMethod, 'GET'>,
-  url: string,
-  opts: RequestOptions = {},
+	method: Exclude<HttpMethod, "GET">,
+	url: string,
+	opts: RequestOptions = {},
 ): UseMutationResult<ServiceResponse<TData>, ServiceError, TBody> {
-  return useMutation<ServiceResponse<TData>, ServiceError, TBody>({
-    mutationFn: (body: TBody) =>
-      httpClient.execute<TData>(method, url, { ...opts, data: body as any }),
-  });
+	return useMutation<ServiceResponse<TData>, ServiceError, TBody>({
+		mutationFn: (body: TBody) =>
+			httpClient.execute<TData>(method, url, { ...opts, data: body as any }),
+	});
 }

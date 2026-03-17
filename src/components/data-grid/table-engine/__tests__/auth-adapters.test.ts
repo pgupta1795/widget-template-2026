@@ -63,7 +63,9 @@ describe("WAFDataAuthAdapter", () => {
 			"/api",
 			expect.objectContaining({
 				data: '{"key":"val"}',
-				headers: expect.objectContaining({ "Content-Type": "application/json" }),
+				headers: expect.objectContaining({
+					"Content-Type": "application/json",
+				}),
 			}),
 		);
 	});

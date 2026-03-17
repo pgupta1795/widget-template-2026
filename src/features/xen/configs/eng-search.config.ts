@@ -1,5 +1,5 @@
 // src/features/xen/configs/eng-search.config.ts
-import type {DAGTableConfig} from "@/components/data-grid/table-engine";
+import type { DAGTableConfig } from "@/components/data-grid/table-engine";
 
 /**
  * Engineering Item search table config.
@@ -37,7 +37,7 @@ export const engSearchConfig: DAGTableConfig = {
 					},
 					headers: {
 						"Content-Type": "application/json",
-						"Accept": "application/json",
+						Accept: "application/json",
 					},
 					responseTransform: `
             member.{

@@ -1,20 +1,20 @@
 import type {
-  ColumnMeta,
-  GridColumnDef,
-} from "@/components/data-grid/types/column-types"
-import { cn } from "@/components/data-grid/utils/grid-utils"
-import { formatNumber } from "@/components/data-grid/utils/formatters"
+	ColumnMeta,
+	GridColumnDef,
+} from "@/components/data-grid/types/column-types";
+import { cn } from "@/components/data-grid/utils/grid-utils";
+import { formatNumber } from "@/components/data-grid/utils/formatters";
 
 interface NumberColumnOptions {
-  accessorKey: string
-  header: string
-  editable?: boolean
-  format?: "currency" | "percent" | "decimal"
-  currency?: string
-  locale?: string
-  width?: number
-  meta?: Partial<ColumnMeta>
-  [key: string]: unknown
+	accessorKey: string;
+	header: string;
+	editable?: boolean;
+	format?: "currency" | "percent" | "decimal";
+	currency?: string;
+	locale?: string;
+	width?: number;
+	meta?: Partial<ColumnMeta>;
+	[key: string]: unknown;
 }
 
 /**
@@ -33,51 +33,49 @@ interface NumberColumnOptions {
  * numberColumn({ accessorKey: 'price', header: 'Price', format: 'currency', currency: 'USD' })
  */
 export function numberColumn(options: NumberColumnOptions): GridColumnDef {
-  const {
-    accessorKey,
-    header,
-    editable,
-    format,
-    currency,
-    locale,
-    width,
-    meta: extraMeta,
-    ...rest
-  } = options
+	const {
+		accessorKey,
+		header,
+		editable,
+		format,
+		currency,
+		locale,
+		width,
+		meta: extraMeta,
+		...rest
+	} = options;
 
-  const classNameHeader = extraMeta?.classNameHeader as string | undefined
+	const classNameHeader = extraMeta?.classNameHeader as string | undefined;
 
-  return {
-    accessorKey,
-    header: classNameHeader
-      ? ({ column }) => (
-          <div className={classNameHeader}>{header}</div>
-        )
-      : header,
-    size: width ?? 120,
-    enableSorting: true,
-    meta: {
-      type: "number",
-      editable: editable ?? false,
-      format,
-      currency,
-      locale,
-      ...extraMeta,
-    },
-    cell: ({ getValue, column }) => {
-      const value = getValue<number>()
-      if (value === null || value === undefined) return null
-      const meta = column.columnDef.meta as any
-      const classNameCell = meta?.classNameCell as string | undefined
-      const display = format
-        ? formatNumber(value, format, locale, currency)
-        : String(value)
-      return (
-        <div className={cn("text-right font-mono tabular-nums", classNameCell)}>
-          {display}
-        </div>
-      )
-    },
-    ...rest,
-  } as GridColumnDef
+	return {
+		accessorKey,
+		header: classNameHeader
+			? ({ column }) => <div className={classNameHeader}>{header}</div>
+			: header,
+		size: width ?? 120,
+		enableSorting: true,
+		meta: {
+			type: "number",
+			editable: editable ?? false,
+			format,
+			currency,
+			locale,
+			...extraMeta,
+		},
+		cell: ({ getValue, column }) => {
+			const value = getValue<number>();
+			if (value === null || value === undefined) return null;
+			const meta = column.columnDef.meta as any;
+			const classNameCell = meta?.classNameCell as string | undefined;
+			const display = format
+				? formatNumber(value, format, locale, currency)
+				: String(value);
+			return (
+				<div className={cn("text-right font-mono tabular-nums", classNameCell)}>
+					{display}
+				</div>
+			);
+		},
+		...rest,
+	} as GridColumnDef;
 }

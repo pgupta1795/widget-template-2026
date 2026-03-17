@@ -114,4 +114,4 @@ export type Widget = {
 	 * Get full preference definition (including current value) by name.
 	 */
 	getPreference(name: string): WidgetPreference | undefined;
-}
+};

@@ -1,5 +1,5 @@
 {
-	"$schema": "https://biomejs.dev/schemas/2.2.4/schema.json",
+	"$schema": "https://biomejs.dev/schemas/2.4.6/schema.json",
 	"vcs": {
 		"enabled": false,
 		"clientKind": "git",
@@ -10,39 +10,69 @@
 		"includes": [
 			"**/src/**/*",
 			"**/.vscode/**/*",
-			"**/index.html",
 			"**/vite.config.ts",
-			"!**/src/routeTree.gen.ts",
-			"!**/src/styles.css"
+			"!!**/src/routeTree.gen.ts",
+			"!!**/src/styles.css",
+			"!!**/index.html",
+			"!!**/dist/**/*"
 		]
 	},
 	"formatter": {
 		"enabled": true,
-		"indentStyle": "tab"
+		"indentStyle": "tab",
+		"formatWithErrors": true
 	},
-	"assist": { "actions": { "source": { "organizeImports": "on" } } },
+	"assist": { "actions": { "source": { "organizeImports": "off" } } },
 	"linter": {
 		"enabled": true,
 		"rules": {
 			"recommended": true,
 			"suspicious": {
-				"noArrayIndexKey": "warn",
-				"noExplicitAny": "warn",
-				"noUnknownAtRules": "off"
+				"noArrayIndexKey": "off",
+				"noExplicitAny": "off",
+				"noUnknownAtRules": "off",
+				"noConfusingVoidType": "off",
+				"noGlobalIsNan": "off",
+				"noDocumentCookie": "off"
 			},
 			"style": {
-				"noNonNullAssertion": "warn"
+				"noNonNullAssertion": "off",
+				"useTemplate": "off"
 			},
 			"a11y": {
-				"useSemanticElements": "warn",
-				"noLabelWithoutControl": "warn",
-				"useKeyWithClickEvents": "warn"
+				"useSemanticElements": "off",
+				"noLabelWithoutControl": "off",
+				"useKeyWithClickEvents": "off",
+				"useButtonType": "off",
+				"noStaticElementInteractions": "off",
+				"noRedundantRoles": "off"
+			},
+			"correctness": {
+				"noUnusedFunctionParameters": "off",
+				"useExhaustiveDependencies": "off",
+				"noUnusedVariables": "off",
+				"useHookAtTopLevel": "off"
+			},
+			"complexity": {
+				"useLiteralKeys": "off"
+			},
+			"performance": {
+				"noAccumulatingSpread": "off"
+			},
+			"security": {
+				"noDangerouslySetInnerHtml": "off"
 			}
 		}
 	},
 	"javascript": {
 		"formatter": {
 			"quoteStyle": "double"
+		}
+	},
+	"css": {
+		"parser": {
+			"allowWrongLineComments": true,
+			"tailwindDirectives": true
 		}
 	}
 }

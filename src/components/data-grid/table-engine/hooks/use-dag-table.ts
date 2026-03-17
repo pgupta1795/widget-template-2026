@@ -84,7 +84,9 @@ export function useDAGTable(
 	const infiniteQuery = useInfiniteQuery({
 		queryKey: [tableId, "infinite", JSON.stringify(params)],
 		queryFn: async ({ pageParam }: { pageParam: string | null }) => {
-			const ctxParams = pageParam ? { ...params, cursor: pageParam } : { ...params };
+			const ctxParams = pageParam
+				? { ...params, cursor: pageParam }
+				: { ...params };
 			const ctx = new NodeContext().withParams(ctxParams);
 			await engine.execute(dag, "column", ctx);
 

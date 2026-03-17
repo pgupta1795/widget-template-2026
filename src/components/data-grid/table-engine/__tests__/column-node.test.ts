@@ -79,7 +79,14 @@ describe("ColumnNodeExecutor", () => {
 
 	it("renderType is included in column meta", async () => {
 		const config: ColumnNodeConfig = {
-			columns: [{ field: "state", header: "State", type: "string", renderType: "badge" }],
+			columns: [
+				{
+					field: "state",
+					header: "State",
+					type: "string",
+					renderType: "badge",
+				},
+			],
 		};
 		const result = await executor.execute(config, ctx, []);
 		expect(result.columns[0].meta?.renderType).toBe("badge");
@@ -87,15 +94,25 @@ describe("ColumnNodeExecutor", () => {
 
 	it("classNameHeader is included in column meta", async () => {
 		const config: ColumnNodeConfig = {
-			columns: [{ field: "name", header: "Name", classNameHeader: "font-bold text-blue-600" }],
+			columns: [
+				{
+					field: "name",
+					header: "Name",
+					classNameHeader: "font-bold text-blue-600",
+				},
+			],
 		};
 		const result = await executor.execute(config, ctx, []);
-		expect(result.columns[0].meta?.classNameHeader).toBe("font-bold text-blue-600");
+		expect(result.columns[0].meta?.classNameHeader).toBe(
+			"font-bold text-blue-600",
+		);
 	});
 
 	it("classNameCell is included in column meta", async () => {
 		const config: ColumnNodeConfig = {
-			columns: [{ field: "name", header: "Name", classNameCell: "text-sm italic" }],
+			columns: [
+				{ field: "name", header: "Name", classNameCell: "text-sm italic" },
+			],
 		};
 		const result = await executor.execute(config, ctx, []);
 		expect(result.columns[0].meta?.classNameCell).toBe("text-sm italic");

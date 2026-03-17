@@ -1,20 +1,20 @@
 import type {
-  ColumnMeta,
-  GridColumnDef,
-  SelectOption,
-} from "@/components/data-grid/types/column-types"
-import { cn, toArray } from "@/components/data-grid/utils/grid-utils"
-import { Badge } from "@/components/ui/badge"
+	ColumnMeta,
+	GridColumnDef,
+	SelectOption,
+} from "@/components/data-grid/types/column-types";
+import { cn, toArray } from "@/components/data-grid/utils/grid-utils";
+import { Badge } from "@/components/ui/badge";
 
 interface MultiValueColumnOptions {
-  accessorKey: string
-  header: string
-  editable?: boolean
-  options?: SelectOption[]
-  maxVisible?: number
-  width?: number
-  meta?: Partial<ColumnMeta>
-  [key: string]: unknown
+	accessorKey: string;
+	header: string;
+	editable?: boolean;
+	options?: SelectOption[];
+	maxVisible?: number;
+	width?: number;
+	meta?: Partial<ColumnMeta>;
+	[key: string]: unknown;
 }
 
 /**
@@ -32,65 +32,63 @@ interface MultiValueColumnOptions {
  * multiValueColumn({ accessorKey: 'tags', header: 'Tags', maxVisible: 2 })
  */
 export function multiValueColumn(
-  options: MultiValueColumnOptions
+	options: MultiValueColumnOptions,
 ): GridColumnDef {
-  const {
-    accessorKey,
-    header,
-    editable,
-    options: selectOptions,
-    maxVisible = 3,
-    width,
-    meta: extraMeta,
-    ...rest
-  } = options
+	const {
+		accessorKey,
+		header,
+		editable,
+		options: selectOptions,
+		maxVisible = 3,
+		width,
+		meta: extraMeta,
+		...rest
+	} = options;
 
-  const classNameHeader = extraMeta?.classNameHeader as string | undefined
+	const classNameHeader = extraMeta?.classNameHeader as string | undefined;
 
-  return {
-    accessorKey,
-    header: classNameHeader
-      ? ({ column }) => (
-          <div className={classNameHeader}>{header}</div>
-        )
-      : header,
-    size: width ?? 240,
-    meta: {
-      type: "multi-value",
-      editable: editable ?? false,
-      options: selectOptions,
-      maxVisible,
-      ...extraMeta,
-    },
-    cell: ({ getValue, column }) => {
-      const values = toArray<string>(getValue<string | string[] | null>())
-      if (!values.length) return null
-      const meta = column.columnDef.meta as any
-      const classNameCell = meta?.classNameCell as string | undefined
-      const visible = values.slice(0, maxVisible)
-      const remaining = values.length - visible.length
-      return (
-        <div className={cn("flex flex-wrap items-center gap-1", classNameCell)}>
-          {visible.map((v, i) => (
-            <Badge
-              key={i}
-              variant="secondary"
-              className="px-1.5 py-0.5 text-xs font-normal"
-            >
-              {v}
-            </Badge>
-          ))}
-          {remaining > 0 && (
-            <Badge
-              variant="outline"
-              className="px-1.5 py-0.5 text-xs font-normal text-muted-foreground"
-            >
-              +{remaining}
-            </Badge>
-          )}
-        </div>
-      )
-    },
-    ...rest,
-  } as GridColumnDef
+	return {
+		accessorKey,
+		header: classNameHeader
+			? ({ column }) => <div className={classNameHeader}>{header}</div>
+			: header,
+		size: width ?? 240,
+		meta: {
+			type: "multi-value",
+			editable: editable ?? false,
+			options: selectOptions,
+			maxVisible,
+			...extraMeta,
+		},
+		cell: ({ getValue, column }) => {
+			const values = toArray<string>(getValue<string | string[] | null>());
+			if (!values.length) return null;
+			const meta = column.columnDef.meta as any;
+			const classNameCell = meta?.classNameCell as string | undefined;
+			const visible = values.slice(0, maxVisible);
+			const remaining = values.length - visible.length;
+			return (
+				<div className={cn("flex flex-wrap items-center gap-1", classNameCell)}>
+					{visible.map((v, i) => (
+						<Badge
+							key={i}
+							variant="secondary"
+							className="px-1.5 py-0.5 text-xs font-normal"
+						>
+							{v}
+						</Badge>
+					))}
+					{remaining > 0 && (
+						<Badge
+							variant="outline"
+							className="px-1.5 py-0.5 text-xs font-normal text-muted-foreground"
+						>
+							+{remaining}
+						</Badge>
+					)}
+				</div>
+			);
+		},
+		...rest,
+	} as GridColumnDef;
 }

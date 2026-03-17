@@ -85,7 +85,9 @@ export class ColumnNodeExecutor implements INodeExecutor<"column"> {
 				...(def.pinned ? { pinned: def.pinned } : {}),
 				...(def.selectOptions ? { options: def.selectOptions } : {}),
 				...(def.renderType ? { renderType: def.renderType } : {}),
-				...(def.classNameHeader ? { classNameHeader: def.classNameHeader } : {}),
+				...(def.classNameHeader
+					? { classNameHeader: def.classNameHeader }
+					: {}),
 				...(def.classNameCell ? { classNameCell: def.classNameCell } : {}),
 			};
 
