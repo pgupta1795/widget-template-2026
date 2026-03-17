@@ -88,7 +88,6 @@ export function validateDAG(dag: DAGConfig, authIds: Set<string>): void {
 		if (node.type === "action") {
 			const allActions = [
 				...(node.config.rowActions ?? []),
-				...(node.config.toolbarActions ?? []),
 				...(node.config.cellActions ?? []),
 			];
 			for (const action of allActions) {

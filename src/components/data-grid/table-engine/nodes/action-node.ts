@@ -23,7 +23,6 @@ export class ActionNodeExecutor implements INodeExecutor<"action"> {
 	): Promise<ActionOutput> {
 		return {
 			rowActions: config.rowActions ?? [],
-			toolbarActions: config.toolbarActions ?? [],
 			cellActions: config.cellActions ?? [],
 		};
 	}
