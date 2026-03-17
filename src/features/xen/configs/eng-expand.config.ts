@@ -1,5 +1,5 @@
 // src/features/xen/configs/eng-expand.config.ts
-import type { DAGTableConfig } from "@/components/data-grid/table-engine";
+import type {DAGTableConfig} from "@/components/data-grid/table-engine";
 
 /**
  * Engineering Item expand tree config.
@@ -25,22 +25,63 @@ import type { DAGTableConfig } from "@/components/data-grid/table-engine";
 const EXPAND_URL =
 	'$:"/resources/v1/modeler/dseng/dseng:EngItem/" & $params.nodeId & "/expand"';
 
-const EXPAND_RESPONSE_TRANSFORM = `
-  member[type = "VPMReference" and id != $params.nodeId].{
-    "id":           id,
-    "name":         name,
-    "title":        title,
-    "type":         type,
-    "revision":     revision,
-    "state":        state,
-    "owner":        owner,
-    "organization": organization,
-    "collabspace":  collabspace,
-    "created":      created,
-    "modified":     modified,
-    "_hasChildren": true
-  }
-`;
+/**
+ * Builds a nested tree directly from the raw expand-all API response.
+ *
+ * The 3DEXPERIENCE expand API (withPath: true) returns three types of members:
+ *   VPMReference — the actual nodes (we use these as tree rows)
+ *   VPMInstance  — relationship "edges" (stored on each child for reference)
+ *   Path entries — arrays encoding root→leaf paths as alternating [refId, instId, ...] sequences
+ *
+ * Each Path array encodes the full ancestry: [root, inst0, ref1, inst1, ref2, ...]
+ * Stepping every 2 positions gives (parentId, instId, childId) relation triples.
+ *
+ * The transform returns a SINGLE root node object with nested `children` arrays.
+ * ApiNodeExecutor wraps it as [rootNode], so the handler reads result[0].children.
+ */
+const EXPAND_RESPONSE_TRANSFORM = `(
+  $members := member;
+  $refs     := $members[type = "VPMReference"];
+  $insts    := $members[type = "VPMInstance"];
+
+  $paths := $map($members[$exists(Path)], function($m) { $m.Path });
+
+  $refMap  := $refs{ id: $ };
+  $instMap := $insts{ id: $ };
+
+  $relations := $reduce(
+    $paths,
+    function($acc, $path) {
+      $append(
+        $acc,
+        $filter(
+          $map($path, function($v, $i, $a) {
+            $i % 2 = 0 and $i + 2 < $count($a)
+              ? { "parentId": $a[$i], "instId": $a[$i + 1], "childId": $a[$i + 2] }
+          }),
+          function($x) { $exists($x) }
+        )
+      )
+    },
+    []
+  );
+
+  $buildTree := function($nodeId) {(
+    $node     := $lookup($refMap, $nodeId);
+    $childIds := $distinct($relations[parentId = $nodeId].childId);
+    $instIds  := $distinct($relations[childId  = $nodeId].instId);
+
+    $merge([
+      $node,
+      {
+        "instances": [ $map($instIds,  function($id) { $lookup($instMap, $id) }) ],
+        "children":  [ $map($childIds, function($id) { $buildTree($id) }) ]
+      }
+    ])
+  )};
+
+  $buildTree($paths[0][0])
+)`;
 
 export const engExpandConfig: DAGTableConfig = {
 	tableId: "eng-expand",
@@ -137,7 +178,7 @@ export const engExpandConfig: DAGTableConfig = {
 					url: '$:"/resources/v1/modeler/dseng/dseng:EngItem/" & $params.nodeId & "/expand"',
 					method: "POST",
 					authAdapterId: "wafdata",
-					body: { expandDepth: 10, withPath: true },
+					body: { expandDepth: -1, withPath: true },
 					responseTransform: EXPAND_RESPONSE_TRANSFORM,
 					headers: {
 						"Content-Type": "application/json",
@@ -167,10 +208,22 @@ export const engExpandConfig: DAGTableConfig = {
 		{
 			id: "expand-all",
 			type: "command",
-			action: "expand-all-api",
 			enabled: true,
-			label: "Expand All",
-			icon: "ChevronDownSquare",
-		},
-	],
+			label: "Expand/Collapse",
+			icon: "ChevronsDownUp",
+			handler: async (ctx) => {
+				const isExpanded = ctx.table.getIsAllRowsExpanded();
+				if(isExpanded){
+					ctx.table.toggleAllRowsExpanded(false);
+				}else{
+					const result = await ctx.executeApiNode("expand-all-api");
+					const treeRows = result[0]?.children ?? [];
+					if (treeRows.length > 0) {
+						ctx.setRows(result);
+						ctx.table.toggleAllRowsExpanded(true);
+					}
+				}
+			}
+		}
+	]
 };

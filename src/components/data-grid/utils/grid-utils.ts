@@ -79,10 +79,10 @@ export function getSkeletonWidth(
 }
 
 export function hasActiveFilters(
-	columnFilters: ColumnFiltersState,
-	globalFilter: string,
+	columnFilters: ColumnFiltersState | undefined,
+	globalFilter: string | undefined,
 ): boolean {
-	return columnFilters.length > 0 || globalFilter.length > 0;
+	return (columnFilters?.length ?? 0) > 0 || (globalFilter?.length ?? 0) > 0;
 }
 
 export function clearAllFilters(table: Table<GridRow>): void {
@@ -108,3 +108,4 @@ export function mergeChildrenIntoTree(
 		return row;
 	});
 }
+

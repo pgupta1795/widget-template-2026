@@ -5,15 +5,15 @@ import {
 	useQuery,
 	useQueryClient,
 } from "@tanstack/react-query";
-import { useCallback, useMemo, useRef, useState } from "react";
-import type { DAGEngine } from "../core/dag-engine";
+import {useCallback,useMemo,useRef,useState} from "react";
+import type {DAGEngine} from "../core/dag-engine";
 import type {
 	DAGExecutionError,
 	DAGValidationError,
 } from "../core/dag-validator";
-import { NodeContext } from "../core/node-context";
-import { ApiNodeExecutor } from "../nodes/api-node";
-import type { JsonPrimitive } from "../types/dag.types";
+import {NodeContext} from "../core/node-context";
+import {ApiNodeExecutor} from "../nodes/api-node";
+import type {JsonPrimitive} from "../types/dag.types";
 import type {
 	ColumnNodeOutput,
 	DAGTableConfig,
@@ -162,26 +162,27 @@ export function useDAGTable(
 	const queryClient = useQueryClient();
 
 	const executeNode = useCallback(
-		async (nodeId: string) => {
+		async (nodeId: string): Promise<GridRow[]> => {
 			const ctx = ctxRef.current;
-			if (!ctx) return;
+			if (!ctx) return [];
 
 			// Find the lazy ApiNode by nodeId
 			const lazyApiNode = config.dag.nodes.find(
 				(n) => n.id === nodeId && n.type === "api",
 			);
-			if (!lazyApiNode) return;
+			if (!lazyApiNode) return [];
 
 			// Execute the lazy ApiNode without row context
 			const apiExecutor = new ApiNodeExecutor(engine.getAuthRegistry());
-			await apiExecutor.execute(
+			const result = await apiExecutor.execute(
 				lazyApiNode.config as import("../types/table.types").ApiNodeConfig,
 				ctx,
 				config.dag.nodes,
 			);
 
 			// Invalidate query cache to trigger re-fetch
-			await queryClient.invalidateQueries({ queryKey: [config.tableId] });
+			// await queryClient.invalidateQueries({ queryKey: [config.tableId] });
+			return result.rows;
 		},
 		[config, engine, queryClient],
 	);
@@ -221,7 +222,7 @@ export function useDAGTable(
 			);
 
 			// 4. Invalidate query cache to trigger re-fetch
-			await queryClient.invalidateQueries({ queryKey: [config.tableId] });
+			// await queryClient.invalidateQueries({ queryKey: [config.tableId] });
 		},
 		[config, engine, queryClient],
 	);

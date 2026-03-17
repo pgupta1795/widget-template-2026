@@ -4,10 +4,10 @@ import { cn } from "@/lib/utils";
 import { Search, X } from "lucide-react";
 import type React from "react";
 import { useEffect, useState } from "react";
-import type { ToolbarCommand, ToolbarContext } from "./toolbar.types";
+import type { SearchToolbarCommand, ToolbarContext } from "./toolbar.types";
 
 interface CommandSearchProps {
-	command: ToolbarCommand;
+	command: SearchToolbarCommand;
 	ctx: ToolbarContext;
 }
 

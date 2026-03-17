@@ -111,7 +111,7 @@ export interface DataGridConfig<TData extends GridRow> {
 	 * Provides direct DAG API node execution (in ConfiguredTable).
 	 * In standalone DataGrid: undefined, use handler instead.
 	 */
-	onExecuteNode?: (nodeId: string) => Promise<void>;
+	onExecuteNode?: (nodeId: string) => Promise<GridRow[]>;
 	/** Server-side search callback. Wired by ConfiguredTable to update searchParams state. */
 	onSearch?: (paramName: string, query: string) => void;
 	/** Required QueryKey for query-driven modes (paginated, infinite) */
@@ -161,18 +161,17 @@ export function useDataGrid<TData extends GridRow>(
 		onRefresh,
 		toolbarCommands,
 		toolbarClassName,
-		onAction,
 		onExecuteNode,
 		onSearch,
 		initialColumnVisibility,
 	} = config;
 
 	const executeApiNode = React.useCallback(
-		(nodeId: string) => {
+		(nodeId: string): Promise<GridRow[]> => {
 			if (onExecuteNode) {
 				return onExecuteNode(nodeId);
 			}
-			return Promise.resolve();
+			return Promise.resolve([]);
 		},
 		[onExecuteNode],
 	);
@@ -491,6 +490,7 @@ export function useDataGrid<TData extends GridRow>(
 			toolbarCommands,
 			toolbarClassName,
 			executeApiNode,
+			setRows: setInternalData as (rows: GridRow[]) => void,
 			onSearch,
 			handleExpand: handleExpand as (
 				row: import("@tanstack/react-table").Row<GridRow>,

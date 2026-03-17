@@ -17,6 +17,7 @@ export const DEFAULT_COLUMN_VISIBILITY: ToolbarCommand = {
 	align: "right",
 	label: "Columns",
 	icon: "Columns3",
+	commands: [],
 };
 
 export const DEFAULT_DENSITY: ToolbarCommand = {
@@ -25,6 +26,7 @@ export const DEFAULT_DENSITY: ToolbarCommand = {
 	enabled: false,
 	align: "right",
 	icon: "AlignJustify",
+	commands: [],
 };
 
 export const DEFAULT_EXPAND_ALL: ToolbarCommand = {

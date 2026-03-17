@@ -1,12 +1,14 @@
 // src/components/data-grid/toolbar/toolbar.types.ts
-import type { ComponentType } from "react";
-import type { Table } from "@tanstack/react-table";
 import type {
 	GridDensity,
 	GridFeaturesConfig,
 	GridMode,
 	GridRow,
 } from "@/components/data-grid/types/grid-types";
+import type {Row, Table} from "@tanstack/react-table";
+import type {ComponentType} from "react";
+import type { ActiveEdit } from "@/components/data-grid/features/editing/use-editing";
+import React from "react";
 
 // ── Shared base ───────────────────────────────────────────────────────────────
 
@@ -84,6 +86,7 @@ export interface SpacerToolbarCommand {
 	id: string;
 	type: "spacer";
 	enabled?: boolean;
+	align?: "left" | "right";
 }
 
 /** Visual divider between commands */
@@ -91,6 +94,7 @@ export interface SeparatorToolbarCommand {
 	id: string;
 	type: "separator";
 	enabled?: boolean;
+	align?: "left" | "right";
 }
 
 // ── Union ─────────────────────────────────────────────────────────────────────
@@ -114,29 +118,11 @@ export type ToolbarCommandType = ToolbarCommand["type"];
 export type ToolbarAlign = "left" | "right";
 
 /**
- * Config-safe subset — handler and handlerParams omitted (not JSON-serializable).
- * Use this type in DAGTableConfig.toolbarCommands.
+ * Type alias for ToolbarCommand — allows inline handler functions in DAGTableConfig.
+ * Previously restricted to serializable-only (no handler/handlerParams), but configs
+ * are TypeScript code (not stored JSON), so inline handlers are safe and supported.
  */
-
-// Define serializable variants inline for clarity and maintainability
-export type SerializableCommandToolbarCommand = Omit<
-	CommandToolbarCommand,
-	"handler" | "handlerParams"
->;
-
-export type SerializableMenuToolbarCommand = Omit<
-	MenuToolbarCommand,
-	"commands"
-> & {
-	commands: SerializableCommandToolbarCommand[];
-};
-
-export type SerializableToolbarCommand =
-	| SerializableCommandToolbarCommand
-	| SerializableMenuToolbarCommand
-	| SearchToolbarCommand
-	| SpacerToolbarCommand
-	| SeparatorToolbarCommand;
+export type SerializableToolbarCommand = ToolbarCommand;
 
 // ── ToolbarContext ─────────────────────────────────────────────────────────────
 
@@ -155,31 +141,56 @@ export interface ToolbarContext {
 	density: GridDensity;
 	setDensity: (d: GridDensity) => void;
 
-	/** True while data is refetching — use to show spinner on refresh button */
+	/** True while data is refetching */
 	isRefetching: boolean;
+	/** True while initial data is loading */
+	isLoading: boolean;
+	/** True while next page is loading (infinite mode) */
+	isFetchingNextPage: boolean;
 
 	/**
-	 * Fires a DAG API node directly by nodeId (bypasses ActionNode).
+	 * Fires a DAG API node directly by nodeId. Returns the rows from the API response.
 	 * In ConfiguredTable: wired to useDAGTable's executeNode(nodeId).
-	 * In standalone DataGrid: no-op (use handler for programmatic logic instead).
+	 * In standalone DataGrid: returns empty array.
 	 */
-	executeApiNode: (nodeId: string) => Promise<void>;
+	executeApiNode: (nodeId: string) => Promise<GridRow[]>;
+
+	/** Replace all tree rows with a new set (e.g. after an expand-all API call). */
+	setRows: (rows: GridRow[]) => void;
 
 	/** Trigger a data refetch (maps to onRefresh prop) */
 	refetch?: () => void;
 
-	/** Lazy-expand a single tree row */
-	expandRow?: (row: GridRow) => Promise<void>;
+	/** Row IDs currently loading children (lazy tree expand) */
+	loadingRowIds: Set<string>;
+	/** Lazy-expand a single tree row — takes the full TanStack Row object */
+	expandRow?: (row: Row<GridRow>) => Promise<void>;
 	/** Collapse all expanded rows */
 	collapseAll?: () => void;
 
 	/**
-	 * Server-side search relay. Called by SearchToolbarCommand when action is set.
+	 * Server-side search relay.
 	 * paramName = command.queryParamName ?? 'q'
-	 * ConfiguredTable wires this to update its searchParams state.
 	 */
 	onSearch?: (paramName: string, query: string) => void;
 
 	mode?: GridMode;
 	features?: GridFeaturesConfig;
+
+	// ── Editing ─────────────────────────────────────────────────────────────
+	activeEdit: ActiveEdit | null;
+	startEditing: (rowId: string, columnId: string, value: unknown) => void;
+	cancelEditing: () => void;
+	commitEditing: (value: unknown) => Promise<void>;
+	mutatingRowIds: Set<string>;
+	errorRowIds: Set<string>;
+
+	// ── Pagination ───────────────────────────────────────────────────────────
+	pagination: { pageIndex: number; pageSize: number };
+	setPagination: React.Dispatch<React.SetStateAction<{ pageIndex: number; pageSize: number }>>;
+	paginatedTotal: number | undefined;
+
+	// ── Infinite ─────────────────────────────────────────────────────────────
+	hasNextPage: boolean;
+	fetchNextPage: () => void;
 }

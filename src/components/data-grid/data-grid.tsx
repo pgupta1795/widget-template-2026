@@ -375,7 +375,7 @@ export interface DataGridProps<TData extends GridRow> {
 	 * Provides direct DAG API node execution (in ConfiguredTable).
 	 * In standalone DataGrid: undefined, use handler instead.
 	 */
-	onExecuteNode?: (nodeId: string) => Promise<void>;
+	onExecuteNode?: (nodeId: string) => Promise<GridRow[]>;
 	/**
 	 * Server-side search callback. Called by search commands when apiNodeId is set.
 	 * Signature: (paramName, query) — paramName defaults to 'q'.

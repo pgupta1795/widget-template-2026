@@ -32,7 +32,9 @@ export interface DataGridContextValue {
 	toolbarCommands?: ToolbarCommand[];
 	toolbarClassName?: string;
 	/** Fires a DAG action by id. No-op when DataGrid is standalone (no onAction prop). */
-	executeApiNode: (actionId: string) => Promise<void>;
+	executeApiNode: (actionId: string) => Promise<GridRow[]>;
+	/** Replace all tree rows with a new set (e.g. after an expand-all API call). */
+	setRows: (rows: GridRow[]) => void;
 	/** Server-side search relay. Undefined when DataGrid has no onSearch prop wired. */
 	onSearch?: (paramName: string, query: string) => void;
 	// Tree features

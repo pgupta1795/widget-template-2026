@@ -14,9 +14,9 @@ import { clearAllFilters } from "./utils/grid-utils";
 
 const ActiveFiltersBadge = memo(function ActiveFiltersBadge() {
 	const { table, globalFilter } = useDataGridContext();
-	const columnFilters = table.getState().columnFilters;
+	const columnFilters = table.getState().columnFilters ?? [];
 	const activeFilterCount =
-		columnFilters.length + (globalFilter.length > 0 ? 1 : 0);
+		columnFilters.length + ((globalFilter?.length ?? 0) > 0 ? 1 : 0);
 
 	if (activeFilterCount === 0) return null;
 
@@ -44,9 +44,8 @@ const ActiveFiltersBadge = memo(function ActiveFiltersBadge() {
 
 const SelectionActionBar = memo(function SelectionActionBar() {
 	const { table, slots } = useDataGridContext();
-	const selectedRows = table
-		.getSelectedRowModel()
-		.rows.map((r) => r.original) as GridRow[];
+	const selectedRows =
+		table.getSelectedRowModel()?.rows?.map((r) => r.original as GridRow) ?? [];
 
 	if (selectedRows.length === 0) return null;
 

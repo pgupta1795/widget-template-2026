@@ -34,12 +34,11 @@ import {
 	RefreshCw,
 } from "lucide-react";
 import { memo, useMemo, useState } from "react";
-import type { Row } from "@tanstack/react-table";
 import { useDataGridContext } from "../data-grid-context";
 import { CommandButton } from "./command-button";
 import { CommandMenu } from "./command-menu";
 import { CommandSearch } from "./command-search";
-import type { ToolbarCommand, ToolbarContext } from "./toolbar.types";
+import type { ToolbarCommand, ToolbarCommandBase, ToolbarContext } from "./toolbar.types";
 
 // ─── Built-in: Column Visibility ─────────────────────────────────────────────
 
@@ -47,7 +46,7 @@ const BuiltInColumnVisibility = memo(function BuiltInColumnVisibility({
 	command,
 	ctx,
 }: {
-	command: ToolbarCommand;
+	command: ToolbarCommandBase;
 	ctx: ToolbarContext;
 }) {
 	const hideableColumns = ctx.table
@@ -95,7 +94,7 @@ const BuiltInDensity = memo(function BuiltInDensity({
 	command,
 	ctx,
 }: {
-	command: ToolbarCommand;
+	command: ToolbarCommandBase;
 	ctx: ToolbarContext;
 }) {
 	return (
@@ -137,7 +136,7 @@ const BuiltInExpandAll = memo(function BuiltInExpandAll({
 	command,
 	ctx,
 }: {
-	command: ToolbarCommand;
+	command: ToolbarCommandBase;
 	ctx: ToolbarContext;
 }) {
 	const isAllExpanded = ctx.table.getIsAllRowsExpanded();
@@ -164,7 +163,7 @@ const BuiltInRefresh = memo(function BuiltInRefresh({
 	command,
 	ctx,
 }: {
-	command: ToolbarCommand;
+	command: ToolbarCommandBase;
 	ctx: ToolbarContext;
 }) {
 	return (
@@ -189,7 +188,7 @@ const BuiltInExport = memo(function BuiltInExport({
 	command,
 	ctx,
 }: {
-	command: ToolbarCommand;
+	command: ToolbarCommandBase;
 	ctx: ToolbarContext;
 }) {
 	const [isPending, setIsPending] = useState(false);
@@ -226,7 +225,7 @@ const BuiltInAddRow = memo(function BuiltInAddRow({
 	command,
 	ctx,
 }: {
-	command: ToolbarCommand;
+	command: ToolbarCommandBase;
 	ctx: ToolbarContext;
 }) {
 	const addRowConfig =
@@ -325,12 +324,27 @@ export const ToolbarRenderer = memo(function ToolbarRenderer({
 		density,
 		setDensity,
 		isRefetching,
+		isLoading,
+		isFetchingNextPage,
 		executeApiNode,
+		setRows,
 		onRefresh,
 		handleExpand,
+		loadingRowIds,
 		onSearch,
 		mode,
 		features,
+		activeEdit,
+		startEditing,
+		cancelEditing,
+		commitEditing,
+		mutatingRowIds,
+		errorRowIds,
+		pagination,
+		setPagination,
+		paginatedTotal,
+		hasNextPage,
+		fetchNextPage,
 	} = useDataGridContext();
 
 	const ctx = useMemo<ToolbarContext>(
@@ -346,13 +360,28 @@ export const ToolbarRenderer = memo(function ToolbarRenderer({
 			density,
 			setDensity,
 			isRefetching,
+			isLoading,
+			isFetchingNextPage,
 			executeApiNode,
+			setRows,
 			refetch: onRefresh,
-			expandRow: (row) => handleExpand(row as unknown as Row<GridRow>),
+			loadingRowIds,
+			expandRow: handleExpand,
 			collapseAll: () => table.toggleAllRowsExpanded(false),
 			onSearch,
 			mode,
 			features,
+			activeEdit,
+			startEditing,
+			cancelEditing,
+			commitEditing,
+			mutatingRowIds,
+			errorRowIds,
+			pagination,
+			setPagination,
+			paginatedTotal,
+			hasNextPage,
+			fetchNextPage,
 		}),
 		[
 			table,
@@ -361,12 +390,27 @@ export const ToolbarRenderer = memo(function ToolbarRenderer({
 			density,
 			setDensity,
 			isRefetching,
+			isLoading,
+			isFetchingNextPage,
 			executeApiNode,
+			setRows,
 			onRefresh,
 			handleExpand,
+			loadingRowIds,
 			onSearch,
 			mode,
 			features,
+			activeEdit,
+			startEditing,
+			cancelEditing,
+			commitEditing,
+			mutatingRowIds,
+			errorRowIds,
+			pagination,
+			setPagination,
+			paginatedTotal,
+			hasNextPage,
+			fetchNextPage,
 		],
 	);
 
