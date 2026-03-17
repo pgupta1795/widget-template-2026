@@ -106,6 +106,12 @@ export interface DataGridConfig<TData extends GridRow> {
    * At toolbar level row is always undefined.
    */
   onAction?: (actionId: string, row?: GridRow) => Promise<void>
+  /**
+   * Called when a toolbar command with action property is executed.
+   * Provides direct DAG API node execution (in ConfiguredTable).
+   * In standalone DataGrid: undefined, use handler instead.
+   */
+  onExecuteNode?: (nodeId: string) => Promise<void>
   /** Server-side search callback. Wired by ConfiguredTable to update searchParams state. */
   onSearch?: (paramName: string, query: string) => void
   /** Required QueryKey for query-driven modes (paginated, infinite) */
@@ -156,13 +162,19 @@ export function useDataGrid<TData extends GridRow>(
     toolbarCommands,
     toolbarClassName,
     onAction,
+    onExecuteNode,
     onSearch,
     initialColumnVisibility,
   } = config
 
   const executeApiNode = React.useCallback(
-    (actionId: string) => onAction?.(actionId, undefined) ?? Promise.resolve(),
-    [onAction],
+    (nodeId: string) => {
+      if (onExecuteNode) {
+        return onExecuteNode(nodeId)
+      }
+      return Promise.resolve()
+    },
+    [onExecuteNode],
   )
 
   const [density, setDensity] = React.useState<GridDensity>(initialDensity)
