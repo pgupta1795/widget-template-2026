@@ -242,51 +242,56 @@ const BuiltInAddRow = memo(function BuiltInAddRow({
 // ─── Dispatch: route each command to its renderer ────────────────────────────
 
 function renderCommand(command: ToolbarCommand, ctx: ToolbarContext) {
-  if (command.type === 'spacer') {
-    return <div key={command.id} className="flex-1" />
-  }
-  if (command.type === 'separator') {
-    return (
-      <Separator
-        key={command.id}
-        orientation="vertical"
-        className="mx-1 h-4"
-      />
-    )
-  }
-
-  // Built-in IDs with dedicated rendering
-  if (command.id === 'columnVisibility') {
-    return <BuiltInColumnVisibility key={command.id} command={command} ctx={ctx} />
-  }
-  if (command.id === 'density') {
-    return <BuiltInDensity key={command.id} command={command} ctx={ctx} />
-  }
-  if (command.id === 'expandAll') {
-    return <BuiltInExpandAll key={command.id} command={command} ctx={ctx} />
-  }
-  if (command.id === 'refresh') {
-    return <BuiltInRefresh key={command.id} command={command} ctx={ctx} />
-  }
-  if (command.id === 'export') {
-    return <BuiltInExport key={command.id} command={command} ctx={ctx} />
-  }
-  if (command.id === 'addRow') {
-    return <BuiltInAddRow key={command.id} command={command} ctx={ctx} />
+  // Handle built-in commands by ID (these have special rendering logic)
+  switch (command.id) {
+    case 'columnVisibility':
+      return <BuiltInColumnVisibility key={command.id} command={command} ctx={ctx} />
+    case 'density':
+      return <BuiltInDensity key={command.id} command={command} ctx={ctx} />
+    case 'expandAll':
+      return <BuiltInExpandAll key={command.id} command={command} ctx={ctx} />
+    case 'refresh':
+      return <BuiltInRefresh key={command.id} command={command} ctx={ctx} />
+    case 'export':
+      return <BuiltInExport key={command.id} command={command} ctx={ctx} />
+    case 'addRow':
+      return <BuiltInAddRow key={command.id} command={command} ctx={ctx} />
   }
 
-  // Generic type-based rendering
-  if (command.type === 'search') {
-    return <CommandSearch key={command.id} command={command} ctx={ctx} />
-  }
-  if (command.type === 'menu') {
-    return <CommandMenu key={command.id} command={command} ctx={ctx} />
-  }
-  if (command.type === 'command') {
-    return <CommandButton key={command.id} command={command} ctx={ctx} />
-  }
+  // Type-narrowed dispatch: each case handles a specific command variant
+  switch (command.type) {
+    case 'command':
+      // type is now CommandToolbarCommand — access action, handler, handlerParams
+      return <CommandButton key={command.id} command={command} ctx={ctx} />
 
-  return null
+    case 'menu':
+      // type is now MenuToolbarCommand — access commands[], menuClassName
+      return <CommandMenu key={command.id} command={command} ctx={ctx} />
+
+    case 'search':
+      // type is now SearchToolbarCommand — access action, queryParamName, debounceMs
+      return <CommandSearch key={command.id} command={command} ctx={ctx} />
+
+    case 'spacer':
+      // type is now SpacerToolbarCommand — simple layout element
+      return <div key={command.id} className="flex-1" />
+
+    case 'separator':
+      // type is now SeparatorToolbarCommand — simple visual divider
+      return (
+        <Separator
+          key={command.id}
+          orientation="vertical"
+          className="mx-1 h-4"
+        />
+      )
+
+    default:
+      // Exhaustiveness check: if a new ToolbarCommand type is added,
+      // TypeScript will error here until this switch is updated
+      const exhaustive: never = command
+      return exhaustive
+  }
 }
 
 // ─── Main: ToolbarRenderer ────────────────────────────────────────────────────
