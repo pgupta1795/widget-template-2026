@@ -100,4 +100,14 @@ export const engSearchConfig: DAGTableConfig = {
 		columnVisibility: { enabled: true },
 		selection: { enabled: true, mode: "multi" },
 	},
+
+	toolbarCommands: [
+		{
+			id: "search",
+			type: "search",
+			enabled: true,
+			queryParamName: "searchStr",
+			placeholder: "Search by name, description...",
+		},
+	],
 };
