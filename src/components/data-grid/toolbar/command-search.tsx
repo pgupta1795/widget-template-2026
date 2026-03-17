@@ -20,7 +20,7 @@ function useDebounce<T>(value: T, delay: number): T {
 }
 
 export function CommandSearch({ command, ctx }: CommandSearchProps) {
-  const isServerSide = Boolean(command.apiNodeId)
+  const isServerSide = Boolean(command.action)
   const debounceMs = command.debounceMs ?? 300
   const paramName = command.queryParamName ?? 'q'
 
