@@ -3,10 +3,10 @@ import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 import { useCallback, useTransition } from 'react'
 import { resolveLucideIcon } from './icon-resolver'
-import type { ToolbarCommand, ToolbarContext } from './toolbar.types'
+import type { CommandToolbarCommand, ToolbarContext } from './toolbar.types'
 
 interface CommandButtonProps {
-  command: ToolbarCommand
+  command: CommandToolbarCommand
   ctx: ToolbarContext
 }
 
@@ -14,11 +14,22 @@ export function CommandButton({ command, ctx }: CommandButtonProps) {
   const [isPending, startTransition] = useTransition()
 
   const handleClick = useCallback(() => {
-    if (!command.handler) return
     startTransition(async () => {
-      await command.handler!(ctx, command.handlerParams)
+      try {
+        if (command.handler) {
+          // Execute custom handler (takes precedence)
+          await command.handler(ctx, command.handlerParams)
+        } else if (command.action) {
+          // Execute DAG API node (fallback)
+          await ctx.executeApiNode(command.action)
+        }
+        // else: no-op (no handler or action defined)
+      } catch (error) {
+        // Log error to console — let caller handle toast/UI feedback
+        console.error('Command execution failed:', error)
+      }
     })
-  }, [command.handler, command.handlerParams, ctx])
+  }, [command.handler, command.handlerParams, command.action, ctx])
 
   const Icon =
     command.icon != null
