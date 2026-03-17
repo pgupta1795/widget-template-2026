@@ -11,10 +11,10 @@ import { cn } from '@/lib/utils'
 import { ChevronDown } from 'lucide-react'
 import { useCallback, useState, useTransition } from 'react'
 import { resolveLucideIcon } from './icon-resolver'
-import type { ToolbarCommand, ToolbarContext } from './toolbar.types'
+import type { CommandToolbarCommand, MenuToolbarCommand, ToolbarContext } from './toolbar.types'
 
 interface CommandMenuProps {
-  command: ToolbarCommand
+  command: MenuToolbarCommand
   ctx: ToolbarContext
 }
 
@@ -22,11 +22,22 @@ export function CommandMenu({ command, ctx }: CommandMenuProps) {
   const [isPending, startTransition] = useTransition()
   const [pendingId, setPendingId] = useState<string | null>(null)
 
-  const handleItemClick = useCallback((item: ToolbarCommand) => {
-    if (!item.handler) return
-    setPendingId(item.id)
+  const handleMenuItemClick = useCallback((subCommand: CommandToolbarCommand) => {
+    setPendingId(subCommand.id)
     startTransition(async () => {
-      await item.handler!(ctx, item.handlerParams)
+      try {
+        if (subCommand.handler) {
+          // Execute custom handler (takes precedence)
+          await subCommand.handler(ctx, subCommand.handlerParams)
+        } else if (subCommand.action) {
+          // Execute DAG API node (fallback)
+          await ctx.executeApiNode(subCommand.action)
+        }
+        // else: no-op (no handler or action defined)
+      } catch (error) {
+        // Log error to console — let caller handle toast/UI feedback
+        console.error(`Error executing menu item: ${subCommand.id}`, error)
+      }
       setPendingId(null)
     })
   }, [ctx])
@@ -56,23 +67,23 @@ export function CommandMenu({ command, ctx }: CommandMenuProps) {
       />
       <DropdownMenuContent align="end" className={command.menuClassName}>
         <DropdownMenuGroup>
-          {(command.commands ?? []).map((item) => {
+          {command.commands.map((subCommand) => {
             const ItemIcon =
-              item.icon != null
-                ? typeof item.icon === 'string'
-                  ? resolveLucideIcon(item.icon)
-                  : item.icon
+              subCommand.icon != null
+                ? typeof subCommand.icon === 'string'
+                  ? resolveLucideIcon(subCommand.icon)
+                  : subCommand.icon
                 : null
-            const isItemPending = pendingId === item.id
+            const isItemPending = pendingId === subCommand.id
             return (
               <DropdownMenuItem
-                key={item.id}
-                disabled={item.disabled === true || isItemPending}
-                onClick={() => handleItemClick(item)}
-                className={item.className}
+                key={subCommand.id}
+                disabled={subCommand.disabled === true || isItemPending}
+                onClick={() => handleMenuItemClick(subCommand)}
+                className={subCommand.className}
               >
                 {ItemIcon && <ItemIcon className="mr-2 h-3.5 w-3.5" />}
-                {item.label}
+                {subCommand.label}
               </DropdownMenuItem>
             )
           })}
