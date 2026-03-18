@@ -117,6 +117,111 @@ export interface RowExpandOutput {
 	expandHandler: (row: GridRow) => Promise<GridRow[]>;
 }
 
+// ── RowEnrichNode ─────────────────────────────────────────────────────────────
+
+export interface RowEnrichDescriptor {
+	/** Key value identifying the row — derived from rowKeyField */
+	rowKey: string;
+	/** Plain row data snapshot — no NodeContext stored */
+	rowData: GridRow;
+}
+
+export interface RowEnrichNodeConfig {
+	/** Must reference an 'api', 'transform', or 'merge' node */
+	sourceNodeId: string;
+	/**
+	 * Lazy ApiNode in nodes[] — NOT in edges.
+	 * Same convention as RowExpandNodeConfig.childApiNodeId.
+	 */
+	childApiNodeId: string;
+	/** Field used as the row identity key. Default: 'id' */
+	rowKeyField?: string;
+	/**
+	 * false (default) = fires immediately after root load.
+	 * true = waits for triggerEnrich() to be called.
+	 */
+	lazy?: boolean;
+	/**
+	 * JSONata expression applied to the first row of the childApi response
+	 * before merging into the root row.
+	 * Input: first GridRow from childApi response.
+	 * Output: object spread onto the root row.
+	 * Evaluated via evaluateExpr (jsonata-evaluator.ts).
+	 * When absent, first row is spread directly.
+	 */
+	mergeTransform?: string;
+	/**
+	 * TanStack Query keys to invalidate after ALL row enrich queries succeed.
+	 * Each string is wrapped in an array: queryClient.invalidateQueries({ queryKey: [key] })
+	 * e.g. ['eng-expand'] re-fetches the root table after enrichment completes.
+	 */
+	invalidateQueryKeys?: string[];
+}
+
+export interface RowEnrichNodeOutput {
+	descriptors: RowEnrichDescriptor[];
+	/** Shared childApiNodeId for all descriptors */
+	childApiNodeId: string;
+	/** Resolved rowKeyField (default 'id' applied) */
+	rowKeyField: string;
+	lazy: boolean;
+	mergeTransform?: string;
+	invalidateQueryKeys?: string[];
+}
+
+// ── ColumnHydrateNode ─────────────────────────────────────────────────────────
+
+export interface ColumnHydrateDescriptor {
+	/** Key value identifying the row */
+	rowKey: string;
+	/** Plain row data snapshot */
+	rowData: GridRow;
+	/** Column this descriptor is for */
+	columnId: string;
+}
+
+export interface ColumnHydrateEntry {
+	/** Must match a ColumnDef.field in the ColumnNode of the same DAG */
+	columnId: string;
+	/**
+	 * Lazy ApiNode in nodes[] — NOT in edges.
+	 * Same convention as RowEnrichNodeConfig.childApiNodeId.
+	 */
+	childApiNodeId: string;
+	/** Per-column lazy gate. false (default) = fires with root load */
+	lazy?: boolean;
+	/**
+	 * JSONata expression applied to the first row of the childApi response.
+	 * Output is merged as { [columnId]: transformedValue } onto the root row.
+	 * When absent, merged as { [columnId]: result.rows[0] }.
+	 */
+	mergeTransform?: string;
+	/**
+	 * TanStack Query keys to invalidate after this column's queries all succeed.
+	 * Each string is wrapped in an array for the invalidateQueries call.
+	 */
+	invalidateQueryKeys?: string[];
+}
+
+export interface ColumnHydrateNodeConfig {
+	/** Must reference an 'api', 'transform', or 'merge' node */
+	sourceNodeId: string;
+	/** Field used as the row identity key. Default: 'id' */
+	rowKeyField?: string;
+	columns: ColumnHydrateEntry[];
+}
+
+export interface ColumnHydrateNodeOutput {
+	descriptors: ColumnHydrateDescriptor[];
+	/**
+	 * Preserved from config for lazy lookups and mergeTransform access in useDAGTable.
+	 * Index-aligned to descriptors would be ambiguous — use columnEntries.find(c => c.columnId === desc.columnId).
+	 */
+	columnEntries: ColumnHydrateEntry[];
+	/** Resolved rowKeyField (default 'id' applied) */
+	rowKeyField: string;
+}
+
 // ── MergeNode ─────────────────────────────────────────────────────────────────
 
 export type MergeStrategy = "concat" | "join" | "merge";
@@ -163,6 +268,8 @@ export interface NodeOutputMap {
 	rowExpand: RowExpandOutput;
 	merge: GridRow[];
 	action: ActionOutput;
+	rowEnrich: RowEnrichNodeOutput;
+	columnHydrate: ColumnHydrateNodeOutput;
 }
 
 // ── Features ──────────────────────────────────────────────────────────────────
@@ -209,4 +316,18 @@ export interface DAGTableResult {
 	onExpand?: (row: GridRow) => Promise<GridRow[]>;
 	onAction?: (actionId: string, row?: GridRow) => Promise<void>;
 	executeNode: (nodeId: string) => Promise<GridRow[]>;
+	/** True while any per-row enrichment query is in-flight */
+	isEnriching: boolean;
+	/** True while any per-column hydration query is in-flight */
+	isHydrating: boolean;
+	/**
+	 * Enables eager rowEnrich queries when rowEnrich.lazy === true.
+	 * Undefined when the DAG has no rowEnrich node or lazy is false.
+	 */
+	triggerEnrich?: () => void;
+	/**
+	 * Enables a specific column's hydration queries when that column has lazy === true.
+	 * Undefined when the DAG has no columnHydrate node or no column has lazy === true.
+	 */
+	triggerHydrate?: (columnId: string) => void;
 }

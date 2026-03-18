@@ -59,6 +59,12 @@ export interface DataGridContextValue {
 	// Infinite
 	hasNextPage: boolean;
 	fetchNextPage: () => void;
+
+	// Row/Column enrichment
+	isEnriching: boolean;
+	isHydrating: boolean;
+	triggerEnrich?: () => void;
+	triggerHydrate?: (columnId: string) => void;
 }
 
 const DataGridContext = React.createContext<DataGridContextValue | null>(null);

@@ -5,8 +5,8 @@ import type {
 	GridMode,
 	GridRow,
 } from "@/components/data-grid/types/grid-types";
-import type {Row, Table} from "@tanstack/react-table";
-import type {ComponentType} from "react";
+import type { Row, Table } from "@tanstack/react-table";
+import type { ComponentType } from "react";
 import type { ActiveEdit } from "@/components/data-grid/features/editing/use-editing";
 import React from "react";
 
@@ -187,10 +187,22 @@ export interface ToolbarContext {
 
 	// ── Pagination ───────────────────────────────────────────────────────────
 	pagination: { pageIndex: number; pageSize: number };
-	setPagination: React.Dispatch<React.SetStateAction<{ pageIndex: number; pageSize: number }>>;
+	setPagination: React.Dispatch<
+		React.SetStateAction<{ pageIndex: number; pageSize: number }>
+	>;
 	paginatedTotal: number | undefined;
 
 	// ── Infinite ─────────────────────────────────────────────────────────────
 	hasNextPage: boolean;
 	fetchNextPage: () => void;
+
+	// ── Row/Column enrichment ─────────────────────────────────────────────────
+	/** True while any per-row enrichment query is in-flight */
+	isEnriching: boolean;
+	/** True while any per-column hydration query is in-flight */
+	isHydrating: boolean;
+	/** Trigger rowEnrich queries when rowEnrich node has lazy === true. Undefined when not applicable. */
+	triggerEnrich?: () => void;
+	/** Trigger a column's hydration queries (lazy === true). Undefined when not applicable. */
+	triggerHydrate?: (columnId: string) => void;
 }

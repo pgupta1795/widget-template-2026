@@ -387,6 +387,14 @@ export interface DataGridProps<TData extends GridRow> {
 	 * Use this to react to selection changes from outside the grid.
 	 */
 	onSelectionChange?: (rows: GridRow[]) => void;
+	/** True while any per-row enrichment query is in-flight */
+	isEnriching?: boolean;
+	/** True while any per-column hydration query is in-flight */
+	isHydrating?: boolean;
+	/** Trigger rowEnrich queries when rowEnrich node has lazy === true */
+	triggerEnrich?: () => void;
+	/** Trigger a column's hydration queries when that column has lazy === true */
+	triggerHydrate?: (columnId: string) => void;
 }
 
 /**

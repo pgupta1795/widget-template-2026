@@ -10,6 +10,8 @@ import { ActionNodeExecutor } from "./nodes/action-node";
 import { ApiNodeExecutor } from "./nodes/api-node";
 import { ColumnNodeExecutor } from "./nodes/column-node";
 import { MergeNodeExecutor } from "./nodes/merge-node";
+import { ColumnHydrateNodeExecutor } from "./nodes/column-hydrate-node";
+import { RowEnrichNodeExecutor } from "./nodes/row-enrich-node";
 import { RowExpandNodeExecutor } from "./nodes/row-expand-node";
 import { TransformNodeExecutor } from "./nodes/transform-node";
 
@@ -27,6 +29,8 @@ export function createDefaultEngine(bearerToken?: string): DAGEngine {
 		.register("action", new ActionNodeExecutor());
 
 	nodeReg.register("rowExpand", new RowExpandNodeExecutor(nodeReg));
+	nodeReg.register("rowEnrich", new RowEnrichNodeExecutor());
+	nodeReg.register("columnHydrate", new ColumnHydrateNodeExecutor());
 
 	return new DAGEngine(nodeReg, auth);
 }

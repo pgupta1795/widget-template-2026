@@ -4,16 +4,7 @@ import type { NodeContext } from "../core/node-context";
 import type { INodeExecutor } from "../core/node-registry";
 import type { DAGNode } from "../types/dag.types";
 import type { GridRow, MergeNodeConfig } from "../types/table.types";
-
-/** Extract rows from a node in context regardless of whether it's api/transform/merge. */
-function extractRows(context: NodeContext, id: string): GridRow[] {
-	if (!context.has(id)) return [];
-	const entry = context.getAll().get(id);
-	if (entry?.type === "api") return context.get(id, "api").rows;
-	if (entry?.type === "transform") return context.get(id, "transform");
-	if (entry?.type === "merge") return context.get(id, "merge");
-	return [];
-}
+import { readSourceRows } from "./shared-row-reader";
 
 export class MergeNodeExecutor implements INodeExecutor<"merge"> {
 	async execute(
@@ -21,7 +12,9 @@ export class MergeNodeExecutor implements INodeExecutor<"merge"> {
 		context: NodeContext,
 		_allNodes: DAGNode[],
 	): Promise<GridRow[]> {
-		const sources = config.sourceNodeIds.map((id) => extractRows(context, id));
+		const sources = config.sourceNodeIds.map((id) =>
+			readSourceRows(context, id),
+		);
 
 		switch (config.strategy) {
 			case "concat": {

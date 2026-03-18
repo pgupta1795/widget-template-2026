@@ -2,23 +2,28 @@
 
 import {
 	useInfiniteQuery,
+	useQueries,
 	useQuery,
 	useQueryClient,
 } from "@tanstack/react-query";
-import {useCallback,useMemo,useRef,useState} from "react";
-import type {DAGEngine} from "../core/dag-engine";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import type { DAGEngine } from "../core/dag-engine";
 import type {
 	DAGExecutionError,
 	DAGValidationError,
 } from "../core/dag-validator";
-import {NodeContext} from "../core/node-context";
-import {ApiNodeExecutor} from "../nodes/api-node";
-import type {JsonPrimitive} from "../types/dag.types";
+import { NodeContext } from "../core/node-context";
+import { evaluateExpr } from "../jsonata-evaluator";
+import { ApiNodeExecutor } from "../nodes/api-node";
+import type { JsonPrimitive } from "../types/dag.types";
 import type {
+	ApiNodeConfig,
+	ColumnHydrateNodeOutput,
 	ColumnNodeOutput,
 	DAGTableConfig,
 	DAGTableResult,
 	GridRow,
+	RowEnrichNodeOutput,
 } from "../types/table.types";
 
 /**
@@ -35,11 +40,51 @@ export function useDAGTable(
 	params: Record<string, JsonPrimitive> = {},
 ): DAGTableResult {
 	const { tableId, mode, dag } = config;
+
+	// ── Static node lookups (derived from config — stable between renders) ───────
+	const rowEnrichNode = dag.nodes.find((n) => n.type === "rowEnrich") as
+		| {
+				id: string;
+				type: "rowEnrich";
+				config: import("../types/table.types").RowEnrichNodeConfig;
+		  }
+		| undefined;
+	const colHydrateNode = dag.nodes.find((n) => n.type === "columnHydrate") as
+		| {
+				id: string;
+				type: "columnHydrate";
+				config: import("../types/table.types").ColumnHydrateNodeConfig;
+		  }
+		| undefined;
+
+	// Lazy-gate state — initialised from static DAG config, never from async data.
+	// rowEnrich: starts enabled unless config.lazy === true.
+	const [enrichEnabled, setEnrichEnabled] = useState(
+		() => !rowEnrichNode?.config.lazy,
+	);
+	// columnHydrate: per-column gate; starts enabled unless column.lazy === true.
+	const [hydrateEnabledCols, setHydrateEnabledCols] = useState<
+		Record<string, boolean>
+	>(() =>
+		Object.fromEntries(
+			(colHydrateNode?.config.columns ?? []).map((col) => [
+				col.columnId,
+				!col.lazy,
+			]),
+		),
+	);
+
+	// One-shot refs to guard invalidateQueryKeys effects from firing more than once.
+	const enrichInvalidatedRef = useRef(false);
+	const hydrateInvalidatedRef = useRef<Set<string>>(new Set());
+
 	const [pageIndex, setPageIndex] = useState(0);
 	const pageSize = 50;
 
 	// Store the last NodeContext so onAction can access action output and row data
 	const ctxRef = useRef<NodeContext | null>(null);
+
+	const queryClient = useQueryClient();
 
 	// ── Flat / Paginated / Tree ──────────────────────────────────────────────
 	const flatQuery = useQuery({
@@ -73,8 +118,23 @@ export function useDAGTable(
 				? ctx.get(dag.rootNodeId, "column")
 				: { columns: [], visibility: {} };
 
+			// Extract rowEnrich and columnHydrate outputs if their nodes were executed
+			const rowEnrichNodeId = dag.nodes.find((n) => n.type === "rowEnrich")?.id;
+			const rowEnrichOutput: RowEnrichNodeOutput | undefined =
+				rowEnrichNodeId && ctx.has(rowEnrichNodeId)
+					? ctx.get(rowEnrichNodeId, "rowEnrich")
+					: undefined;
+
+			const colHydrateNodeId = dag.nodes.find(
+				(n) => n.type === "columnHydrate",
+			)?.id;
+			const colHydrateOutput: ColumnHydrateNodeOutput | undefined =
+				colHydrateNodeId && ctx.has(colHydrateNodeId)
+					? ctx.get(colHydrateNodeId, "columnHydrate")
+					: undefined;
+
 			// Store context for expand handler
-			return { rows, colOutput, ctx };
+			return { rows, colOutput, ctx, rowEnrichOutput, colHydrateOutput };
 		},
 		enabled: mode === "flat" || mode === "paginated" || mode === "tree",
 		staleTime: 0,
@@ -143,6 +203,189 @@ export function useDAGTable(
 		return flatQuery.data?.colOutput ?? { columns: [], visibility: {} };
 	}, [mode, flatQuery.data, infiniteQuery.data]);
 
+	// ── rowEnrich useQueries ─────────────────────────────────────────────────────
+
+	const rowEnrichOutput = flatQuery.data?.rowEnrichOutput;
+	const enrichDescriptors = rowEnrichOutput?.descriptors ?? [];
+	const enrichChildApiNodeId = rowEnrichOutput?.childApiNodeId ?? "";
+	const enrichRowKeyField = rowEnrichOutput?.rowKeyField ?? "id";
+	const enrichMergeTransform = rowEnrichOutput?.mergeTransform;
+	const enrichInvalidateKeys = rowEnrichOutput?.invalidateQueryKeys;
+
+	const enrichQueries = useQueries({
+		queries: enrichDescriptors.map((desc) => ({
+			queryKey: [tableId, "rowEnrich", desc.rowKey, enrichChildApiNodeId],
+			queryFn: async (): Promise<GridRow> => {
+				const childApiNode = dag.nodes.find(
+					(n) => n.id === enrichChildApiNodeId && n.type === "api",
+				);
+				if (!childApiNode || !ctxRef.current) return desc.rowData;
+
+				const rowCtx = ctxRef.current.withRow(desc.rowData);
+				const apiExecutor = new ApiNodeExecutor(engine.getAuthRegistry());
+				const result = await apiExecutor.execute(
+					childApiNode.config as ApiNodeConfig,
+					rowCtx,
+					dag.nodes,
+				);
+
+				const firstRow = result.rows[0] ?? {};
+				if (enrichMergeTransform) {
+					const merged = await evaluateExpr<GridRow>(
+						enrichMergeTransform,
+						rowCtx,
+						firstRow,
+					);
+					return merged ?? {};
+				}
+				return firstRow as GridRow;
+			},
+			enabled: enrichEnabled && !!flatQuery.data && !!enrichChildApiNodeId,
+		})),
+	});
+
+	// ── columnHydrate useQueries ─────────────────────────────────────────────────
+
+	const colHydrateOutput = flatQuery.data?.colHydrateOutput;
+	const hydrateDescriptors = colHydrateOutput?.descriptors ?? [];
+	const hydrateColumnEntries = colHydrateOutput?.columnEntries ?? [];
+	const hydrateRowKeyField = colHydrateOutput?.rowKeyField ?? "id";
+
+	const hydrateQueries = useQueries({
+		queries: hydrateDescriptors.map((desc) => {
+			const entry = hydrateColumnEntries.find(
+				(e) => e.columnId === desc.columnId,
+			);
+			return {
+				queryKey: [tableId, "columnHydrate", desc.rowKey, desc.columnId],
+				queryFn: async (): Promise<unknown> => {
+					if (!entry || !ctxRef.current) return undefined;
+					const childApiNode = dag.nodes.find(
+						(n) => n.id === entry.childApiNodeId && n.type === "api",
+					);
+					if (!childApiNode) return undefined;
+
+					const rowCtx = ctxRef.current.withRow(desc.rowData);
+					const apiExecutor = new ApiNodeExecutor(engine.getAuthRegistry());
+					const result = await apiExecutor.execute(
+						childApiNode.config as ApiNodeConfig,
+						rowCtx,
+						dag.nodes,
+					);
+
+					const firstRow = result.rows[0] ?? {};
+					if (entry.mergeTransform) {
+						return evaluateExpr<unknown>(
+							entry.mergeTransform,
+							rowCtx,
+							firstRow,
+						);
+					}
+					return firstRow;
+				},
+				enabled: !!(
+					hydrateEnabledCols[desc.columnId] &&
+					flatQuery.data &&
+					entry?.childApiNodeId
+				),
+			};
+		}),
+	});
+
+	// ── Progressive merge chain ───────────────────────────────────────────────────
+
+	// Fold enrichment results onto the root rows (progressive — updates per query)
+	const enrichedRows = useMemo<GridRow[]>(() => {
+		if (enrichDescriptors.length === 0) return finalRows;
+		return finalRows.map((row) => {
+			const rowKey = String(row[enrichRowKeyField] ?? "");
+			const idx = enrichDescriptors.findIndex((d) => d.rowKey === rowKey);
+			if (idx === -1 || enrichQueries[idx]?.status !== "success") return row;
+			const patch = enrichQueries[idx].data;
+			return patch ? { ...row, ...patch } : row;
+		});
+	}, [finalRows, enrichDescriptors, enrichQueries, enrichRowKeyField]);
+
+	// Fold hydration results onto enriched rows — one key per descriptor
+	const hydratedRows = useMemo<GridRow[]>(() => {
+		if (hydrateDescriptors.length === 0) return enrichedRows;
+		return enrichedRows.map((row) => {
+			const rowKey = String(row[hydrateRowKeyField] ?? "");
+			const matches = hydrateDescriptors
+				.map((desc, i) => ({ desc, i }))
+				.filter(({ desc }) => desc.rowKey === rowKey);
+			if (matches.length === 0) return row;
+			let merged: GridRow = { ...row };
+			for (const { desc, i } of matches) {
+				if (hydrateQueries[i]?.status === "success") {
+					merged = { ...merged, [desc.columnId]: hydrateQueries[i].data };
+				}
+			}
+			return merged;
+		});
+	}, [enrichedRows, hydrateDescriptors, hydrateQueries, hydrateRowKeyField]);
+
+	const isEnriching = enrichQueries.some((q) => q.isFetching);
+	const isHydrating = hydrateQueries.some((q) => q.isFetching);
+
+	// Reset one-shot invalidation guards whenever flatQuery produces a new batch.
+	useEffect(() => {
+		enrichInvalidatedRef.current = false;
+		hydrateInvalidatedRef.current = new Set();
+	}, [flatQuery.data]);
+
+	// ── invalidateQueryKeys effects ──────────────────────────────────────────────
+
+	// rowEnrich: invalidate once when ALL row-enrich queries succeed.
+	const allEnrichSuccess =
+		enrichQueries.length > 0 && enrichQueries.every((q) => q.isSuccess);
+	useEffect(() => {
+		if (!allEnrichSuccess || !enrichInvalidateKeys?.length) return;
+		if (enrichInvalidatedRef.current) return;
+		enrichInvalidatedRef.current = true;
+		for (const key of enrichInvalidateKeys) {
+			void queryClient.invalidateQueries({ queryKey: [key] });
+		}
+	}, [allEnrichSuccess, enrichInvalidateKeys, queryClient]);
+
+	// columnHydrate: per-column — invalidate once when ALL queries for that column succeed.
+	useEffect(() => {
+		for (const entry of hydrateColumnEntries) {
+			if (!entry.invalidateQueryKeys?.length) continue;
+			if (hydrateInvalidatedRef.current.has(entry.columnId)) continue;
+			const colIndices = hydrateDescriptors
+				.map((desc, i) => ({ desc, i }))
+				.filter(({ desc }) => desc.columnId === entry.columnId);
+			const allColSuccess =
+				colIndices.length > 0 &&
+				colIndices.every(({ i }) => hydrateQueries[i]?.isSuccess);
+			if (allColSuccess) {
+				hydrateInvalidatedRef.current.add(entry.columnId);
+				for (const key of entry.invalidateQueryKeys) {
+					void queryClient.invalidateQueries({ queryKey: [key] });
+				}
+			}
+		}
+	}, [hydrateColumnEntries, hydrateDescriptors, hydrateQueries, queryClient]);
+
+	// ── Lazy triggers ─────────────────────────────────────────────────────────────
+
+	// Always call — never inside conditions.
+	const triggerEnrichFn = useCallback(() => setEnrichEnabled(true), []);
+	const triggerHydrateFn = useCallback(
+		(columnId: string) =>
+			setHydrateEnabledCols((prev) => ({ ...prev, [columnId]: true })),
+		[],
+	);
+
+	// Only expose when the DAG actually has a lazy node of that type.
+	const triggerEnrich = rowEnrichNode?.config.lazy
+		? triggerEnrichFn
+		: undefined;
+	const triggerHydrate = colHydrateNode?.config.columns.some((c) => c.lazy)
+		? triggerHydrateFn
+		: undefined;
+
 	// ── RowExpand handler ─────────────────────────────────────────────────────
 
 	const onExpand = useMemo<DAGTableResult["onExpand"]>(() => {
@@ -159,8 +402,6 @@ export function useDAGTable(
 	}, [dag.nodes, mode, flatQuery.data]);
 
 	// ── executeNode handler ──────────────────────────────────────────────────
-	const queryClient = useQueryClient();
-
 	const executeNode = useCallback(
 		async (nodeId: string): Promise<GridRow[]> => {
 			const ctx = ctxRef.current;
@@ -180,11 +421,9 @@ export function useDAGTable(
 				config.dag.nodes,
 			);
 
-			// Invalidate query cache to trigger re-fetch
-			// await queryClient.invalidateQueries({ queryKey: [config.tableId] });
 			return result.rows;
 		},
-		[config, engine, queryClient],
+		[config, engine],
 	);
 
 	// ── onAction handler ─────────────────────────────────────────────────────
@@ -220,11 +459,8 @@ export function useDAGTable(
 				rowCtx,
 				config.dag.nodes,
 			);
-
-			// 4. Invalidate query cache to trigger re-fetch
-			// await queryClient.invalidateQueries({ queryKey: [config.tableId] });
 		},
-		[config, engine, queryClient],
+		[config, engine],
 	);
 
 	// ── Pagination ────────────────────────────────────────────────────────────
@@ -243,7 +479,7 @@ export function useDAGTable(
 			: undefined;
 
 	return {
-		data: finalRows,
+		data: hydratedRows,
 		columns: finalColOutput.columns,
 		columnVisibility: finalColOutput.visibility,
 		isLoading,
@@ -256,5 +492,9 @@ export function useDAGTable(
 		onExpand,
 		onAction,
 		executeNode,
+		isEnriching,
+		isHydrating,
+		triggerEnrich,
+		triggerHydrate,
 	};
 }

@@ -76,6 +76,10 @@ export function ConfiguredTable({
 		onExpand,
 		onAction,
 		executeNode,
+		isEnriching,
+		isHydrating,
+		triggerEnrich,
+		triggerHydrate,
 	} = useDAGTable(
 		config,
 		engine,
@@ -143,6 +147,11 @@ export function ConfiguredTable({
 			onAction={onAction}
 			onExecuteNode={executeNode}
 			onSearch={handleSearch}
+			// Row/Column enrichment
+			isEnriching={isEnriching}
+			isHydrating={isHydrating}
+			triggerEnrich={triggerEnrich}
+			triggerHydrate={triggerHydrate}
 		/>
 	);
 }

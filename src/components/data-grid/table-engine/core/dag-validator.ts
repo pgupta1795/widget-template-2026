@@ -99,5 +99,37 @@ export function validateDAG(dag: DAGConfig, authIds: Set<string>): void {
 				}
 			}
 		}
+
+		if (node.type === "rowEnrich") {
+			if (!nodeIds.has(node.config.sourceNodeId)) {
+				throw new DAGValidationError(
+					`RowEnrichNode "${node.id}" references unknown sourceNodeId: "${node.config.sourceNodeId}"`,
+					node.id,
+				);
+			}
+			if (!nodeIds.has(node.config.childApiNodeId)) {
+				throw new DAGValidationError(
+					`RowEnrichNode "${node.id}" references unknown childApiNodeId: "${node.config.childApiNodeId}"`,
+					node.id,
+				);
+			}
+		}
+
+		if (node.type === "columnHydrate") {
+			if (!nodeIds.has(node.config.sourceNodeId)) {
+				throw new DAGValidationError(
+					`ColumnHydrateNode "${node.id}" references unknown sourceNodeId: "${node.config.sourceNodeId}"`,
+					node.id,
+				);
+			}
+			for (const col of node.config.columns) {
+				if (!nodeIds.has(col.childApiNodeId)) {
+					throw new DAGValidationError(
+						`ColumnHydrateNode "${node.id}" column "${col.columnId}" references unknown childApiNodeId: "${col.childApiNodeId}"`,
+						node.id,
+					);
+				}
+			}
+		}
 	}
 }

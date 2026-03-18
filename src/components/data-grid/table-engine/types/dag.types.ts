@@ -2,9 +2,11 @@
 import type {
 	ActionNodeConfig,
 	ApiNodeConfig,
+	ColumnHydrateNodeConfig,
 	ColumnNodeConfig,
 	MergeNodeConfig,
 	NodeOutputMap,
+	RowEnrichNodeConfig,
 	RowExpandNodeConfig,
 	TransformNodeConfig,
 } from "./table.types";
@@ -30,7 +32,9 @@ export type NodeType =
 	| "column"
 	| "rowExpand"
 	| "merge"
-	| "action";
+	| "action"
+	| "rowEnrich"
+	| "columnHydrate";
 
 export interface NodeConfigMap {
 	api: ApiNodeConfig;
@@ -39,6 +43,8 @@ export interface NodeConfigMap {
 	rowExpand: RowExpandNodeConfig;
 	merge: MergeNodeConfig;
 	action: ActionNodeConfig;
+	rowEnrich: RowEnrichNodeConfig;
+	columnHydrate: ColumnHydrateNodeConfig;
 }
 
 export type { NodeOutputMap };
@@ -49,7 +55,9 @@ export type DAGNode =
 	| { id: string; type: "column"; config: ColumnNodeConfig }
 	| { id: string; type: "rowExpand"; config: RowExpandNodeConfig }
 	| { id: string; type: "merge"; config: MergeNodeConfig }
-	| { id: string; type: "action"; config: ActionNodeConfig };
+	| { id: string; type: "action"; config: ActionNodeConfig }
+	| { id: string; type: "rowEnrich"; config: RowEnrichNodeConfig }
+	| { id: string; type: "columnHydrate"; config: ColumnHydrateNodeConfig };
 
 export interface DAGEdge {
 	from: string;

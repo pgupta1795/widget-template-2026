@@ -345,6 +345,10 @@ export const ToolbarRenderer = memo(function ToolbarRenderer({
 		paginatedTotal,
 		hasNextPage,
 		fetchNextPage,
+		isEnriching,
+		isHydrating,
+		triggerEnrich,
+		triggerHydrate,
 	} = useDataGridContext();
 
 	const ctx = useMemo<ToolbarContext>(
@@ -382,6 +386,10 @@ export const ToolbarRenderer = memo(function ToolbarRenderer({
 			paginatedTotal,
 			hasNextPage,
 			fetchNextPage,
+			isEnriching,
+			isHydrating,
+			triggerEnrich,
+			triggerHydrate,
 		}),
 		[
 			table,
@@ -411,6 +419,10 @@ export const ToolbarRenderer = memo(function ToolbarRenderer({
 			paginatedTotal,
 			hasNextPage,
 			fetchNextPage,
+			isEnriching,
+			isHydrating,
+			triggerEnrich,
+			triggerHydrate,
 		],
 	);
 

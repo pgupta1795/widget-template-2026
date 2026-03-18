@@ -124,6 +124,14 @@ export interface DataGridConfig<TData extends GridRow> {
 	 * Example: { internalCode: false, notes: false }
 	 */
 	initialColumnVisibility?: Record<string, boolean>;
+	/** True while any per-row enrichment query is in-flight */
+	isEnriching?: boolean;
+	/** True while any per-column hydration query is in-flight */
+	isHydrating?: boolean;
+	/** Trigger rowEnrich queries when rowEnrich node has lazy === true */
+	triggerEnrich?: () => void;
+	/** Trigger a column's hydration queries when that column has lazy === true */
+	triggerHydrate?: (columnId: string) => void;
 }
 
 /**
@@ -164,6 +172,10 @@ export function useDataGrid<TData extends GridRow>(
 		onExecuteNode,
 		onSearch,
 		initialColumnVisibility,
+		isEnriching: externalIsEnriching = false,
+		isHydrating: externalIsHydrating = false,
+		triggerEnrich,
+		triggerHydrate,
 	} = config;
 
 	const executeApiNode = React.useCallback(
@@ -513,6 +525,11 @@ export function useDataGrid<TData extends GridRow>(
 			// otherwise use infiniteQuery values
 			hasNextPage: config.hasNextPage ?? infiniteQuery.hasNextPage,
 			fetchNextPage: config.fetchNextPage ?? infiniteQuery.fetchNextPage,
+			// Row/Column enrichment
+			isEnriching: externalIsEnriching,
+			isHydrating: externalIsHydrating,
+			triggerEnrich,
+			triggerHydrate,
 		}),
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 		[
@@ -555,6 +572,10 @@ export function useDataGrid<TData extends GridRow>(
 			columnPinningHook.columnPinning,
 			groupingHook.grouping,
 			groupingHook.expanded,
+			externalIsEnriching,
+			externalIsHydrating,
+			triggerEnrich,
+			triggerHydrate,
 		],
 	);
 }
