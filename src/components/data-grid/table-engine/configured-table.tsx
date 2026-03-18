@@ -7,6 +7,7 @@ import { createDefaultEngine } from "./bootstrap";
 import { useDAGTable } from "./hooks/use-dag-table";
 import type { JsonPrimitive } from "./types/dag.types";
 import type { DAGTableConfig } from "./types/table.types";
+import type { GridRow } from "@/components/data-grid/types/grid-types";
 
 export interface ConfiguredTableProps {
 	config: DAGTableConfig;
@@ -20,6 +21,11 @@ export interface ConfiguredTableProps {
 	toolbarCommands?: ToolbarCommand[];
 	/** CSS classes for the toolbar bar element */
 	toolbarClassName?: string;
+	/**
+	 * Called whenever the row selection changes.
+	 * Receives the array of currently selected row objects.
+	 */
+	onSelectionChange?: (rows: GridRow[]) => void;
 }
 
 /**
@@ -39,6 +45,7 @@ export function ConfiguredTable({
 	params,
 	toolbarCommands: consumerToolbarCommands,
 	toolbarClassName,
+	onSelectionChange,
 }: ConfiguredTableProps) {
 	// One engine instance per table mount
 	const engine = useMemo(() => createDefaultEngine(), []);
@@ -121,6 +128,7 @@ export function ConfiguredTable({
 			fetchNextPage={fetchNextPage}
 			onExpand={onExpand}
 			className={className}
+			onSelectionChange={onSelectionChange}
 			// Toolbar wiring
 			// Pass undefined only when neither the DAG nor the consumer supplied any commands.
 			// If consumer explicitly passes toolbarCommands={[]} we preserve the empty array

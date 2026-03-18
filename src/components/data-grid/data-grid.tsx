@@ -381,6 +381,35 @@ export interface DataGridProps<TData extends GridRow> {
 	 * Signature: (paramName, query) — paramName defaults to 'q'.
 	 */
 	onSearch?: (paramName: string, query: string) => void;
+	/**
+	 * Called whenever the row selection state changes.
+	 * Receives the array of currently selected GridRow objects.
+	 * Use this to react to selection changes from outside the grid.
+	 */
+	onSelectionChange?: (rows: GridRow[]) => void;
+}
+
+/**
+ * Zero-render component that watches table selection and forward it to the consumer.
+ * Must live inside DataGridProvider to access the table via context.
+ */
+function SelectionWatcher({
+	onSelectionChange,
+}: {
+	onSelectionChange: (rows: GridRow[]) => void;
+}) {
+	const { table } = useDataGridContext();
+	const selectionState = table.getState().rowSelection;
+
+	React.useEffect(() => {
+		const selectedRows = table
+			.getSelectedRowModel()
+			.rows.map((r) => r.original);
+		onSelectionChange(selectedRows);
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [selectionState, onSelectionChange]);
+
+	return null;
 }
 
 /**
@@ -403,6 +432,10 @@ export function DataGrid<TData extends GridRow>(props: DataGridProps<TData>) {
 			>
 				<DataGridInner />
 			</div>
+			{props.onSelectionChange && (
+				<SelectionWatcher onSelectionChange={props.onSelectionChange} />
+			)}
 		</DataGridProvider>
 	);
 }
+

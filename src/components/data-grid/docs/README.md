@@ -9,6 +9,7 @@ Welcome to the DataGrid documentation. Choose your path below:
 - **Feature reference?** → [Features](#features) below
 - **See all data modes?** → [Data Modes (Raw Props)](#data-modes-raw-props)
 - **Config-driven approach?** → [Config & JSONata](#config-driven-tables)
+- **Toolbar / commands?** → [Toolbar](08-toolbar.md)
 - **Extend the grid?** → [Customization](#customization)
 - **Full API?** → [API Reference](07-api-reference.md)
 
@@ -66,14 +67,24 @@ Full, runnable examples without config abstraction:
 
 ## Config-Driven Tables
 
-Declarative approach using JSON config + JSONata transforms:
+Declarative approach using DAG (Directed Acyclic Graph) configuration + JSONata transforms:
 
-- [Config Basics](05-config-driven-tables/config-basics.md) — When to use config vs raw props
-- [JSONata Transforms](05-config-driven-tables/jsonata-transforms.md) — Field mapping, conditions, transforms
-- [Flat Table Config](05-config-driven-tables/flat-table-config.md) — Full config example
-- [Infinite Table Config](05-config-driven-tables/infinite-table-config.md) — Config + cursor-based fetch
-- [Tree Table Config](05-config-driven-tables/tree-table-config.md) — Config + lazy hierarchy
-- [Config API Reference](05-config-driven-tables/config-api-reference.md) — Full config schema
+**Getting Started:**
+- [Config Basics](05-config-driven-tables/config-basics.md) — DAG model, when to use config, minimal example
+- [DAG Nodes Reference](05-config-driven-tables/dag-nodes.md) — All 6 node types (api, transform, column, merge, rowExpand, action)
+
+**JSONata & Transforms:**
+- [JSONata Transforms](05-config-driven-tables/jsonata-transforms.md) — Field mapping, expressions, `$params`, `valueExpr`, `responseTransform`
+
+**Scenarios & Examples:**
+- [Flat Table Config](05-config-driven-tables/flat-table-config.md) — Local or single API data
+- [Infinite Table Config](05-config-driven-tables/infinite-table-config.md) — Offset/cursor pagination + server-side search
+- [Tree Table Config](05-config-driven-tables/tree-table-config.md) — Hierarchies, lazy expansion, expand-all
+- [Parallel Merges](05-config-driven-tables/parallel-merge.md) — Multiple APIs in parallel, merge strategies (concat, join, merge)
+- [Actions](05-config-driven-tables/actions.md) — Row/cell buttons, lazy APIs, visibility/disabled rules
+
+**Reference:**
+- [Config API Reference](05-config-driven-tables/config-api-reference.md) — Complete schema for all node types
 
 ---
 
@@ -130,6 +141,14 @@ Ready? Start with [Quick Start](01-quick-start.md) or [Progressive Walkthrough](
 
 ---
 
+## Toolbar
+
+A declarative, composable command bar above the grid. Supports built-in commands (search, column visibility, density, refresh, export, expand-all, add-row) and fully custom commands with handler functions.
+
+- [Toolbar](08-toolbar.md) — Full toolbar reference: command types, ToolbarContext, built-in commands, merge behavior, server-side search, examples
+
+---
+
 ## Architecture
 
 The DataGrid is organized as:
@@ -139,8 +158,9 @@ The DataGrid is organized as:
 - **`features/`** — Modular behavior: sorting, filtering, selection, etc.
 - **`columns/`** — Typed column factories
 - **`editors/`** — Inline edit components
+- **`toolbar/`** — Toolbar command types, renderer, built-in commands, merge utility
 - **`types/`** — TypeScript contracts
-- **`table-engine/`** — Config-driven engine (Phase 14+)
+- **`table-engine/`** — Config-driven engine (DAG, ConfiguredTable)
 
 [Learn more](../../README.md) about the overall codebase structure in CLAUDE.md.
 

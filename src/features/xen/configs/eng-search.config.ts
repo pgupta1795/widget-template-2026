@@ -1,5 +1,4 @@
-// src/features/xen/configs/eng-search.config.ts
-import type { DAGTableConfig } from "@/components/data-grid/table-engine";
+import type {DAGTableConfig} from "@/components/data-grid/table-engine";
 
 /**
  * Engineering Item search table config.
@@ -40,20 +39,20 @@ export const engSearchConfig: DAGTableConfig = {
 						Accept: "application/json",
 					},
 					responseTransform: `
-            member.{
-              "id":           id,
-              "name":         name,
-              "title":        title,
-              "type":         type,
-              "revision":     revision,
-              "state":        state,
-              "owner":        owner,
-              "organization": organization,
-              "collabspace":  collabspace,
-              "created":      created,
-              "modified":     modified
-            }
-          `,
+						member.{
+						"id":           id,
+						"name":         name,
+						"title":        title,
+						"type":         type,
+						"revision":     revision,
+						"state":        state,
+						"owner":        owner,
+						"organization": organization,
+						"collabspace":  collabspace,
+						"created":      created,
+						"modified":     modified
+						}
+					`,
 				},
 			},
 
@@ -108,6 +107,51 @@ export const engSearchConfig: DAGTableConfig = {
 			enabled: true,
 			queryParamName: "searchStr",
 			placeholder: "Search by name, description...",
+		},
+		{
+			id: "spacer",
+			type: "spacer",
+			enabled: true,
+		},
+		{
+			id: "columnVisibility",
+			type: "menu",
+			enabled: true,
+			label: "Columns",
+			icon: "Columns3",
+			commands: [],
+		},
+		{
+			id: "density",
+			type: "menu",
+			enabled: true,
+			icon: "AlignJustify",
+			commands: [],
+		},
+		{
+			id: "refresh",
+			type: "command",
+			enabled: true,
+			label: "Refresh",
+			icon: "RefreshCw",
+		},
+		{
+			id: "export",
+			type: "command",
+			enabled: true,
+			label: "Export",
+			icon: "Download",
+		},
+		{
+			id: "menu",
+			type: "menu",
+			label: "Actions",
+			enabled: true,
+			align: "right",
+			icon: "Settings",
+			commands: [
+				
+			],
 		},
 	],
 };

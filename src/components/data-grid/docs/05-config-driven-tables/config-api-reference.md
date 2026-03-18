@@ -1,187 +1,397 @@
 # Config API Reference
 
-Complete schema for table configuration.
+Complete, accurate schema for `DAGTableConfig` and all node types. For examples, see the scenario-specific docs.
 
-## Root Config
+---
+
+## DAGTableConfig (Root)
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `tableId` | `string` | ✓ | Unique table ID. Used in React Query cache keys. |
+| `mode` | `"flat"` \| `"paginated"` \| `"infinite"` \| `"tree"` | ✓ | Data loading strategy. |
+| `dag` | `DAGConfig` | ✓ | Node graph: all nodes, edges, root node ID. |
+| `features` | `DAGFeaturesConfig` | — | Feature flags (sorting, filtering, etc.). |
+| `density` | `"compact"` \| `"normal"` \| `"comfortable"` | — | Initial row density. |
+| `toolbarCommands` | `SerializableToolbarCommand[]` | — | Toolbar button/menu definitions. |
+
+---
+
+## DAGConfig
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `nodes` | `DAGNode[]` | ✓ | All nodes: api, transform, column, merge, rowExpand, action. Includes lazy nodes. |
+| `edges` | `{ from: string; to: string }[]` | ✓ | Initial-wave dependencies. Lazy nodes NOT listed here. |
+| `rootNodeId` | `string` | ✓ | Final node ID to render. Usually a `column` node. |
+
+---
+
+## Node Types
+
+### ApiNode
 
 ```typescript
 {
-  name: string;              // Unique table name
-  description?: string;       // What this table does
-  mode: "flat" | "paginated" | "infinite" | "tree";
-  columns: ColumnConfig[];
-  features: FeaturesConfig;
-  dataSource: DataSourceConfig;
-  ui?: UIConfig;
+  id: string;
+  type: "api";
+  config: ApiNodeConfig;
 }
 ```
 
-## ColumnConfig
+**ApiNodeConfig:**
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `url` | `string` \| `JsonataExpr` | ✓ | Endpoint URL. Use `$:$params.x` to reference params. |
+| `method` | `"GET"` \| `"POST"` \| `"PUT"` \| `"DELETE"` \| `"PATCH"` | ✓ | HTTP method. |
+| `authAdapterId` | `string` | ✓ | Auth strategy: `"wafdata"`, `"bearer"`, `"none"`. |
+| `queryParams` | `Record<string, string \| JsonataExpr>` | — | URL query parameters. |
+| `body` | `JsonValue` \| `JsonataExpr` | — | Request body (JSON or JSONata). |
+| `formParams` | `Record<string, string \| JsonataExpr>` | — | Form-encoded parameters. |
+| `fileParams` | `Array<{ fieldName: string; sourceKey: string }>` | — | File upload fields. |
+| `headers` | `Record<string, string>` | — | Custom HTTP headers. |
+| `responseTransform` | `string` (JSONata) | — | JSONata to transform API response → rows. |
+| `paginationConfig` | `PaginationConfig` | — | Pagination setup for infinite/paginated modes. |
+
+**PaginationConfig:**
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `type` | `"offset"` \| `"cursor"` \| `"page"` | ✓ | Pagination strategy. |
+| `pageParam` | `string` | ✓ | URL param name for offset/cursor/page. |
+| `pageSizeParam` | `string` | ✓ | URL param name for page size. |
+| `totalKey` | `string` | — | JSON path in response for total count (e.g., `"meta.total"`). |
+
+**ApiNodeOutput:**
 
 ```typescript
 {
-  id: string;                        // Field name in data
-  type: "string" | "number" | "boolean" | "date" | "select" | "multi-value" | "code";
-  label: string;                     // Display header
-  width?: number;                    // Column width in pixels (default: auto)
-  sortable?: boolean;                // Allow sort (default: true)
-  filterable?: boolean;              // Allow filter (default: true)
-  editable?: boolean;                // Allow inline edit (default: false)
-
-  // For select columns:
-  options?: Array<{
-    label: string;
-    value: string;
-  }>;
-
-  // For computed columns:
-  expr?: string;                     // JSONata expression
-}
-```
-
-## FeaturesConfig
-
-```typescript
-{
-  sorting?: {
-    enabled: boolean;
-    defaultSort?: Array<{
-      id: string;
-      desc: boolean;
-    }>;
-  };
-
-  filtering?: {
-    enabled: boolean;
-    filterRow?: boolean;  // Show filter inputs in header
-    defaultFilters?: Array<{
-      id: string;
-      value: any;
-    }>;
-  };
-
-  selection?: {
-    enabled: boolean;
-    initialSelected?: string[];
-  };
-
-  pinning?: {
-    enabled: boolean;
-    columnPinningLeft?: string[];
-    columnPinningRight?: string[];
-  };
-
-  grouping?: {
-    enabled: boolean;
-    groupBy?: string[];
-  };
-
-  editing?: {
-    enabled: boolean;
-    onMutate?: (rowId: string, columnId: string, value: any) => Promise<any>;
-  };
-
-  virtualization?: {
-    enabled: boolean;
-    overscan?: number;  // Rows to render beyond viewport
-  };
-}
-```
-
-## DataSourceConfig
-
-### Local Data
-
-```typescript
-{
-  type: "local";
-  data: Array<any>;
-}
-```
-
-### Paginated
-
-```typescript
-{
-  type: "paginated";
-  fetchFn: (pageIndex: number) => Promise<{
-    rows: Array<any>;
-    total: number;
-  }>;
-}
-```
-
-### Infinite
-
-```typescript
-{
-  type: "infinite";
-  fetchFn: (pageParam?: any) => Promise<{
-    rows: Array<any>;
-    nextPage: any | null;
-  }>;
-}
-```
-
-### Tree
-
-```typescript
-{
-  type: "tree";
-  data: Array<any>;
-  getSubRows?: string | ((row: any) => any[]);  // Path or function
-  onExpand?: (rowId: string) => Promise<any[]>;  // Optional lazy load
-}
-```
-
-## UIConfig
-
-```typescript
-{
-  density?: "default" | "compact" | "loose";
-  pageSize?: number;  // Rows per view (for virtualization)
+  rows: GridRow[];
+  total?: number;        // For paginated mode
+  nextPage?: string | null;  // For infinite mode
 }
 ```
 
 ---
 
-## Usage Example
+### TransformNode
 
-```tsx
-import { ConfiguredTable } from "@/components/data-grid/table-engine";
+```typescript
+{
+  id: string;
+  type: "transform";
+  config: TransformNodeConfig;
+}
+```
 
-const config = {
-  name: "users",
-  description: "User directory",
-  mode: "flat",
-  columns: [
-    { id: "name", type: "string", label: "Name" },
-    { id: "age", type: "number", label: "Age" },
-  ],
+**TransformNodeConfig:**
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `sourceNodeId` | `string` | ✓ | Prior node ID (api or merge). |
+| `expression` | `string` (JSONata) | ✓ | JSONata to transform rows. Input is array. |
+
+**Output:** `GridRow[]`
+
+---
+
+### ColumnNode
+
+```typescript
+{
+  id: string;
+  type: "column";
+  config: ColumnNodeConfig;
+}
+```
+
+**ColumnNodeConfig:**
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `columns` | `ColumnDef[]` | ✓ | Array of column definitions. |
+| `actionNodeId` | `string` | — | ID of action node to append action column. |
+
+**ColumnDef:**
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `field` | `string` | ✓ | Row property name. |
+| `header` | `string` | ✓ | Column header label. |
+| `type` | `"string"` \| `"number"` \| `"date"` \| `"boolean"` \| `"select"` \| `"multi-value"` \| `"code"` | — | Data type. |
+| `sortable` | `boolean` | — | Allow sorting (default: true). |
+| `filterable` | `boolean` | — | Allow filtering (default: true). |
+| `editable` | `boolean` \| `DepthRule` | — | Allow inline edit. |
+| `renderType` | `"badge"` \| `"boolean"` \| `"date"` \| `"code"` \| `"custom"` | — | Cell render style. |
+| `valueExpr` | `string` (JSONata) | — | Per-cell transform. Input is row object. |
+| `selectOptions` | `Array<{ label: string; value: string }>` | — | Options for select type. |
+| `width` | `number` | — | Column width in pixels. |
+| `pinned` | `"left"` \| `"right"` | — | Pin column to side. |
+| `hidden` | `boolean` | — | Hide by default. |
+| `classNameHeader` | `string` | — | Tailwind CSS classes for header cell. |
+| `classNameCell` | `string` | — | Tailwind CSS classes for data cell. |
+
+**ColumnNodeOutput:**
+
+```typescript
+{
+  columns: GridColumnDef[];
+  visibility: Record<string, boolean>;
+}
+```
+
+---
+
+### MergeNode
+
+```typescript
+{
+  id: string;
+  type: "merge";
+  config: MergeNodeConfig;
+}
+```
+
+**MergeNodeConfig:**
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `sourceNodeIds` | `string[]` | ✓ | Prior node IDs (api or transform). |
+| `strategy` | `"concat"` \| `"join"` \| `"merge"` | ✓ | Merge strategy. |
+| `joinKey` | `string` | — | Field name for join strategy. Required if strategy is `"join"`. |
+
+**Strategies:**
+- `"concat"` — Flatten arrays. Append all sources.
+- `"join"` — Left-outer join on `joinKey`.
+- `"merge"` — Positional zip (index-based).
+
+**Output:** `GridRow[]`
+
+---
+
+### RowExpandNode
+
+```typescript
+{
+  id: string;
+  type: "rowExpand";
+  config: RowExpandNodeConfig;
+}
+```
+
+**RowExpandNodeConfig:**
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `childApiNodeId` | `string` | ✓ | ID of lazy API node to fetch children. |
+| `childKeyExpr` | `JsonataExpr` | ✓ | JSONata to extract param from row (e.g., `$:$row.id`). |
+| `childQueryParam` | `string` | ✓ | URL query param name to inject value into. |
+| `triggerOnExpand` | `boolean` | — | Auto-fetch on expand (default: true). |
+| `infiniteLoad` | `boolean` | — | Support infinite scroll within expanded rows. |
+| `maxDepth` | `number` | — | Max nesting depth. |
+
+**Output:**
+
+```typescript
+{
+  expandHandler: (row: GridRow) => Promise<GridRow[]>;
+}
+```
+
+---
+
+### ActionNode
+
+```typescript
+{
+  id: string;
+  type: "action";
+  config: ActionNodeConfig;
+}
+```
+
+**ActionNodeConfig:**
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `rowActions` | `ActionDef[]` | — | Row-level action buttons. |
+| `cellActions` | `ActionDef[]` | — | Cell-level action buttons. |
+
+**ActionDef:**
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `id` | `string` | ✓ | Unique action ID. |
+| `label` | `string` | ✓ | Button label. |
+| `icon` | `string` | — | lucide-react icon name. |
+| `apiNodeId` | `string` | ✓ | ID of lazy API node to execute. |
+| `confirmMessage` | `string` | — | Confirmation dialog text. |
+| `visibilityExpr` | `JsonataExpr` | — | JSONata with `$row` context. Show if true. |
+| `disabledExpr` | `JsonataExpr` | — | JSONata with `$row` context. Disable if true. |
+
+**Output:**
+
+```typescript
+{
+  rowActions: ActionDef[];
+  cellActions: ActionDef[];
+}
+```
+
+---
+
+## Features Config
+
+**DAGFeaturesConfig extends GridFeaturesConfig:**
+
+| Feature | Type | Description |
+|---------|------|-------------|
+| `sorting` | `{ enabled?: boolean; defaultSort?: Array<{ id: string; desc: boolean }> }` | Sorting. |
+| `filtering` | `{ enabled?: boolean; filterRow?: boolean; defaultFilters?: Array<{ id: string; value: any }> }` | Filtering. |
+| `selection` | `{ enabled?: boolean; mode?: "single" \| "multi"; initialSelected?: string[] }` | Row selection. |
+| `pinning` | `{ enabled?: boolean; columnPinningLeft?: string[]; columnPinningRight?: string[] }` | Pin columns/rows. |
+| `grouping` | `{ enabled?: boolean; groupBy?: string[] }` | Row grouping. |
+| `editing` | `{ enabled?: boolean; onMutate?: (rowId, colId, value) => Promise<any> }` | Inline edit. |
+| `virtualization` | `{ enabled?: boolean; overscan?: number }` | Virtual scroll. |
+| `columnOrdering` | `{ enabled?: boolean }` | Reorder columns (engine-only). |
+| `columnResizing` | `{ enabled?: boolean }` | Resize columns (engine-only). |
+| `columnVisibility` | `{ enabled?: boolean }` | Show/hide columns (engine-only). |
+
+---
+
+## JSONataExpr
+
+A JSONata expression string prefixed with `$:`:
+
+```typescript
+type JsonataExpr = `$:${string}`;
+```
+
+**Examples:**
+- `$:$params.searchStr` — Access param
+- `$:$row.id` — Access row field
+- `$:name & " " & email` — Concatenation
+- `$:status = "active"` — Boolean condition
+
+---
+
+## SerializableToolbarCommand
+
+See [Toolbar Reference](../08-toolbar.md) for complete details.
+
+**Types:** `"command"`, `"menu"`, `"search"`, `"spacer"`, `"separator"`
+
+**Common fields:** `id`, `enabled`, `align`, `label`, `icon`, `className`, `disabled`
+
+---
+
+## Complete Example
+
+```typescript
+const config: DAGTableConfig = {
+  tableId: "engineers",
+  mode: "infinite",
+
+  dag: {
+    nodes: [
+      {
+        id: "api-engineers",
+        type: "api",
+        config: {
+          url: "/api/engineers",
+          method: "GET",
+          authAdapterId: "wafdata",
+          queryParams: {
+            $search: '$:$params.searchStr ?? ""',
+            $top: "50",
+            $skip: '$:$params.cursor ?? "0"',
+          },
+          responseTransform: `members.{ "id": id, "name": name, "email": email }`,
+          paginationConfig: {
+            type: "offset",
+            pageParam: "$skip",
+            pageSizeParam: "$top",
+          },
+        },
+      },
+
+      {
+        id: "delete-api",
+        type: "api",
+        config: {
+          url: "/api/engineers/{id}",
+          method: "DELETE",
+          authAdapterId: "wafdata",
+        },
+      },
+
+      {
+        id: "actions",
+        type: "action",
+        config: {
+          rowActions: [
+            {
+              id: "delete",
+              label: "Delete",
+              icon: "Trash2",
+              apiNodeId: "delete-api",
+              confirmMessage: "Delete this engineer?",
+            },
+          ],
+        },
+      },
+
+      {
+        id: "columns",
+        type: "column",
+        config: {
+          columns: [
+            { field: "name", header: "Name", sortable: true },
+            { field: "email", header: "Email" },
+          ],
+          actionNodeId: "actions",
+        },
+      },
+    ],
+
+    edges: [
+      { from: "api-engineers", to: "actions" },
+      { from: "actions", to: "columns" },
+    ],
+    rootNodeId: "columns",
+  },
+
   features: {
     sorting: { enabled: true },
     filtering: { enabled: true },
+    selection: { enabled: true },
   },
-  dataSource: {
-    type: "local",
-    data: [
-      { id: "1", name: "Alice", age: 30 },
-      { id: "2", name: "Bob", age: 25 },
-    ],
-  },
-};
 
-export default function App() {
-  return <ConfiguredTable config={config} />;
-}
+  toolbarCommands: [
+    {
+      id: "search",
+      type: "search",
+      enabled: true,
+      queryParamName: "searchStr",
+      placeholder: "Search...",
+    },
+    { id: "spacer", type: "spacer", enabled: true },
+    { id: "refresh", type: "command", enabled: true, icon: "RefreshCw" },
+  ],
+};
 ```
 
 ---
 
 ## See Also
 
-- [Config Basics](config-basics.md)
-- [JSONata Transforms](jsonata-transforms.md)
-- [Flat Table Config](flat-table-config.md)
-- [Infinite Table Config](infinite-table-config.md)
-- [Tree Table Config](tree-table-config.md)
+- [Config Basics](config-basics.md) — DAG model
+- [DAG Nodes](dag-nodes.md) — Detailed node explanations
+- [Flat Table Config](flat-table-config.md) — Example
+- [Infinite Table Config](infinite-table-config.md) — Example
+- [Tree Table Config](tree-table-config.md) — Example
+- [Parallel Merges](parallel-merge.md) — Multiple APIs
+- [Actions](actions.md) — Row/cell buttons
+- [JSONata Transforms](jsonata-transforms.md) — Expression syntax
+- [Toolbar Reference](../08-toolbar.md) — Toolbar commands

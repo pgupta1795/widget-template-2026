@@ -4,43 +4,31 @@ Complete reference for DataGrid component, columns, types, and hooks.
 
 ## DataGrid Component
 
-```tsx
-<DataGrid<TData>
-  // Data (choose one)
-  data?: TData[];                    // Local data (flat mode)
-  queryFn?: (pageParam?: any) => Promise<{  // Server data (paginated/infinite/tree)
-    rows: TData[];
-    total?: number;                  // For paginated
-    nextPage?: any;                  // For infinite
-  }>;
-
-  // Column Definition
-  columns: ColumnDef<TData>[];       // TanStack column definitions
-
-  // Mode
-  mode?: "flat" | "paginated" | "infinite" | "tree";
-
-  // Tree Options (tree mode only)
-  getSubRows?: (row: TData) => TData[] | undefined;
-  onExpand?: (rowId: string) => Promise<TData[]>;
-
-  // Features
-  features?: {
-    sorting?: { enabled?: boolean; initialState?: SortingState };
-    filtering?: { enabled?: boolean; filterRow?: boolean };
-    selection?: { enabled?: boolean };
-    pinning?: { enabled?: boolean };
-    grouping?: { enabled?: boolean; groupBy?: string[] };
-    editing?: { enabled?: boolean; onMutate?: (rowId: string, columnId: string, value: any) => Promise<any> };
-    virtualization?: { enabled?: boolean };
-  };
-
-  // UI
-  density?: "default" | "compact" | "loose";
-  className?: string;
-  style?: CSSProperties;
-/>
-```
+| Prop | Type | Description |
+|------|------|-------------|
+| `data` | `TData[]` | Local data (flat / tree modes). |
+| `queryKey` | `QueryKey` | React Query key for paginated / infinite modes. |
+| `queryFn` | `PaginatedQueryFn \| InfiniteQueryFn` | Fetch function for server-side modes. |
+| `columns` | `GridColumnDef<TData>[]` | Column definitions — use column factories. |
+| `mode` | `"flat" \| "paginated" \| "infinite" \| "tree"` | Operational mode. Default: `"flat"`. |
+| `density` | `"compact" \| "normal" \| "comfortable"` | Row/cell spacing. Default: `"normal"`. |
+| `features` | `GridFeaturesConfig` | Feature flags — sorting, filtering, selection, editing, etc. |
+| `slots` | `GridSlots` | Custom render slots (toolbar, pagination, etc.). |
+| `className` | `string` | CSS class on the root container. |
+| `getSubRows` | `(row: TData) => TData[] \| undefined` | Resolve child rows (tree mode). |
+| `onExpand` | `(row: GridRow) => Promise<GridRow[]> \| void` | Lazy-load children for a tree row. |
+| `isRefetching` | `boolean` | External refetch indicator (spins the refresh icon). |
+| `isFetchingNextPage` | `boolean` | Infinite scroll — next page loading indicator. |
+| `isLoading` | `boolean` | Initial loading indicator (shows skeleton). |
+| `hasNextPage` | `boolean` | Infinite scroll — whether more pages exist. |
+| `fetchNextPage` | `() => void` | Infinite scroll — fetch the next page. |
+| `onRefresh` | `() => void` | Called when the built-in `refresh` toolbar button is clicked. |
+| `initialColumnVisibility` | `Record<string, boolean>` | Initial column hidden/visible state. Set automatically by `ConfiguredTable`. |
+| `toolbarCommands` | `ToolbarCommand[]` | Toolbar command definitions. `undefined` = no toolbar. `[]` = empty bar. |
+| `toolbarClassName` | `string` | CSS class merged onto the toolbar bar element only. |
+| `onSearch` | `(paramName: string, query: string) => void` | Server-side search relay (called by search toolbar commands with `action` set). |
+| `onExecuteNode` | `(nodeId: string) => Promise<GridRow[]>` | DAG API node executor — wired by `ConfiguredTable`. |
+| `onAction` | `(actionId: string, row?: GridRow) => Promise<void>` | Row/cell/toolbar action handler — wired by `ConfiguredTable`. |
 
 ## Column Factories
 
@@ -187,19 +175,18 @@ string | number | [number, number] | { from?: string; to?: string } | string[]
 
 ```tsx
 import { ConfiguredTable } from "@/components/data-grid/table-engine";
-
-<ConfiguredTable
-  config={{
-    name: string;
-    mode: "flat" | "paginated" | "infinite" | "tree";
-    columns: ColumnConfig[];
-    features: FeaturesConfig;
-    dataSource: DataSourceConfig;
-  }}
-/>
 ```
 
-See [Config API Reference](05-config-driven-tables/config-api-reference.md) for full schema.
+| Prop | Type | Description |
+|------|------|-------------|
+| `config` | `DAGTableConfig` | Full table configuration including DAG, columns, features, toolbar. |
+| `className` | `string` | CSS class on the root container. |
+| `params` | `Record<string, JsonPrimitive>` | Runtime params injected into the DAG (e.g. `{ nodeId: "abc" }`). |
+| `toolbarCommands` | `ToolbarCommand[]` | Consumer toolbar overrides. Merged with `config.toolbarCommands` via `mergeToolbarCommands`. |
+| `toolbarClassName` | `string` | CSS class merged onto the toolbar bar element. |
+
+See [Config API Reference](05-config-driven-tables/config-api-reference.md) for full `DAGTableConfig` schema, including `toolbarCommands`.
+See [Toolbar](08-toolbar.md) for full toolbar command reference.
 
 ---
 
@@ -249,4 +236,5 @@ export default function App() {
 - [Features](03-features/)
 - [Data Modes](04-data-modes-non-config/)
 - [Config-Driven](05-config-driven-tables/)
+- [Toolbar](08-toolbar.md)
 - [Customization](06-customization/)
