@@ -27,7 +27,7 @@ Instead of writing imperative React code, you declare a table's structure as a J
 
 A **DAG** is a graph of typed nodes connected by edges. Tables execute nodes in topological order (dependencies first) and within each "wave" **in parallel**.
 
-### Six Node Types
+### Eight Node Types
 
 | Type | Purpose | Example |
 |------|---------|---------|
@@ -37,6 +37,8 @@ A **DAG** is a graph of typed nodes connected by edges. Tables execute nodes in 
 | **merge** | Combine rows from multiple sources | Join/concat two API endpoints |
 | **rowExpand** | Lazy-load children per row | Tree hierarchy, expandable rows |
 | **action** | Define row/cell actions (buttons) | Delete, edit, approve buttons |
+| **rowEnrich** | Enrich every root row via per-row API call | `GET /api/items/{id}/details`, merge results |
+| **columnHydrate** | Hydrate per-column cells from independent API calls | Members column, status column with per-column lazy gates |
 
 ### Execution Model
 

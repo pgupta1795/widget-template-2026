@@ -21,7 +21,7 @@ Complete, accurate schema for `DAGTableConfig` and all node types. For examples,
 
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
-| `nodes` | `DAGNode[]` | ✓ | All nodes: api, transform, column, merge, rowExpand, action. Includes lazy nodes. |
+| `nodes` | `DAGNode[]` | ✓ | All nodes: api, transform, column, merge, rowExpand, action, rowEnrich, columnHydrate. Includes lazy nodes. |
 | `edges` | `{ from: string; to: string }[]` | ✓ | Initial-wave dependencies. Lazy nodes NOT listed here. |
 | `rootNodeId` | `string` | ✓ | Final node ID to render. Usually a `column` node. |
 
@@ -236,6 +236,82 @@ Complete, accurate schema for `DAGTableConfig` and all node types. For examples,
 {
   rowActions: ActionDef[];
   cellActions: ActionDef[];
+}
+```
+
+---
+
+### RowEnrichNode
+
+```typescript
+{
+  id: string;
+  type: "rowEnrich";
+  config: RowEnrichNodeConfig;
+}
+```
+
+**RowEnrichNodeConfig:**
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `sourceNodeId` | `string` | ✓ | ID of `api`, `transform`, or `merge` node whose rows to enrich |
+| `childApiNodeId` | `string` | ✓ | ID of lazy `api` node (in nodes[], NOT in edges[]) |
+| `rowKeyField` | `string` | — | Field name used as unique key (default: `"id"`) |
+| `lazy` | `boolean` | — | false = eager; true = waits for trigger (default: `false`) |
+| `mergeTransform` | `string` (JSONata) | — | Applied to first row of childApi response before merging |
+| `invalidateQueryKeys` | `string[]` | — | TQ keys to invalidate after all row enrich queries succeed |
+
+**RowEnrichNodeOutput:**
+
+```typescript
+{
+  descriptors: RowEnrichDescriptor[];
+  childApiNodeId: string;
+  rowKeyField: string;
+  lazy: boolean;
+  mergeTransform?: string;
+  invalidateQueryKeys?: string[];
+}
+```
+
+---
+
+### ColumnHydrateNode
+
+```typescript
+{
+  id: string;
+  type: "columnHydrate";
+  config: ColumnHydrateNodeConfig;
+}
+```
+
+**ColumnHydrateNodeConfig:**
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `sourceNodeId` | `string` | ✓ | ID of `api`, `transform`, or `merge` node whose rows to hydrate |
+| `rowKeyField` | `string` | — | Field name used as unique key (default: `"id"`) |
+| `columns` | `ColumnHydrateEntry[]` | ✓ | Array of per-column hydration configs |
+
+**ColumnHydrateEntry:**
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `columnId` | `string` | ✓ | Must match a `field` in the ColumnNode |
+| `childApiNodeId` | `string` | ✓ | ID of lazy `api` node (in nodes[], NOT in edges[]) |
+| `lazy` | `boolean` | — | false = eager; true = waits for trigger (default: `false`) |
+| `mergeTransform` | `string` (JSONata) | — | Applied to first row of childApi; if result is non-null object, spread directly |
+| `invalidateQueryKeys` | `string[]` | — | TQ keys to invalidate after this column's queries succeed |
+
+**ColumnHydrateNodeOutput:**
+
+```typescript
+{
+  descriptors: ColumnHydrateDescriptor[];
+  columnEntries: ColumnHydrateEntry[];
+  rowKeyField: string;
 }
 ```
 

@@ -71,7 +71,7 @@ Declarative approach using DAG (Directed Acyclic Graph) configuration + JSONata 
 
 **Getting Started:**
 - [Config Basics](05-config-driven-tables/config-basics.md) — DAG model, when to use config, minimal example
-- [DAG Nodes Reference](05-config-driven-tables/dag-nodes.md) — All 6 node types (api, transform, column, merge, rowExpand, action)
+- [DAG Nodes Reference](05-config-driven-tables/dag-nodes.md) — All 8 node types (api, transform, column, merge, rowExpand, action, rowEnrich, columnHydrate)
 
 **JSONata & Transforms:**
 - [JSONata Transforms](05-config-driven-tables/jsonata-transforms.md) — Field mapping, expressions, `$params`, `valueExpr`, `responseTransform`
@@ -82,6 +82,9 @@ Declarative approach using DAG (Directed Acyclic Graph) configuration + JSONata 
 - [Tree Table Config](05-config-driven-tables/tree-table-config.md) — Hierarchies, lazy expansion, expand-all
 - [Parallel Merges](05-config-driven-tables/parallel-merge.md) — Multiple APIs in parallel, merge strategies (concat, join, merge)
 - [Actions](05-config-driven-tables/actions.md) — Row/cell buttons, lazy APIs, visibility/disabled rules
+- [Row Enrich](05-config-driven-tables/row-enrich.md) — Eager per-row API enrichment, progressive rendering
+- [Column Hydrate](05-config-driven-tables/column-hydrate.md) — Per-column lazy hydration, toolbar-triggered
+- [RowEnrich + ColumnHydrate Combined](05-config-driven-tables/row-enrich-column-hydrate-combined.md) — Real-world walkthrough with ca-search.config.ts
 
 **Reference:**
 - [Config API Reference](05-config-driven-tables/config-api-reference.md) — Complete schema for all node types

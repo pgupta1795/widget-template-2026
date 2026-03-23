@@ -1,6 +1,6 @@
 # DAG Nodes Reference
 
-Complete reference for all six node types. For each type: purpose, config fields, example, output.
+Complete reference for all eight node types. For each type: purpose, config fields, example, output.
 
 ---
 
@@ -400,6 +400,147 @@ When a user clicks "Delete", the `delete-api` node executes with the row's ID, t
 
 ---
 
+## RowEnrich Node
+
+**Purpose:** Enrich every root row with supplemental API data. Each row triggers one child API call in parallel; results merge progressively as they arrive.
+
+### Config Fields
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `sourceNodeId` | `string` | ✓ | ID of `api`, `transform`, or `merge` node whose rows to enrich |
+| `childApiNodeId` | `string` | ✓ | ID of lazy `api` node (in nodes[], NOT in edges[]) |
+| `rowKeyField` | `string` | — | Field name used as unique key (default: `"id"`) |
+| `lazy` | `boolean` | — | false = eager; true = waits for `triggerEnrich()` (default: `false`) |
+| `mergeTransform` | `string` (JSONata) | — | JSONata applied to first row of childApi response |
+| `invalidateQueryKeys` | `string[]` | — | TQ keys to invalidate after all row enrich queries succeed |
+
+### Output
+
+```typescript
+{
+  descriptors: RowEnrichDescriptor[];
+  childApiNodeId: string;
+  rowKeyField: string;
+  lazy: boolean;
+  mergeTransform?: string;
+  invalidateQueryKeys?: string[];
+}
+```
+
+### Example: Eager Enrichment
+
+```typescript
+{
+  id: "row-enrich",
+  type: "rowEnrich",
+  config: {
+    sourceNodeId: "root-api",
+    childApiNodeId: "detail-api",
+    rowKeyField: "id",
+    lazy: false,
+    mergeTransform: `{ "owner": owner.login, "status": $uppercase(state) }`,
+  },
+},
+
+{
+  id: "detail-api",  // Lazy node
+  type: "api",
+  config: {
+    url: '$:"/api/items/" & $row.id',
+    method: "GET",
+    authAdapterId: "wafdata",
+  },
+}
+```
+
+When a user loads the table, row-enrich fires after root-api and calls detail-api once per root row in parallel. As responses arrive, the mergeTransform output is spread onto each root row.
+
+---
+
+## ColumnHydrate Node
+
+**Purpose:** Hydrate per-column cell data from independent API calls, with per-column lazy gates.
+
+### Config Fields
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `sourceNodeId` | `string` | ✓ | ID of `api`, `transform`, or `merge` node whose rows to hydrate |
+| `rowKeyField` | `string` | — | Field name used as unique key (default: `"id"`) |
+| `columns` | `ColumnHydrateEntry[]` | ✓ | Array of per-column hydration configs |
+
+### ColumnHydrateEntry (Per-Column)
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `columnId` | `string` | ✓ | Must match a `field` in the ColumnNode |
+| `childApiNodeId` | `string` | ✓ | ID of lazy `api` node (in nodes[], NOT in edges[]) |
+| `lazy` | `boolean` | — | false = eager; true = waits for `triggerHydrate(columnId)` (default: `false`) |
+| `mergeTransform` | `string` (JSONata) | — | JSONata applied to first row of childApi. If result is a non-null object, spread directly (can merge multiple fields) |
+| `invalidateQueryKeys` | `string[]` | — | TQ keys to invalidate after this column's queries all succeed |
+
+### Output
+
+```typescript
+{
+  descriptors: ColumnHydrateDescriptor[];
+  columnEntries: ColumnHydrateEntry[];
+  rowKeyField: string;
+}
+```
+
+### Example: Mixed Eager and Lazy
+
+```typescript
+{
+  id: "col-hydrate",
+  type: "columnHydrate",
+  config: {
+    sourceNodeId: "root-api",
+    rowKeyField: "id",
+    columns: [
+      {
+        columnId: "members",
+        childApiNodeId: "members-api",
+        lazy: false,  // Eager — load immediately
+        mergeTransform: `$join(members, ", ")`
+      },
+      {
+        columnId: "status",
+        childApiNodeId: "status-api",
+        lazy: true,   // Lazy — wait for triggerHydrate('status')
+        mergeTransform: `state`
+      }
+    ]
+  },
+},
+
+{
+  id: "members-api",  // Lazy node
+  type: "api",
+  config: {
+    url: '$:"/api/items/" & $row.id & "/members"',
+    method: "GET",
+    authAdapterId: "wafdata",
+  },
+},
+
+{
+  id: "status-api",   // Lazy node
+  type: "api",
+  config: {
+    url: '$:"/api/items/" & $row.id & "/status"',
+    method: "GET",
+    authAdapterId: "wafdata",
+  },
+}
+```
+
+The `members` column loads immediately; the `status` column waits until the user calls `ctx.triggerHydrate?.('status')` from a toolbar command.
+
+---
+
 ## Full Node Type Reference
 
 | Node Type | Executes On Initial Wave | Can Be Lazy | Output Type | Typical Use |
@@ -410,6 +551,8 @@ When a user clicks "Delete", the `delete-api` node executes with the row's ID, t
 | **merge** | Yes (if in edges) | No | `GridRow[]` | Combine multiple sources |
 | **rowExpand** | Yes (if in edges) | No | `RowExpandOutput` | Tree expansion, lazy children |
 | **action** | Yes (if in edges) | No | `ActionOutput` | Row/cell action buttons |
+| **rowEnrich** | Yes (if in edges) | Yes (via `triggerEnrich()`) | `RowEnrichNodeOutput` | Enrich every root row via per-row API call (eager or trigger-gated) |
+| **columnHydrate** | Yes (if in edges) | Yes (per-column via `triggerHydrate(columnId)`) | `ColumnHydrateNodeOutput` | Hydrate per-column cells from independent API calls (per-column lazy gate) |
 
 ---
 
