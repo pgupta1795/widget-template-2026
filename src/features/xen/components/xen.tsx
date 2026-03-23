@@ -4,6 +4,7 @@ import {use3dxDropZone} from "@/hooks/use-3dx-drop-zone";
 import {cn} from "@/lib/utils";
 import {MousePointerClick} from "lucide-react";
 import {useMemo,useState} from "react";
+import {caSearchConfig} from "../configs/ca-search.config";
 import {engExpandConfig} from "../configs/eng-expand.config";
 import {engSearchConfig} from "../configs/eng-search.config";
 
@@ -29,7 +30,7 @@ export function Xen() {
 				isDragOver&&"ring-2 ring-primary ring-inset",
 			)}
 		>
-			<Tabs defaultValue="search" className="flex h-full flex-col">
+			<Tabs defaultValue="change-action" className="flex h-full flex-col">
 				<div className="border-b px-4">
 					<TabsList className="mt-3 mb-0 h-9">
 						<TabsTrigger value="search" className="text-sm">
@@ -37,6 +38,9 @@ export function Xen() {
 						</TabsTrigger>
 						<TabsTrigger value="expand" className="text-sm">
 							Expand
+						</TabsTrigger>
+						<TabsTrigger value="change-action" className="text-sm">
+							Change Action
 						</TabsTrigger>
 					</TabsList>
 				</div>
@@ -70,6 +74,18 @@ export function Xen() {
 							</p>
 						</div>
 					)}
+				</TabsContent>
+
+				<TabsContent
+					value="change-action"
+					className="mt-0 flex flex-1 flex-col gap-2 overflow-hidden p-2"
+				>
+					<div className="min-h-0 flex-1 overflow-hidden">
+						<ConfiguredTable
+							config={caSearchConfig}
+							className="h-full"
+						/>
+					</div>
 				</TabsContent>
 			</Tabs>
 		</div>
