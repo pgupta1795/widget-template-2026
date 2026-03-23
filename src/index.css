@@ -157,4 +157,29 @@
 	.state-pill-freeze {
 		@apply bg-cyan-100 text-cyan-800;
 	}
+
+	/* ── 3DExperience state badges ── */
+	.state-pill-draft {
+		@apply bg-blue-100 text-blue-800;
+	}
+
+	.state-pill-in-approval {
+		@apply bg-amber-100 text-amber-800;
+	}
+
+	.state-pill-complete {
+		@apply bg-green-100 text-green-800;
+	}
+
+	.state-pill-rejected {
+		@apply bg-red-100 text-red-800;
+	}
+
+	.state-pill-released {
+		@apply bg-green-100 text-green-800;
+	}
+
+	.state-pill-obsolete {
+		@apply bg-gray-100 text-gray-800;
+	}
 }
