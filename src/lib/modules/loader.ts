@@ -1,10 +1,10 @@
-import {logger} from "@/lib/logger";
+import { logger } from "@/lib/logger";
 import {
 	CORE_MODULES,
 	MODULE_REGISTRY,
 	type ModuleKey,
 } from "@/lib/modules/modules";
-import {registerModule} from "@/lib/modules/registry";
+import { registerModule } from "@/lib/modules/registry";
 
 export function loadModules(
 	additionalModules: ModuleKey[] = [],

@@ -1,6 +1,6 @@
-import {logger} from "@/lib/logger";
-import type {DSPlatformAPIs,UWA} from "@/lib/types/index";
-import type {Widget} from '@/lib/types/widget';
+import { logger } from "@/lib/logger";
+import type { DSPlatformAPIs, UWA } from "@/lib/types/index";
+import type { Widget } from "@/lib/types/widget";
 
 let platformAPIs: DSPlatformAPIs | undefined;
 let widgetRef: Widget | undefined;

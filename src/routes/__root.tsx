@@ -1,8 +1,10 @@
-import type { QueryClient } from "@tanstack/react-query";
-import { createRootRouteWithContext, Outlet } from "@tanstack/react-router";
-import { TanStackRouterDevtools } from "@tanstack/react-router-devtools";
+import { AppShell } from "@/components/layout/app-shell";
+import { DropZoneProvider } from "@/components/dnd/drop-zone-provider";
 import TanStackQueryProvider from "@/components/root-provider";
 import { Toaster } from "@/components/ui/sonner";
+import type { QueryClient } from "@tanstack/react-query";
+import { createRootRouteWithContext } from "@tanstack/react-router";
+import { TanStackRouterDevtools } from "@tanstack/react-router-devtools";
 
 interface MyRouterContext {
 	queryClient: QueryClient;
@@ -15,7 +17,9 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
 function RootComponent() {
 	return (
 		<TanStackQueryProvider>
-			<Outlet />
+			<DropZoneProvider>
+				<AppShell />
+			</DropZoneProvider>
 			<Toaster position="top-right" closeButton />
 			<TanStackRouterDevtools />
 		</TanStackQueryProvider>

@@ -1,72 +1,39 @@
-import type {ClassValue} from "clsx";
-import {clsx} from "clsx";
-import {twMerge} from "tailwind-merge";
-import {logger} from "./logger";
-import {getAPIs,getWidget} from "./widget/api";
+import type { ClassValue } from "clsx";
+import { clsx } from "clsx";
+import { twMerge } from "tailwind-merge";
 
 export function cn(...inputs: ClassValue[]) {
 	return twMerge(clsx(inputs));
 }
 
-const GET_CSRF_TOKEN_URL = "/resources/v1/application/CSRF";
+export function highlightJson(obj: any): string {
+	const json = typeof obj === "string" ? obj : JSON.stringify(obj, null, 2);
+	if (!json) return "";
 
-export type CsrfResponse = {
-	csrf: {
-		name: string;
-		value: string;
-	};
-};
-
-export async function get3DSpaceUrl(): Promise<string> {
-	const { i3DXCompassServices } = getAPIs();
-	logger.info("i3DXCompassServices", i3DXCompassServices);
-	const widget = getWidget();
-	const tenant = widget.getValue("tenant") || "OnPremise";
-	logger.info("tenant", tenant);
-
-	return new Promise((resolve, reject) => {
-		(i3DXCompassServices as any).getPlatformServices({
-			tenant,
-			onComplete: (data: any) => {
-				const services = Array.isArray(data) ? data[0] : data;
-				logger.info("services : ", services);
-				const url = services["3DSpace"];
-				logger.info("3DSpace URL : ", url);
-				if (url) resolve(url);
-				else reject(new Error("3DSpace service URL not found"));
-			},
-			onFailure: (err: any) => {
-				logger.error("Failed to get platform services", err);
-				reject(err);
-			},
-		});
-	});
+	return json
+		.replace(/&/g, "&amp;")
+		.replace(/</g, "&lt;")
+		.replace(/>/g, "&gt;")
+		.replace(
+			/"([^"\\]*(\\.[^"\\]*)*)"\s*:/g,
+			'"<span class="json-key">$1</span>":',
+		)
+		.replace(
+			/:\s*"([^"\\]*(\\.[^"\\]*)*)"/g,
+			': "<span class="json-string">$1</span>"',
+		)
+		.replace(
+			/:\s*(-?\d+\.?\d*([eE][+-]?\d+)?)/g,
+			': <span class="json-number">$1</span>',
+		)
+		.replace(/:\s*(true|false)/g, ': <span class="json-boolean">$1</span>')
+		.replace(/:\s*(null)/g, ': <span class="json-null">$1</span>');
 }
 
-export async function fetchCsrfToken(): Promise<CsrfResponse> {
-	const spaceUrl = await get3DSpaceUrl();
-	logger.info("spaceUrl : ", spaceUrl);
-	const { WAFData } = getAPIs();
-	const url = `${spaceUrl}${GET_CSRF_TOKEN_URL}`;
-	logger.info("url : ", url);
-
-	return new Promise((resolve, reject) => {
-		(WAFData as any).authenticatedRequest(url, {
-			method: "GET",
-			onComplete: (data: string) => {
-				try {
-					const response: CsrfResponse = JSON.parse(data);
-					logger.info("response : ", response);
-					resolve(response);
-				} catch (e) {
-					logger.error("Failed to parse CSRF response", e);
-					reject(new Error("Failed to parse CSRF response"));
-				}
-			},
-			onFailure: (err: any) => {
-				logger.error("CSRF request failed", err);
-				reject(err);
-			},
-		});
-	});
+export function formatBytes(bytes: number): string {
+	if (bytes === 0) return "0 B";
+	const k = 1024;
+	const sizes = ["B", "KB", "MB"];
+	const i = Math.floor(Math.log(bytes) / Math.log(k));
+	return parseFloat((bytes / k ** i).toFixed(1)) + " " + sizes[i];
 }

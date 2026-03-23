@@ -1,10 +1,9 @@
-import { createRouter } from "@tanstack/react-router";
 import { getContext } from "@/components/root-provider";
 import { env } from "@/lib/env";
 import { routeTree } from "@/routeTree.gen";
+import { createRouter } from "@tanstack/react-router";
 
 export function getRouter() {
-	console.log({ BASE_PATH: env.VITE_WIDGET_BASE_PATH });
 	const router = createRouter({
 		routeTree,
 		basepath: env.VITE_WIDGET_BASE_PATH,

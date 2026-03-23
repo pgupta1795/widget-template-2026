@@ -1,0 +1,553 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "3DEXPERIENCE Zone Query API",
+    "description": "Computes the intersection between one or several PLM root elements and a volume defined by PLM Representation References. The PLM Elements (Reference or Representation Reference) are PRODUCT modeler elements.",
+    "version": "R2025x",
+    "contact": {
+      "name": "Dassault Systèmes",
+      "url": "https://www.3ds.com"
+    },
+    "license": {
+      "name": "3DEXPERIENCE License",
+      "url": "https://www.3ds.com/legal-notices"
+    }
+  },
+  "servers": [
+    {
+      "url": "{3DSpace}",
+      "variables": {
+        "3DSpace": {
+          "default": "https://oi000163582-eu1-space.3dexperience.3ds.com/enovia",
+          "description": "URL of the 3DSpace service"
+        }
+      }
+    }
+  ],
+  "paths": {
+    "/cvservlet/zonequeries": {
+      "post": {
+        "summary": "Execute Zone Query",
+        "description": "Computes the intersection between PLM root elements and a volume defined by PLM Representation References",
+        "operationId": "executeZoneQuery",
+        "parameters": [
+          {
+            "name": "tenant",
+            "in": "query",
+            "description": "Tenant identifier. Optional for on-premise, mandatory for cloud deployments",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "description": "Zone query request parameters",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ZoneQueryRequest"
+              },
+              "examples": {
+                "basicQuery": {
+                  "summary": "Basic query without volume filter",
+                  "value": {
+                    "root_path_physicalid": [
+                      ["56B5016900003A485D120F490007159A"]
+                    ],
+                    "select_bo": ["physicalid", "ds6w:type"],
+                    "select_rel": ["physicalid", "ds6w:type"],
+                    "label": "CAAAMyApp"
+                  }
+                },
+                "volumeFilterQuery": {
+                  "summary": "Query with volume filter",
+                  "value": {
+                    "root_path_physicalid": [
+                      ["857FEB8000002AC05D12059A0000C7C7"]
+                    ],
+                    "expand_iter": "-1",
+                    "select_bo": ["physicalid"],
+                    "select_rel": ["physicalid"],
+                    "label": "CAAAMyApp",
+                    "volume_filter": {
+                      "shape": {
+                        "path_physicalid": [
+                          "857FEB8000002AC05D12059A0000C7C7",
+                          "857FEB8000002AC05D12059A0000C7F7",
+                          "857FEB8000002AC05D12059A0000C7BF",
+                          "857FEB8000002AC05D12059A0000C7E7",
+                          "857FEB8000002AC05D12059A0000C7AF"
+                        ],
+                        "distance": "1.0",
+                        "intersection_mode": "fully_in"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ZoneQueryResponse"
+                },
+                "examples": {
+                  "successfulResponse": {
+                    "summary": "Successful zone query response",
+                    "value": {
+                      "results": [
+                        {
+                          "attributes": [
+                            { "name": "did", "value": "54724" },
+                            {
+                              "name": "physicalid",
+                              "value": "56B5016900003A485D120F490007159A"
+                            },
+                            { "name": "ds6w:type", "value": "PLMProductDS" }
+                          ]
+                        },
+                        {
+                          "path": [54724, 103351, 103180, 103119, 102582]
+                        }
+                      ]
+                    }
+                  },
+                  "tooLargeResponse": {
+                    "summary": "Response when result exceeds max_count_path",
+                    "value": {
+                      "results": [{ "status": "This expand is too large" }]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request - Invalid input parameters",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "error": {
+                    "errorCode": "CVSERVLET_INVALID_QUERY_ERROR",
+                    "errorMessage": "Invalid parameter XXX !"
+                  }
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "Unsupported Media Type - Wrong POST format",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "error": {
+                    "errorCode": "CVSERVLET_INVALID_QUERY_ERROR",
+                    "errorMessage": "Wrong content-type: application/json"
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "SecurityContext": []
+          }
+        ]
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "SecurityContext": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "SecurityContext",
+        "description": "Valid security context with format: <Role>.<Organization>.<CollaborativeSpace>"
+      }
+    },
+    "schemas": {
+      "ZoneQueryRequest": {
+        "type": "object",
+        "required": ["root_path_physicalid", "label"],
+        "properties": {
+          "root_path_physicalid": {
+            "type": "array",
+            "description": "Array of arrays defining root elements. Each sub-array represents a root path with PLM PhysicalIDs",
+            "items": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "description": "PLM PhysicalID"
+              }
+            },
+            "example": [["6428782B00002CBC5CDC3E45000101A7"]]
+          },
+          "label": {
+            "type": "string",
+            "description": "Applicative data used for logging traces during query execution",
+            "example": "MyApp.timestamp"
+          },
+          "expand_iter": {
+            "type": "string",
+            "description": "Expand depth of returned PLM occurrences. <0 (default) = no limit, 0 = PLM Reference only, X = X levels",
+            "example": "-1"
+          },
+          "select_bo": {
+            "type": "array",
+            "description": "PLM attributes to return for Business Objects",
+            "items": {
+              "type": "string"
+            },
+            "example": ["physicalid", "ds6w:type", "ds6w:label"]
+          },
+          "select_rel": {
+            "type": "array",
+            "description": "PLM attributes to return for Relational Objects",
+            "items": {
+              "type": "string"
+            },
+            "example": ["physicalid", "ds6w:type"]
+          },
+          "compute_select_bo": {
+            "type": "array",
+            "description": "File types to retrieve for Business Objects stored in FCS",
+            "items": {
+              "type": "string",
+              "enum": ["icon", "thumbnail_2d", "thumbnail_3d", "cgr"]
+            }
+          },
+          "max_count_path": {
+            "type": "string",
+            "description": "Maximum number of result paths. If exceeded, returns status message instead of results",
+            "example": "1000"
+          },
+          "volume_filter": {
+            "$ref": "#/components/schemas/VolumeFilter"
+          }
+        }
+      },
+      "VolumeFilter": {
+        "type": "object",
+        "description": "Defines intersection elements for volume filtering",
+        "oneOf": [
+          {
+            "type": "object",
+            "properties": {
+              "shape": {
+                "$ref": "#/components/schemas/Shape"
+              }
+            },
+            "required": ["shape"]
+          },
+          {
+            "type": "object",
+            "properties": {
+              "assemblyshape": {
+                "$ref": "#/components/schemas/AssemblyShape"
+              }
+            },
+            "required": ["assemblyshape"]
+          },
+          {
+            "type": "object",
+            "properties": {
+              "or": {
+                "$ref": "#/components/schemas/LogicalOperation"
+              }
+            },
+            "required": ["or"]
+          },
+          {
+            "type": "object",
+            "properties": {
+              "and": {
+                "$ref": "#/components/schemas/LogicalOperation"
+              }
+            },
+            "required": ["and"]
+          }
+        ]
+      },
+      "Shape": {
+        "type": "object",
+        "description": "Shape definition for volume filtering",
+        "oneOf": [
+          {
+            "type": "object",
+            "description": "Shape with absolute position",
+            "required": [
+              "physicalid",
+              "transformation_matrix",
+              "distance",
+              "intersection_mode"
+            ],
+            "properties": {
+              "physicalid": {
+                "type": "string",
+                "description": "PhysicalID of the PLM Representation Reference"
+              },
+              "transformation_matrix": {
+                "type": "array",
+                "description": "12-element transformation matrix [r1-r9, t1-t3] for rotation and translation",
+                "items": {
+                  "type": "string"
+                },
+                "minItems": 12,
+                "maxItems": 12
+              },
+              "distance": {
+                "type": "string",
+                "description": "Distance to expand filtering zone (in mm)"
+              },
+              "intersection_mode": {
+                "type": "string",
+                "enum": ["fully_in", "fully_out", "partly_in", "partly_out"],
+                "description": "Intersection mode between shape and root"
+              },
+              "maybe3d": {
+                "type": "boolean",
+                "description": "Add tag for potentially false positive results"
+              },
+              "inverted": {
+                "type": "boolean",
+                "description": "Find objects containing the specific object"
+              }
+            }
+          },
+          {
+            "type": "object",
+            "description": "Shape defined by path",
+            "required": ["path_physicalid", "distance", "intersection_mode"],
+            "properties": {
+              "path_physicalid": {
+                "type": "array",
+                "description": "Path from assembly root to representation leaf",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "distance": {
+                "type": "string",
+                "description": "Distance to expand filtering zone (in mm)"
+              },
+              "intersection_mode": {
+                "type": "string",
+                "enum": ["fully_in", "fully_out", "partly_in", "partly_out"],
+                "description": "Intersection mode between shape and root"
+              },
+              "maybe3d": {
+                "type": "boolean",
+                "description": "Add tag for potentially false positive results"
+              },
+              "inverted": {
+                "type": "boolean",
+                "description": "Find objects containing the specific object"
+              }
+            }
+          }
+        ]
+      },
+      "AssemblyShape": {
+        "type": "object",
+        "required": ["root_path_physicalid", "distance", "intersection_mode"],
+        "properties": {
+          "root_path_physicalid": {
+            "type": "array",
+            "description": "Assembly expanded into occurrences",
+            "items": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          "distance": {
+            "type": "string",
+            "description": "Distance to expand filtering zone (in mm)"
+          },
+          "intersection_mode": {
+            "type": "string",
+            "enum": ["fully_in", "fully_out", "partly_in", "partly_out"],
+            "description": "Intersection mode between shape and root"
+          }
+        }
+      },
+      "LogicalOperation": {
+        "oneOf": [
+          {
+            "type": "object",
+            "description": "Object with multiple keys",
+            "additionalProperties": true
+          },
+          {
+            "type": "array",
+            "description": "Array of objects with single keys",
+            "items": {
+              "type": "object",
+              "additionalProperties": true
+            }
+          }
+        ]
+      },
+      "ZoneQueryResponse": {
+        "type": "object",
+        "required": ["results"],
+        "properties": {
+          "results": {
+            "type": "array",
+            "description": "Array of results containing attributes and paths",
+            "items": {
+              "oneOf": [
+                {
+                  "$ref": "#/components/schemas/AttributesResult"
+                },
+                {
+                  "$ref": "#/components/schemas/PathResult"
+                },
+                {
+                  "$ref": "#/components/schemas/StatusResult"
+                }
+              ]
+            }
+          },
+          "error": {
+            "$ref": "#/components/schemas/ExpandError"
+          }
+        }
+      },
+      "AttributesResult": {
+        "type": "object",
+        "required": ["attributes"],
+        "properties": {
+          "attributes": {
+            "type": "array",
+            "description": "Array of attribute name-value pairs",
+            "items": {
+              "type": "object",
+              "required": ["name", "value"],
+              "properties": {
+                "name": {
+                  "type": "string",
+                  "description": "Attribute name (e.g., 'did', 'physicalid', 'ds6w:type')"
+                },
+                "value": {
+                  "oneOf": [{ "type": "string" }, { "type": "number" }],
+                  "description": "Attribute value"
+                }
+              }
+            }
+          }
+        }
+      },
+      "PathResult": {
+        "type": "object",
+        "required": ["path"],
+        "properties": {
+          "path": {
+            "type": "array",
+            "description": "Array of DIDs forming an occurrence path",
+            "items": {
+              "type": "integer"
+            }
+          }
+        }
+      },
+      "StatusResult": {
+        "type": "object",
+        "required": ["status"],
+        "properties": {
+          "status": {
+            "type": "string",
+            "description": "Status message (e.g., 'This expand is too large')"
+          }
+        }
+      },
+      "ExpandError": {
+        "type": "object",
+        "required": ["errorCode", "errorMessage", "errors"],
+        "properties": {
+          "errorCode": {
+            "type": "string",
+            "example": "CLOUDVIEW_ERROR__SUMMARY"
+          },
+          "errorMessage": {
+            "type": "string",
+            "example": "X expand error(s)"
+          },
+          "errors": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ExpandErrorDetail"
+            }
+          }
+        }
+      },
+      "ExpandErrorDetail": {
+        "type": "object",
+        "required": ["errorCode", "errorSeverity", "errorMessage"],
+        "properties": {
+          "errorCode": {
+            "type": "string"
+          },
+          "errorSeverity": {
+            "type": "string"
+          },
+          "errorMessage": {
+            "type": "string"
+          },
+          "errorOptionalMessage": {
+            "type": "string"
+          }
+        }
+      },
+      "ErrorResponse": {
+        "type": "object",
+        "required": ["error"],
+        "properties": {
+          "error": {
+            "type": "object",
+            "required": ["errorCode", "errorMessage"],
+            "properties": {
+              "errorCode": {
+                "type": "string"
+              },
+              "errorMessage": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "tags": [
+    {
+      "name": "Zone Query",
+      "description": "PLM zone query operations for computing intersections between elements and volumes"
+    }
+  ]
+}

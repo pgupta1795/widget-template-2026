@@ -1,8 +1,8 @@
-import type {DataDragAndDrop} from '@/lib/types/DataDragAndDrop';
-import type {i3DXCompassServices} from '@/lib/types/i3DXCompassServices';
-import type {PlatformAPI} from '@/lib/types/PlatformAPI';
-import type {WAFData} from '@/lib/types/WAFData';
-import type {Widget} from '@/lib/types/widget';
+import type { DataDragAndDrop } from "@/lib/types/DataDragAndDrop";
+import type { i3DXCompassServices } from "@/lib/types/i3DXCompassServices";
+import type { PlatformAPI } from "@/lib/types/PlatformAPI";
+import type { WAFData } from "@/lib/types/WAFData";
+import type { Widget } from "@/lib/types/widget";
 
 export interface UWA {
 	hosts: {

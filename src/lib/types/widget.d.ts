@@ -19,16 +19,22 @@ interface WidgetViewChangeEvent {
 	[key: string]: unknown;
 }
 
+interface WidgetPreferenceOption {
+	value: string;
+	label: string;
+}
+
 interface WidgetPreferenceDefinition {
 	name: string;
 	type: string;
 	label?: string;
 	defaultValue?: string;
+	options?: WidgetPreferenceOption[];
 	step?: string;
 	min?: string;
 	max?: string;
 	// Allow other metadata attributes
-	[key: string]: string | undefined;
+	[key: string]: unknown;
 }
 
 interface WidgetPreference extends WidgetPreferenceDefinition {
@@ -38,18 +44,14 @@ interface WidgetPreference extends WidgetPreferenceDefinition {
 export type Widget = {
 	/** Main HTML element of the widget; null until onLoad. */
 	body: HTMLElement | null;
-
 	/** Unique identifier of the widget instance. */
 	id: string;
-
 	/** Widget metadata keyed by meta `name`. */
 	metas: Record<string, string>;
-
 	/** ISO language code: 'en', 'fr', 'de', 'ja', 'zh', ... */
 	lang: string;
 
 	// Events
-
 	addEvent(
 		name: "onKeyboardAction",
 		listener: (evt: WidgetKeyboardActionEvent) => void,
@@ -112,4 +114,4 @@ export type Widget = {
 	 * Get full preference definition (including current value) by name.
 	 */
 	getPreference(name: string): WidgetPreference | undefined;
-}
+};

@@ -13,4 +13,4 @@ __unconfig*
 todos.json
 build
 docs\example
-.agent
+# .agent

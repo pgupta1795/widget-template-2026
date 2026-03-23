@@ -1,6 +1,6 @@
-import type {DSPlatformAPIs,UWA} from '@/lib/types';
-import type {Widget} from '@/lib/types/widget';
-import {createContext,useContext} from "react";
+import type { DSPlatformAPIs, UWA } from "@/lib/types";
+import type { Widget } from "@/lib/types/widget";
+import { createContext, useContext } from "react";
 
 type WidgetContextValue = {
 	widget: Widget;

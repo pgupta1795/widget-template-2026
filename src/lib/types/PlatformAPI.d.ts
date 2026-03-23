@@ -20,4 +20,4 @@ export type PlatformAPI = {
 	 * Unsubscribe a previously created subscription.
 	 */
 	unsubscribe(subscription: PlatformSubscription): void;
-}
+};
