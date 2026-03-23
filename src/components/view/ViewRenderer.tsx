@@ -10,18 +10,23 @@ interface ViewRendererProps {
 	config: ViewConfig;
 	data?: Record<string, unknown> | null;
 	className?: string;
+	tableRenderer?: (tableId: string, tableConfig: unknown) => React.ReactNode;
 }
 
 /**
  * ViewRenderer is the top-level component that takes a ViewConfig and renders
  * the complete view by composing layout, forms, tabs, and tables together.
  */
-export function ViewRenderer({ config, data, className }: ViewRendererProps) {
+export function ViewRenderer({ config, data, className, tableRenderer }: ViewRendererProps) {
 	const [detailPanelOpen, setDetailPanelOpen] = useState(true);
 
 	const renderTabContent = (tab: TabConfig): React.ReactNode => {
 		switch (tab.content.type) {
 			case "table":
+				if (tableRenderer && tab.content.tableId) {
+					const tableConfig = config.tables[tab.content.tableId];
+					return tableRenderer(tab.content.tableId, tableConfig);
+				}
 				return (
 					<div className="flex h-full flex-col p-0">
 						<div className="flex min-h-0 flex-1 flex-col">
@@ -97,6 +102,10 @@ export function ViewRenderer({ config, data, className }: ViewRendererProps) {
 			}
 
 			case "table":
+				if (tableRenderer) {
+					const tableConfig = config.tables[child.configId];
+					return tableRenderer(child.configId, tableConfig);
+				}
 				return (
 					<div className="flex h-full items-center justify-center text-xs text-muted-foreground">
 						<div className="text-center">

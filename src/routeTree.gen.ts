@@ -10,11 +10,17 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as XenRouteImport } from './routes/xen'
+import { Route as ViewsRouteImport } from './routes/views'
 import { Route as IndexRouteImport } from './routes/index'
 
 const XenRoute = XenRouteImport.update({
   id: '/xen',
   path: '/xen',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ViewsRoute = ViewsRouteImport.update({
+  id: '/views',
+  path: '/views',
   getParentRoute: () => rootRouteImport,
 } as any)
 const IndexRoute = IndexRouteImport.update({
@@ -25,27 +31,31 @@ const IndexRoute = IndexRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/views': typeof ViewsRoute
   '/xen': typeof XenRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/views': typeof ViewsRoute
   '/xen': typeof XenRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/views': typeof ViewsRoute
   '/xen': typeof XenRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/xen'
+  fullPaths: '/' | '/views' | '/xen'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/xen'
-  id: '__root__' | '/' | '/xen'
+  to: '/' | '/views' | '/xen'
+  id: '__root__' | '/' | '/views' | '/xen'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  ViewsRoute: typeof ViewsRoute
   XenRoute: typeof XenRoute
 }
 
@@ -56,6 +66,13 @@ declare module '@tanstack/react-router' {
       path: '/xen'
       fullPath: '/xen'
       preLoaderRoute: typeof XenRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/views': {
+      id: '/views'
+      path: '/views'
+      fullPath: '/views'
+      preLoaderRoute: typeof ViewsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/': {
@@ -70,6 +87,7 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  ViewsRoute: ViewsRoute,
   XenRoute: XenRoute,
 }
 export const routeTree = rootRouteImport
