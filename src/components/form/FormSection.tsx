@@ -1,5 +1,8 @@
+import { FieldGroup } from "@/components/ui/field";
+import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
 import type { FormSectionConfig } from "@/types";
+import { ChevronDown } from "lucide-react";
 import { useState } from "react";
 import { FormField } from "./FormField";
 
@@ -37,31 +40,32 @@ export function FormSection({ section, data }: FormSectionProps) {
 	return (
 		<div className="flex flex-col">
 			{section.label && (
-				<button
-					type="button"
-					onClick={() => section.collapsible && setCollapsed(!collapsed)}
-					className={cn(
-						"mb-1 flex items-center gap-1 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground",
-						section.collapsible && "cursor-pointer hover:text-foreground",
+				<>
+					{section.layout === "vertical" && (
+						<Separator className="mb-2" />
 					)}
-				>
-					{section.collapsible && (
-						<svg
-							className={cn(
-								"h-3 w-3 transition-transform",
-								collapsed && "-rotate-90",
-							)}
-							viewBox="0 0 12 12"
-							fill="currentColor"
-						>
-							<path d="M3 4.5l3 3 3-3" />
-						</svg>
-					)}
-					{section.label}
-				</button>
+					<button
+						type="button"
+						onClick={() => section.collapsible && setCollapsed(!collapsed)}
+						className={cn(
+							"mb-1 flex items-center gap-1 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground",
+							section.collapsible && "cursor-pointer hover:text-foreground",
+						)}
+					>
+						{section.collapsible && (
+							<ChevronDown
+								className={cn(
+									"h-3 w-3 transition-transform",
+									collapsed && "-rotate-90",
+								)}
+							/>
+						)}
+						{section.label}
+					</button>
+				</>
 			)}
 			{!collapsed && (
-				<div className={layoutClass} style={gridStyle}>
+				<FieldGroup className={layoutClass} style={gridStyle}>
 					{section.fields.map((field) => {
 						if (typeof field.visible === "boolean" && !field.visible) return null;
 						return (
@@ -73,7 +77,7 @@ export function FormSection({ section, data }: FormSectionProps) {
 							/>
 						);
 					})}
-				</div>
+				</FieldGroup>
 			)}
 		</div>
 	);

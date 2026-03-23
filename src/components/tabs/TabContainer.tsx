@@ -1,7 +1,8 @@
+import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
 import type { TabConfig } from "@/types";
 import { useState } from "react";
-import { Tab } from "./Tab";
 
 interface TabContainerProps {
 	tabs: TabConfig[];
@@ -23,38 +24,54 @@ export function TabContainer({
 		return true;
 	});
 
-	const [activeId, setActiveId] = useState(
-		defaultActiveId ?? visibleTabs[0]?.id ?? "",
-	);
+	const defaultValue = defaultActiveId ?? visibleTabs[0]?.id ?? "";
+	const [activeId, setActiveId] = useState(defaultValue);
 
-	const activeTab = visibleTabs.find((t) => t.id === activeId);
-
-	const handleTabChange = (tabId: string) => {
-		setActiveId(tabId);
-		onTabChange?.(tabId);
+	const handleTabChange = (value: string | null) => {
+		if (value === null) return;
+		setActiveId(value);
+		onTabChange?.(value);
 	};
 
 	return (
-		<div className={cn("flex min-h-0 flex-1 flex-col", className)}>
-			{/* Tab bar */}
-			<div
-				role="tablist"
-				className="flex shrink-0 items-center gap-0 border-b border-border bg-background px-1"
-			>
-				{visibleTabs.map((tab) => (
-					<Tab
-						key={tab.id}
-						tab={tab}
-						isActive={tab.id === activeId}
-						onClick={() => handleTabChange(tab.id)}
-					/>
-				))}
-			</div>
+		<Tabs
+			value={activeId}
+			onValueChange={handleTabChange}
+			className={cn("flex min-h-0 flex-1 flex-col", className)}
+		>
+			<TabsList variant="line" className="shrink-0 border-b border-border bg-background px-1">
+				{visibleTabs.map((tab) => {
+					const isDisabled =
+						typeof tab.disabled === "boolean" ? tab.disabled : false;
+					return (
+						<TabsTrigger
+							key={tab.id}
+							value={tab.id}
+							disabled={isDisabled}
+						>
+							{tab.icon && (
+								<span className="text-[14px] leading-none">{tab.icon}</span>
+							)}
+							{tab.label}
+							{typeof tab.badge === "string" && tab.badge && (
+								<Badge variant="secondary" className="ml-1 h-4 min-w-4 px-1 text-[10px]">
+									{tab.badge}
+								</Badge>
+							)}
+						</TabsTrigger>
+					);
+				})}
+			</TabsList>
 
-			{/* Tab content */}
-			<div role="tabpanel" className="min-h-0 flex-1 overflow-auto">
-				{activeTab && renderContent?.(activeTab)}
-			</div>
-		</div>
+			{visibleTabs.map((tab) => (
+				<TabsContent
+					key={tab.id}
+					value={tab.id}
+					className="min-h-0 flex-1 overflow-auto"
+				>
+					{tab.id === activeId && renderContent?.(tab)}
+				</TabsContent>
+			))}
+		</Tabs>
 	);
 }

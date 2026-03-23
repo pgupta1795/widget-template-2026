@@ -1,4 +1,15 @@
 import { useSidebarSlot } from "@/components/layout/sidebar-slot-context";
+import { Badge } from "@/components/ui/badge";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import {
+	SidebarGroup,
+	SidebarGroupContent,
+	SidebarGroupLabel,
+	SidebarHeader,
+	SidebarMenu,
+	SidebarMenuButton,
+	SidebarMenuItem,
+} from "@/components/ui/sidebar";
 import {
 	Table,
 	TableBody,
@@ -7,7 +18,6 @@ import {
 	TableHeader,
 	TableRow,
 } from "@/components/ui/table";
-import { SidebarGroup, SidebarGroupContent } from "@/components/ui/sidebar";
 import { ViewRenderer } from "@/components/view/ViewRenderer";
 import {
 	changeActionConfig,
@@ -18,11 +28,11 @@ import type { ViewConfig } from "@/types";
 import { useCallback, useState } from "react";
 import { createPortal } from "react-dom";
 import { changeActionData, bomData, partData, mockTableRows } from "./mock-data";
-import { cn } from "@/lib/utils";
 
 interface ExampleView {
 	id: string;
 	label: string;
+	description: string;
 	config: ViewConfig;
 	data: Record<string, unknown>;
 }
@@ -31,22 +41,34 @@ const EXAMPLE_VIEWS: ExampleView[] = [
 	{
 		id: "change-action",
 		label: "Change Action",
+		description: "Engineering change workflow",
 		config: changeActionConfig,
 		data: changeActionData,
 	},
 	{
 		id: "bom-explorer",
 		label: "BOM Explorer",
+		description: "Bill of materials hierarchy",
 		config: bomExplorerConfig,
 		data: bomData,
 	},
 	{
 		id: "part-detail",
 		label: "Part Detail",
+		description: "Part metadata and attributes",
 		config: partDetailConfig,
 		data: partData,
 	},
 ];
+
+const STATE_BADGE_VARIANTS: Record<string, "info" | "success" | "warning" | "destructive" | "secondary"> = {
+	Draft: "info",
+	"In Work": "info",
+	"In Approval": "warning",
+	Complete: "success",
+	Released: "success",
+	Rejected: "destructive",
+};
 
 function ViewsSidebarContent({
 	views,
@@ -59,30 +81,31 @@ function ViewsSidebarContent({
 }) {
 	return (
 		<div className="flex h-full flex-col">
-			<div className="border-b px-3 py-2">
+			<SidebarHeader className="border-b">
 				<h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
 					View Configs
 				</h3>
-			</div>
+			</SidebarHeader>
 			<SidebarGroup className="flex-1 overflow-auto p-0">
+				<SidebarGroupLabel>Example Configs</SidebarGroupLabel>
 				<SidebarGroupContent>
-					<div className="flex flex-col gap-0.5 p-1">
+					<SidebarMenu>
 						{views.map((view) => (
-							<button
-								key={view.id}
-								type="button"
-								onClick={() => onSelect(view.id)}
-								className={cn(
-									"w-full rounded-md px-3 py-2 text-left text-sm transition-colors",
-									activeId === view.id
-										? "bg-accent text-accent-foreground font-medium"
-										: "text-muted-foreground hover:bg-accent/50 hover:text-foreground",
-								)}
-							>
-								{view.label}
-							</button>
+							<SidebarMenuItem key={view.id}>
+								<SidebarMenuButton
+									isActive={activeId === view.id}
+									onClick={() => onSelect(view.id)}
+								>
+									<div className="flex flex-col gap-0.5">
+										<span>{view.label}</span>
+										<span className="text-[10px] text-muted-foreground font-normal">
+											{view.description}
+										</span>
+									</div>
+								</SidebarMenuButton>
+							</SidebarMenuItem>
 						))}
-					</div>
+					</SidebarMenu>
 				</SidebarGroupContent>
 			</SidebarGroup>
 		</div>
@@ -104,7 +127,7 @@ function MockTable({
 
 	return (
 		<div className="flex h-full flex-col">
-			<div className="min-h-0 flex-1 overflow-auto">
+			<ScrollArea className="min-h-0 flex-1">
 				<Table>
 					<TableHeader>
 						<TableRow className="bg-muted/30">
@@ -126,17 +149,29 @@ function MockTable({
 						) : (
 							rows.map((row, idx) => (
 								<TableRow key={idx}>
-									{columns.map((col) => (
-										<TableCell key={col.id}>
-											{String(row[col.accessorKey] ?? "")}
-										</TableCell>
-									))}
+									{columns.map((col) => {
+										const cellValue = String(row[col.accessorKey] ?? "");
+										const isStateColumn = col.header === "Maturity State" || col.accessorKey === "maturityState" || col.accessorKey === "state";
+										if (isStateColumn && cellValue) {
+											const variant = STATE_BADGE_VARIANTS[cellValue] ?? "secondary";
+											return (
+												<TableCell key={col.id}>
+													<Badge variant={variant}>{cellValue}</Badge>
+												</TableCell>
+											);
+										}
+										return (
+											<TableCell key={col.id}>
+												{cellValue}
+											</TableCell>
+										);
+									})}
 								</TableRow>
 							))
 						)}
 					</TableBody>
 				</Table>
-			</div>
+			</ScrollArea>
 			<div className="border-t bg-muted/20 px-3 py-1.5 text-xs text-muted-foreground">
 				Total Items: {rows.length} &nbsp; Selected Items: 0
 			</div>

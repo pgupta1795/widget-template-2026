@@ -1,5 +1,5 @@
 import { Badge } from "@/components/ui/badge";
-import { cn } from "@/lib/utils";
+import { Field, FieldContent, FieldLabel } from "@/components/ui/field";
 import type { FormFieldConfig } from "@/types";
 
 interface FormFieldProps {
@@ -18,26 +18,53 @@ function getNestedValue(obj: unknown, path: string): unknown {
 	}, obj);
 }
 
+/**
+ * Maps badge color configs to shadcn Badge variants based on color semantics.
+ */
+function getBadgeVariant(
+	colors?: { bg: string; text: string; border?: string },
+): "info" | "success" | "warning" | "destructive" | null {
+	if (!colors) return null;
+	const bg = colors.bg.toLowerCase();
+	// Blues → info
+	if (bg.includes("#dbeafe") || bg.includes("#eff6ff") || bg.includes("#bfdbfe") || bg.includes("blue")) return "info";
+	// Greens → success
+	if (bg.includes("#dcfce7") || bg.includes("#d1fae5") || bg.includes("#bbf7d0") || bg.includes("green")) return "success";
+	// Yellows/Ambers → warning
+	if (bg.includes("#fef3c7") || bg.includes("#fef9c3") || bg.includes("#fde68a") || bg.includes("yellow") || bg.includes("amber")) return "warning";
+	// Reds → destructive
+	if (bg.includes("#fee2e2") || bg.includes("#fecaca") || bg.includes("#fca5a5") || bg.includes("red")) return "destructive";
+	return null;
+}
+
 function BadgeField({
 	value,
 	config,
 }: { value: string; config?: FormFieldConfig["badgeConfig"] }) {
 	const colorMap = config?.colorMap ?? {};
 	const colors = colorMap[value];
+	const variant = getBadgeVariant(colors);
+
+	if (variant) {
+		return <Badge variant={variant}>{value}</Badge>;
+	}
+
 	if (colors) {
+		// Fallback for custom colors not matching a known variant
 		return (
-			<span
-				className="inline-flex items-center rounded px-2 py-0.5 text-[11px] font-semibold"
+			<Badge
+				variant="secondary"
 				style={{
 					backgroundColor: colors.bg,
 					color: colors.text,
-					border: colors.border ? `1px solid ${colors.border}` : undefined,
+					borderColor: colors.border,
 				}}
 			>
 				{value}
-			</span>
+			</Badge>
 		);
 	}
+
 	return <Badge variant="secondary">{value}</Badge>;
 }
 
@@ -135,20 +162,26 @@ export function FormField({ field, value: rawData, layout }: FormFieldProps) {
 		}
 	};
 
+	if (!isHorizontal) {
+		return (
+			<Field
+				orientation="vertical"
+				style={field.width ? { width: field.width } : undefined}
+			>
+				<FieldLabel className="text-xs text-muted-foreground">
+					{field.label}
+				</FieldLabel>
+				<FieldContent>{renderValue()}</FieldContent>
+			</Field>
+		);
+	}
+
 	return (
 		<div
-			className={cn(
-				"flex gap-1",
-				isHorizontal ? "flex-row items-center" : "flex-col",
-			)}
+			className="flex flex-row items-center gap-1"
 			style={field.width ? { width: field.width } : undefined}
 		>
-			<span
-				className={cn(
-					"shrink-0 text-xs text-muted-foreground",
-					isHorizontal && "after:content-[':']",
-				)}
-			>
+			<span className="shrink-0 text-xs text-muted-foreground after:content-[':']">
 				{field.label}
 			</span>
 			<span className="min-w-0">{renderValue()}</span>
