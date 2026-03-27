@@ -16,15 +16,18 @@ export class NodeContext {
 	private readonly store: Map<string, StoredEntry>;
 	private readonly row: GridRow | undefined;
 	private readonly params: Record<string, JsonPrimitive>;
+	private readonly nodeId: string;
 
 	constructor(
 		store: Map<string, StoredEntry> = new Map(),
 		row?: GridRow,
 		params: Record<string, JsonPrimitive> = {},
+		nodeId = "",
 	) {
 		this.store = store;
 		this.row = row;
 		this.params = params;
+		this.nodeId = nodeId;
 	}
 
 	get<T extends NodeType>(nodeId: string, _type: T): NodeOutputMap[T] {
@@ -57,14 +60,24 @@ export class NodeContext {
 	}
 
 	withRow(row: GridRow): NodeContext {
-		return new NodeContext(new Map(this.store), row, { ...this.params });
+		return new NodeContext(
+			new Map(this.store),
+			row,
+			{ ...this.params },
+			this.nodeId,
+		);
 	}
 
 	withParams(params: Record<string, JsonPrimitive>): NodeContext {
-		return new NodeContext(new Map(this.store), this.row, {
-			...this.params,
-			...params,
-		});
+		return new NodeContext(
+			new Map(this.store),
+			this.row,
+			{
+				...this.params,
+				...params,
+			},
+			this.nodeId,
+		);
 	}
 
 	getRow(): GridRow | undefined {
@@ -73,5 +86,13 @@ export class NodeContext {
 
 	getParams(): Record<string, JsonPrimitive> {
 		return this.params;
+	}
+
+	getNodeId(): string {
+		return this.nodeId;
+	}
+
+	forNode(nodeId: string): NodeContext {
+		return new NodeContext(this.store, this.row, this.params, nodeId);
 	}
 }

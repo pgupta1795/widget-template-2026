@@ -14,6 +14,10 @@ import { ColumnHydrateNodeExecutor } from "./nodes/column-hydrate-node";
 import { RowEnrichNodeExecutor } from "./nodes/row-enrich-node";
 import { RowExpandNodeExecutor } from "./nodes/row-expand-node";
 import { TransformNodeExecutor } from "./nodes/transform-node";
+import { FormFieldNodeExecutor } from "@/components/form-engine/nodes/form-field-node";
+import { FormSectionNodeExecutor } from "@/components/form-engine/nodes/form-section-node";
+import { HeaderFormNodeExecutor } from "@/components/form-engine/nodes/header-form-node";
+import { DetailPanelNodeExecutor } from "@/components/form-engine/nodes/detail-panel-node";
 
 export function createDefaultEngine(bearerToken?: string): DAGEngine {
 	const auth = new AuthAdapterRegistry()
@@ -31,6 +35,10 @@ export function createDefaultEngine(bearerToken?: string): DAGEngine {
 	nodeReg.register("rowExpand", new RowExpandNodeExecutor(nodeReg));
 	nodeReg.register("rowEnrich", new RowEnrichNodeExecutor());
 	nodeReg.register("columnHydrate", new ColumnHydrateNodeExecutor());
+	nodeReg.register("headerForm", new HeaderFormNodeExecutor());
+	nodeReg.register("detailPanel", new DetailPanelNodeExecutor());
+	nodeReg.register("formSection", new FormSectionNodeExecutor());
+	nodeReg.register("formField", new FormFieldNodeExecutor());
 
 	return new DAGEngine(nodeReg, auth);
 }

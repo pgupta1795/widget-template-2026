@@ -38,7 +38,11 @@ import { useDataGridContext } from "../data-grid-context";
 import { CommandButton } from "./command-button";
 import { CommandMenu } from "./command-menu";
 import { CommandSearch } from "./command-search";
-import type { ToolbarCommand, ToolbarCommandBase, ToolbarContext } from "./toolbar.types";
+import type {
+	ToolbarCommand,
+	ToolbarCommandBase,
+	ToolbarContext,
+} from "./toolbar.types";
 
 // ─── Built-in: Column Visibility ─────────────────────────────────────────────
 

@@ -26,6 +26,11 @@ export interface ConfiguredTableProps {
 	 * Receives the array of currently selected row objects.
 	 */
 	onSelectionChange?: (rows: GridRow[]) => void;
+	/**
+	 * Called when the user clicks on a data row.
+	 * Receives the row's original data object.
+	 */
+	onRowClick?: (row: GridRow) => void;
 }
 
 /**
@@ -46,6 +51,7 @@ export function ConfiguredTable({
 	toolbarCommands: consumerToolbarCommands,
 	toolbarClassName,
 	onSelectionChange,
+	onRowClick,
 }: ConfiguredTableProps) {
 	// One engine instance per table mount
 	const engine = useMemo(() => createDefaultEngine(), []);
@@ -133,6 +139,7 @@ export function ConfiguredTable({
 			onExpand={onExpand}
 			className={className}
 			onSelectionChange={onSelectionChange}
+			onRowClick={onRowClick}
 			// Toolbar wiring
 			// Pass undefined only when neither the DAG nor the consumer supplied any commands.
 			// If consumer explicitly passes toolbarCommands={[]} we preserve the empty array

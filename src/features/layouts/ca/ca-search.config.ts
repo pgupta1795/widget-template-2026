@@ -35,6 +35,11 @@ const CA_DETAIL_URL =
 export const caSearchConfig: DAGTableConfig = {
 	tableId: "ca-search",
 	mode: "infinite",
+	rowNavigation: {
+		to: "/ca/$nodeId",
+		paramField: "identifier",
+		paramName: "nodeId",
+	},
 
 	dag: {
 		nodes: [
@@ -231,41 +236,65 @@ export const caSearchConfig: DAGTableConfig = {
 				config: {
 					columns: [
 						// From root-api (always present)
-						{ field: "type",         header: "Type",          sortable: true },
-						{ field: "identifier",   header: "ID",            hidden: true },
+						{ field: "type", header: "Type", sortable: true },
+						{ field: "identifier", header: "ID", hidden: true },
 
 						// From rowEnrich (ca-detail-api) — populated after root load
-						{ field: "name",         header: "Name",          sortable: true, filterable: true },
-						{ field: "title",        header: "Title",         sortable: true, filterable: true },
+						{ field: "name", header: "Name", sortable: true, filterable: true },
+						{
+							field: "title",
+							header: "Title",
+							sortable: true,
+							filterable: true,
+						},
 						{
 							field: "state",
 							header: "State",
 							renderType: "badge",
 						},
-						{ field: "severity",     header: "Severity" },
-						{ field: "owner",        header: "Owner" },
+						{ field: "severity", header: "Severity" },
+						{ field: "owner", header: "Owner" },
 						{ field: "organization", header: "Organization" },
-						{ field: "collabSpace",  header: "Collab Space" },
-						{ field: "description",  header: "Description" },
-						{ field: "estimatedStart", header: "Est. Start",  type: "date" },
-						{ field: "estimatedEnd",   header: "Est. End",    type: "date" },
-						{ field: "actualStart",    header: "Act. Start",  type: "date", hidden: true },
-						{ field: "actualEnd",      header: "Act. End",    type: "date", hidden: true },
-						{ field: "onHold",       header: "On Hold",       type: "boolean" },
+						{ field: "collabSpace", header: "Collab Space" },
+						{ field: "description", header: "Description" },
+						{ field: "estimatedStart", header: "Est. Start", type: "date" },
+						{ field: "estimatedEnd", header: "Est. End", type: "date" },
+						{
+							field: "actualStart",
+							header: "Act. Start",
+							type: "date",
+							hidden: true,
+						},
+						{
+							field: "actualEnd",
+							header: "Act. End",
+							type: "date",
+							hidden: true,
+						},
+						{ field: "onHold", header: "On Hold", type: "boolean" },
 
 						// From columnHydrate (lazy — populated after "Load Details")
-						{ field: "assignees",       header: "Assignees",        hidden: false },
-						{ field: "reviewers",       header: "Reviewers",        hidden: false },
-						{ field: "proposedChanges", header: "Proposed Changes", hidden: false },
-						{ field: "proposedCount",   header: "# Proposed",       type: "number", hidden: true },
+						{ field: "assignees", header: "Assignees", hidden: false },
+						{ field: "reviewers", header: "Reviewers", hidden: false },
+						{
+							field: "proposedChanges",
+							header: "Proposed Changes",
+							hidden: false,
+						},
+						{
+							field: "proposedCount",
+							header: "# Proposed",
+							type: "number",
+							hidden: true,
+						},
 					],
 				},
 			},
 		],
 
 		edges: [
-			{ from: "root-api",    to: "row-enrich" },
-			{ from: "row-enrich",  to: "col-hydrate" },
+			{ from: "root-api", to: "row-enrich" },
+			{ from: "row-enrich", to: "col-hydrate" },
 			{ from: "col-hydrate", to: "columns" },
 		],
 
@@ -273,11 +302,11 @@ export const caSearchConfig: DAGTableConfig = {
 	},
 
 	features: {
-		sorting:          { enabled: true },
-		filtering:        { enabled: true },
-		columnResizing:   { enabled: true },
+		sorting: { enabled: true },
+		filtering: { enabled: true },
+		columnResizing: { enabled: true },
 		columnVisibility: { enabled: true },
-		selection:        { enabled: true, mode: "multi" },
+		selection: { enabled: true, mode: "multi" },
 	},
 
 	toolbarCommands: [

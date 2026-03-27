@@ -131,5 +131,63 @@ export function validateDAG(dag: DAGConfig, authIds: Set<string>): void {
 				}
 			}
 		}
+
+		if (node.type === "detailPanel") {
+			if (!nodeIds.has(node.config.sourceNodeId)) {
+				throw new DAGValidationError(
+					`DetailPanelNode "${node.id}" references unknown sourceNodeId: "${node.config.sourceNodeId}"`,
+					node.id,
+				);
+			}
+			if (
+				node.config.saveApiNodeId &&
+				!nodeIds.has(node.config.saveApiNodeId)
+			) {
+				throw new DAGValidationError(
+					`DetailPanelNode "${node.id}" references unknown saveApiNodeId: "${node.config.saveApiNodeId}"`,
+					node.id,
+				);
+			}
+			for (const sectionId of node.config.sections) {
+				if (!nodeIds.has(sectionId)) {
+					throw new DAGValidationError(
+						`DetailPanelNode "${node.id}" references unknown section: "${sectionId}"`,
+						node.id,
+					);
+				}
+			}
+		}
+
+		if (node.type === "headerForm") {
+			if (!nodeIds.has(node.config.sourceNodeId)) {
+				throw new DAGValidationError(
+					`HeaderFormNode "${node.id}" references unknown sourceNodeId: "${node.config.sourceNodeId}"`,
+					node.id,
+				);
+			}
+		}
+
+		if (node.type === "formSection") {
+			for (const fieldId of node.config.fieldIds) {
+				if (!nodeIds.has(fieldId)) {
+					throw new DAGValidationError(
+						`FormSectionNode "${node.id}" references unknown fieldId: "${fieldId}"`,
+						node.id,
+					);
+				}
+			}
+		}
+
+		if (node.type === "formField") {
+			if (
+				node.config.optionsApiNodeId &&
+				!nodeIds.has(node.config.optionsApiNodeId)
+			) {
+				throw new DAGValidationError(
+					`FormFieldNode "${node.id}" references unknown optionsApiNodeId: "${node.config.optionsApiNodeId}"`,
+					node.id,
+				);
+			}
+		}
 	}
 }

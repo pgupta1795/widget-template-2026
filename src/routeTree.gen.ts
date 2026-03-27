@@ -10,11 +10,18 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as XenRouteImport } from './routes/xen'
+import { Route as CaRouteImport } from './routes/ca'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as CaNodeIdRouteImport } from './routes/ca/$nodeId'
 
 const XenRoute = XenRouteImport.update({
   id: '/xen',
   path: '/xen',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CaRoute = CaRouteImport.update({
+  id: '/ca',
+  path: '/ca',
   getParentRoute: () => rootRouteImport,
 } as any)
 const IndexRoute = IndexRouteImport.update({
@@ -22,30 +29,42 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const CaNodeIdRoute = CaNodeIdRouteImport.update({
+  id: '/$nodeId',
+  path: '/$nodeId',
+  getParentRoute: () => CaRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/ca': typeof CaRouteWithChildren
   '/xen': typeof XenRoute
+  '/ca/$nodeId': typeof CaNodeIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/ca': typeof CaRouteWithChildren
   '/xen': typeof XenRoute
+  '/ca/$nodeId': typeof CaNodeIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/ca': typeof CaRouteWithChildren
   '/xen': typeof XenRoute
+  '/ca/$nodeId': typeof CaNodeIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/xen'
+  fullPaths: '/' | '/ca' | '/xen' | '/ca/$nodeId'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/xen'
-  id: '__root__' | '/' | '/xen'
+  to: '/' | '/ca' | '/xen' | '/ca/$nodeId'
+  id: '__root__' | '/' | '/ca' | '/xen' | '/ca/$nodeId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  CaRoute: typeof CaRouteWithChildren
   XenRoute: typeof XenRoute
 }
 
@@ -58,6 +77,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof XenRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/ca': {
+      id: '/ca'
+      path: '/ca'
+      fullPath: '/ca'
+      preLoaderRoute: typeof CaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -65,11 +91,29 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/ca/$nodeId': {
+      id: '/ca/$nodeId'
+      path: '/$nodeId'
+      fullPath: '/ca/$nodeId'
+      preLoaderRoute: typeof CaNodeIdRouteImport
+      parentRoute: typeof CaRoute
+    }
   }
 }
 
+interface CaRouteChildren {
+  CaNodeIdRoute: typeof CaNodeIdRoute
+}
+
+const CaRouteChildren: CaRouteChildren = {
+  CaNodeIdRoute: CaNodeIdRoute,
+}
+
+const CaRouteWithChildren = CaRoute._addFileChildren(CaRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  CaRoute: CaRouteWithChildren,
   XenRoute: XenRoute,
 }
 export const routeTree = rootRouteImport

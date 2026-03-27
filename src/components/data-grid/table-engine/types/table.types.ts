@@ -17,6 +17,12 @@ import type {
 } from "../core/dag-validator";
 import type { DAGConfig, JsonataExpr, JsonValue } from "./dag.types";
 import type { SerializableToolbarCommand } from "@/components/data-grid/toolbar/toolbar.types";
+import type {
+	DetailPanelNodeOutput,
+	FormFieldNodeOutput,
+	FormSectionNodeOutput,
+	HeaderFormNodeOutput,
+} from "../../form-engine/types/form.types";
 
 // Re-export for consumers of table.types
 export type { GridRow, GridColumnDef, ColumnType, SelectOption };
@@ -270,6 +276,10 @@ export interface NodeOutputMap {
 	action: ActionOutput;
 	rowEnrich: RowEnrichNodeOutput;
 	columnHydrate: ColumnHydrateNodeOutput;
+	headerForm: HeaderFormNodeOutput;
+	detailPanel: DetailPanelNodeOutput;
+	formSection: FormSectionNodeOutput;
+	formField: FormFieldNodeOutput;
 }
 
 // ── Features ──────────────────────────────────────────────────────────────────
@@ -288,6 +298,19 @@ export interface DAGTableConfig {
 	dag: DAGConfig;
 	features?: DAGFeaturesConfig;
 	density?: GridDensity;
+	/**
+	 * When set, clicking a row navigates to this route.
+	 * `paramField` is the row field whose value fills `paramName` in the route.
+	 * e.g. { to: "/ca/$nodeId", paramField: "identifier", paramName: "nodeId" }
+	 */
+	rowNavigation?: {
+		/** TanStack Router route pattern, e.g. "/ca/$nodeId" */
+		to: string;
+		/** Field in the row object whose value becomes the route param */
+		paramField: string;
+		/** Route param key, e.g. "nodeId" — must match the $-prefixed segment in `to` */
+		paramName: string;
+	};
 	/**
 	 * Toolbar commands for this table.
 	 * Use action: 'apiNodeId' to wire to a DAG API node.

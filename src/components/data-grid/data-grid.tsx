@@ -387,6 +387,11 @@ export interface DataGridProps<TData extends GridRow> {
 	 * Use this to react to selection changes from outside the grid.
 	 */
 	onSelectionChange?: (rows: GridRow[]) => void;
+	/**
+	 * Called when the user clicks on a data row.
+	 * Receives the row's original data object.
+	 */
+	onRowClick?: (row: GridRow) => void;
 	/** True while any per-row enrichment query is in-flight */
 	isEnriching?: boolean;
 	/** True while any per-column hydration query is in-flight */
@@ -446,4 +451,3 @@ export function DataGrid<TData extends GridRow>(props: DataGridProps<TData>) {
 		</DataGridProvider>
 	);
 }
-

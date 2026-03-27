@@ -1,5 +1,5 @@
 // src/features/xen/configs/eng-expand.config.ts
-import type {DAGTableConfig} from "@/components/data-grid/table-engine";
+import type { DAGTableConfig } from "@/components/data-grid/table-engine";
 
 /**
  * Engineering Item expand tree config.
@@ -213,9 +213,9 @@ export const engExpandConfig: DAGTableConfig = {
 			icon: "ChevronsDownUp",
 			handler: async (ctx) => {
 				const isExpanded = ctx.table.getIsAllRowsExpanded();
-				if(isExpanded){
+				if (isExpanded) {
 					ctx.table.toggleAllRowsExpanded(false);
-				}else{
+				} else {
 					const result = await ctx.executeApiNode("expand-all-api");
 					const treeRows = result[0]?.children ?? [];
 					if (treeRows.length > 0) {
@@ -223,7 +223,7 @@ export const engExpandConfig: DAGTableConfig = {
 						ctx.table.toggleAllRowsExpanded(true);
 					}
 				}
-			}
-		}
-	]
+			},
+		},
+	],
 };

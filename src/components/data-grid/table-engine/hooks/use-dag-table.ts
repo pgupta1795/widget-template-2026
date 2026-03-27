@@ -6,16 +6,16 @@ import {
 	useQuery,
 	useQueryClient,
 } from "@tanstack/react-query";
-import {useCallback,useEffect,useMemo,useRef,useState} from "react";
-import type {DAGEngine} from "../core/dag-engine";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import type { DAGEngine } from "../core/dag-engine";
 import type {
 	DAGExecutionError,
 	DAGValidationError,
 } from "../core/dag-validator";
-import {NodeContext} from "../core/node-context";
-import {evaluateExpr} from "../jsonata-evaluator";
-import {ApiNodeExecutor} from "../nodes/api-node";
-import type {JsonPrimitive} from "../types/dag.types";
+import { NodeContext } from "../core/node-context";
+import { evaluateExpr } from "../jsonata-evaluator";
+import { ApiNodeExecutor } from "../nodes/api-node";
+import type { JsonPrimitive } from "../types/dag.types";
 import type {
 	ApiNodeConfig,
 	ColumnHydrateNodeOutput,
@@ -167,18 +167,20 @@ export function useDAGTable(
 			ctxRef.current = ctx;
 
 			// Extract rowEnrich / columnHydrate outputs from this page's DAG execution.
-			const rowEnrichNodeIdInf = dag.nodes.find((n) => n.type === 'rowEnrich')?.id;
+			const rowEnrichNodeIdInf = dag.nodes.find(
+				(n) => n.type === "rowEnrich",
+			)?.id;
 			const pageRowEnrichOutput: RowEnrichNodeOutput | undefined =
 				rowEnrichNodeIdInf && ctx.has(rowEnrichNodeIdInf)
-					? ctx.get(rowEnrichNodeIdInf, 'rowEnrich')
+					? ctx.get(rowEnrichNodeIdInf, "rowEnrich")
 					: undefined;
 
 			const colHydrateNodeIdInf = dag.nodes.find(
-				(n) => n.type === 'columnHydrate',
+				(n) => n.type === "columnHydrate",
 			)?.id;
 			const pageColHydrateOutput: ColumnHydrateNodeOutput | undefined =
 				colHydrateNodeIdInf && ctx.has(colHydrateNodeIdInf)
-					? ctx.get(colHydrateNodeIdInf, 'columnHydrate')
+					? ctx.get(colHydrateNodeIdInf, "columnHydrate")
 					: undefined;
 
 			return {
@@ -231,7 +233,7 @@ export function useDAGTable(
 
 	// Aggregate rowEnrich output across pages in infinite mode; use flat otherwise.
 	const rowEnrichOutput: RowEnrichNodeOutput | undefined = useMemo(() => {
-		if (mode === 'infinite') {
+		if (mode === "infinite") {
 			const pages = infiniteQuery.data?.pages ?? [];
 			const allDescriptors = pages.flatMap(
 				(p) => p.rowEnrichOutput?.descriptors ?? [],
@@ -245,11 +247,12 @@ export function useDAGTable(
 	}, [mode, infiniteQuery.data, flatQuery.data]);
 
 	// Has the base fetch completed for the active mode?
-	const hasBaseData = mode === 'infinite' ? !!infiniteQuery.data : !!flatQuery.data;
+	const hasBaseData =
+		mode === "infinite" ? !!infiniteQuery.data : !!flatQuery.data;
 
 	const enrichDescriptors = rowEnrichOutput?.descriptors ?? [];
-	const enrichChildApiNodeId = rowEnrichOutput?.childApiNodeId ?? '';
-	const enrichRowKeyField = rowEnrichOutput?.rowKeyField ?? 'id';
+	const enrichChildApiNodeId = rowEnrichOutput?.childApiNodeId ?? "";
+	const enrichRowKeyField = rowEnrichOutput?.rowKeyField ?? "id";
 	const enrichMergeTransform = rowEnrichOutput?.mergeTransform;
 	const enrichInvalidateKeys = rowEnrichOutput?.invalidateQueryKeys;
 
@@ -272,11 +275,11 @@ export function useDAGTable(
 
 				const firstRow = result.rows[0] ?? {};
 				if (enrichMergeTransform) {
-					const merged = await evaluateExpr<GridRow>(
+					const merged = (await evaluateExpr<GridRow>(
 						enrichMergeTransform,
 						rowCtx,
 						firstRow,
-					) as GridRow;
+					)) as GridRow;
 					return merged;
 				}
 				return firstRow;
@@ -289,7 +292,7 @@ export function useDAGTable(
 
 	// Aggregate colHydrate output across pages in infinite mode; use flat otherwise.
 	const colHydrateOutput: ColumnHydrateNodeOutput | undefined = useMemo(() => {
-		if (mode === 'infinite') {
+		if (mode === "infinite") {
 			const pages = infiniteQuery.data?.pages ?? [];
 			const allDescriptors = pages.flatMap(
 				(p) => p.colHydrateOutput?.descriptors ?? [],
@@ -303,7 +306,7 @@ export function useDAGTable(
 	}, [mode, infiniteQuery.data, flatQuery.data]);
 	const hydrateDescriptors = colHydrateOutput?.descriptors ?? [];
 	const hydrateColumnEntries = colHydrateOutput?.columnEntries ?? [];
-	const hydrateRowKeyField = colHydrateOutput?.rowKeyField ?? 'id';
+	const hydrateRowKeyField = colHydrateOutput?.rowKeyField ?? "id";
 
 	const hydrateQueries = useQueries({
 		queries: hydrateDescriptors.map((desc) => {
@@ -371,9 +374,14 @@ export function useDAGTable(
 			if (matches.length === 0) return row;
 			let merged: GridRow = { ...row };
 			for (const { desc, i } of matches) {
-				if (hydrateQueries[i]?.status === 'success') {
+				if (hydrateQueries[i]?.status === "success") {
 					const patch = hydrateQueries[i].data;
-					if (patch !== null && patch !== undefined && typeof patch === 'object' && !Array.isArray(patch)) {
+					if (
+						patch !== null &&
+						patch !== undefined &&
+						typeof patch === "object" &&
+						!Array.isArray(patch)
+					) {
 						merged = { ...merged, ...(patch as GridRow) };
 					} else {
 						merged = { ...merged, [desc.columnId]: patch };

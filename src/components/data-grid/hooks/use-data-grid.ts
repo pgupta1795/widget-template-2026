@@ -132,6 +132,8 @@ export interface DataGridConfig<TData extends GridRow> {
 	triggerEnrich?: () => void;
 	/** Trigger a column's hydration queries when that column has lazy === true */
 	triggerHydrate?: (columnId: string) => void;
+	/** Called when the user clicks a data row. Receives the row's original data object. */
+	onRowClick?: (row: GridRow) => void;
 }
 
 /**
@@ -176,6 +178,7 @@ export function useDataGrid<TData extends GridRow>(
 		isHydrating: externalIsHydrating = false,
 		triggerEnrich,
 		triggerHydrate,
+		onRowClick,
 	} = config;
 
 	const executeApiNode = React.useCallback(
@@ -530,6 +533,7 @@ export function useDataGrid<TData extends GridRow>(
 			isHydrating: externalIsHydrating,
 			triggerEnrich,
 			triggerHydrate,
+			onRowClick,
 		}),
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 		[
@@ -576,6 +580,7 @@ export function useDataGrid<TData extends GridRow>(
 			externalIsHydrating,
 			triggerEnrich,
 			triggerHydrate,
+			onRowClick,
 		],
 	);
 }

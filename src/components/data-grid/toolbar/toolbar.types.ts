@@ -8,7 +8,7 @@ import type {
 import type { Row, Table } from "@tanstack/react-table";
 import type { ComponentType } from "react";
 import type { ActiveEdit } from "@/components/data-grid/features/editing/use-editing";
-import React from "react";
+import type React from "react";
 
 // ── Shared base ───────────────────────────────────────────────────────────────
 

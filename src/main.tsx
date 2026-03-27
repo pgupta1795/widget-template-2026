@@ -9,6 +9,15 @@ import { init } from "./lib/widget/api";
 import { WidgetProvider } from "./lib/widget/context";
 import { getRouter } from "./router";
 import { initSecurityContext } from "./services/core/security-context-manager";
+import { bootstrapFormEngine } from "@/components/form-engine";
+import { bootstrapTabEngine } from "@/components/tab-engine";
+import { bootstrapXenFeature } from "@/features/xen/bootstrap";
+import { bootstrapLayoutsFeature } from "@/features/layouts/bootstrap";
+
+bootstrapFormEngine();
+bootstrapTabEngine();
+bootstrapXenFeature();
+bootstrapLayoutsFeature();
 
 const waitFor = (predicate: () => boolean, timeout: number) => {
 	return new Promise<boolean>((resolve, reject) => {

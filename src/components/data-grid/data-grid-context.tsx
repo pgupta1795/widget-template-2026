@@ -65,6 +65,8 @@ export interface DataGridContextValue {
 	isHydrating: boolean;
 	triggerEnrich?: () => void;
 	triggerHydrate?: (columnId: string) => void;
+	/** Called when the user clicks a data row. Receives the row's original data object. */
+	onRowClick?: (row: GridRow) => void;
 }
 
 const DataGridContext = React.createContext<DataGridContextValue | null>(null);

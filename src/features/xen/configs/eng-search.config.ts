@@ -1,4 +1,4 @@
-import type {DAGTableConfig} from "@/components/data-grid/table-engine";
+import type { DAGTableConfig } from "@/components/data-grid/table-engine";
 
 /**
  * Engineering Item search table config.
@@ -149,9 +149,7 @@ export const engSearchConfig: DAGTableConfig = {
 			enabled: true,
 			align: "right",
 			icon: "Settings",
-			commands: [
-				
-			],
+			commands: [],
 		},
 	],
 };

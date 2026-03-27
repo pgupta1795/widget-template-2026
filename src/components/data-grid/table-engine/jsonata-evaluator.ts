@@ -13,17 +13,22 @@ import type { DepthRule } from "./types/table.types";
  * Bindings available in expressions:
  *   $row    — from context.getRow() (empty object if no row)
  *   $params — from context.getParams()
+ *   + any keys from extraBindings (caller-supplied, spread last so they win)
  *
- * @param expression - JSONata string. Empty/whitespace returns undefined.
- * @param context    - NodeContext carrying $row / $params bindings.
- * @param inputDoc   - Primary input document (e.g. raw API response data).
- *                     Accessible as $, $.field, etc. in expressions.
+ * @param expression    - JSONata string. Empty/whitespace returns undefined.
+ * @param context       - NodeContext carrying $row / $params bindings.
+ * @param inputDoc      - Primary input document (e.g. raw API response data).
+ *                        Accessible as $, $.field, etc. in expressions.
+ * @param extraBindings - Optional additional bindings merged into the JSONata
+ *                        binding object. Keys here override the defaults
+ *                        (row, params) when there is a name collision.
  * @returns Result cast to T (documented cast boundary — caller asserts type).
  */
 export async function evaluateExpr<T>(
 	expression: string,
 	context: NodeContext,
 	inputDoc: unknown = {},
+	extraBindings?: Record<string, unknown>,
 ): Promise<T | undefined> {
 	if (!expression.trim()) return undefined;
 
@@ -33,6 +38,7 @@ export async function evaluateExpr<T>(
 		const result = await expr.evaluate(inputDoc, {
 			row: context.getRow() ?? {},
 			params: context.getParams(),
+			...extraBindings,
 		});
 		return result as T;
 	} catch (err) {

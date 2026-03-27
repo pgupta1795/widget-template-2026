@@ -27,6 +27,7 @@ export function DataGridRow({
 		columnVirtualizer,
 		mutatingRowIds,
 		errorRowIds,
+		onRowClick,
 	} = useDataGridContext();
 
 	// Render group rows differently
@@ -110,12 +111,14 @@ export function DataGridRow({
 					pinned && "bg-muted/60 shadow-sm",
 					isMutating && "opacity-70 pointer-events-none",
 					isError && "animate-[flash-error_0.4s_ease]",
+					onRowClick && "cursor-pointer hover:bg-accent",
 					rowRevealClass,
 					className,
 				)}
 				data-selected={String(row.getIsSelected())}
 				data-pinned={pinned}
 				style={rowStyle}
+				onClick={onRowClick ? () => onRowClick(row.original) : undefined}
 			>
 				{leftCells.map((cell) => (
 					<DataGridCell key={cell.id} cell={cell} />
@@ -140,12 +143,14 @@ export function DataGridRow({
 				"data-[selected=true]:bg-primary/6 data-[selected=true]:border-l-2 data-[selected=true]:border-l-primary",
 				"transition-colors duration-100",
 				pinned && "bg-muted/60 shadow-sm",
+				onRowClick && "cursor-pointer hover:bg-accent",
 				rowRevealClass,
 				className,
 			)}
 			data-selected={String(row.getIsSelected())}
 			data-pinned={pinned}
 			style={rowStyle}
+			onClick={onRowClick ? () => onRowClick(row.original) : undefined}
 		>
 			{row.getVisibleCells().map((cell) => (
 				<DataGridCell key={cell.id} cell={cell} />

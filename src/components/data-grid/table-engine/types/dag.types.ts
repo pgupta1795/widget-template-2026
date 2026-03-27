@@ -10,6 +10,12 @@ import type {
 	RowExpandNodeConfig,
 	TransformNodeConfig,
 } from "./table.types";
+import type {
+	DetailPanelNodeConfig,
+	FormFieldNodeConfig,
+	FormSectionNodeConfig,
+	HeaderFormNodeConfig,
+} from "../../form-engine/types/form.types";
 
 export type JsonPrimitive = string | number | boolean | null;
 export type JsonValue =
@@ -34,7 +40,11 @@ export type NodeType =
 	| "merge"
 	| "action"
 	| "rowEnrich"
-	| "columnHydrate";
+	| "columnHydrate"
+	| "headerForm"
+	| "detailPanel"
+	| "formSection"
+	| "formField";
 
 export interface NodeConfigMap {
 	api: ApiNodeConfig;
@@ -45,6 +55,10 @@ export interface NodeConfigMap {
 	action: ActionNodeConfig;
 	rowEnrich: RowEnrichNodeConfig;
 	columnHydrate: ColumnHydrateNodeConfig;
+	headerForm: HeaderFormNodeConfig;
+	detailPanel: DetailPanelNodeConfig;
+	formSection: FormSectionNodeConfig;
+	formField: FormFieldNodeConfig;
 }
 
 export type { NodeOutputMap };
@@ -57,7 +71,11 @@ export type DAGNode =
 	| { id: string; type: "merge"; config: MergeNodeConfig }
 	| { id: string; type: "action"; config: ActionNodeConfig }
 	| { id: string; type: "rowEnrich"; config: RowEnrichNodeConfig }
-	| { id: string; type: "columnHydrate"; config: ColumnHydrateNodeConfig };
+	| { id: string; type: "columnHydrate"; config: ColumnHydrateNodeConfig }
+	| { id: string; type: "headerForm"; config: HeaderFormNodeConfig }
+	| { id: string; type: "detailPanel"; config: DetailPanelNodeConfig }
+	| { id: string; type: "formSection"; config: FormSectionNodeConfig }
+	| { id: string; type: "formField"; config: FormFieldNodeConfig };
 
 export interface DAGEdge {
 	from: string;
