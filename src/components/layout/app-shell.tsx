@@ -13,8 +13,8 @@ export function AppShell() {
 			<SidebarProvider className="h-full overflow-hidden bg-background">
 				<AppSidebar />
 				<SidebarInset className="flex-1 flex flex-col overflow-hidden min-w-0">
-					<div className="flex items-center px-3 h-9 border-b border-border shrink-0 bg-card/40">
-						<SidebarTrigger className="-ml-1" />
+					<div className="flex items-center px-3 h-9 border-b border-border/60 shrink-0 bg-card shadow-sm">
+						<SidebarTrigger className="-ml-1 text-muted-foreground hover:text-foreground transition-colors" />
 					</div>
 					<div className="flex-1 overflow-hidden">
 						<Outlet />

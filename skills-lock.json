@@ -1,0 +1,20 @@
+{
+  "version": 1,
+  "skills": {
+    "core": {
+      "source": "vercel-labs/json-render",
+      "sourceType": "github",
+      "computedHash": "ae3aa6ba326f01f132e08724614649a7ebadfaea37cab016de37432a5c2852af"
+    },
+    "react": {
+      "source": "vercel-labs/json-render",
+      "sourceType": "github",
+      "computedHash": "ba1686f464e4da1e44da6ce2eb38ea56c2af2790f5c911d8cee2a8f2dd93ceb7"
+    },
+    "shadcn": {
+      "source": "vercel-labs/json-render",
+      "sourceType": "github",
+      "computedHash": "7fb97f1cd76752195b705a3548e2aa5efff5f5f56cdd6ee4cc9c947fc149f35a"
+    }
+  }
+}

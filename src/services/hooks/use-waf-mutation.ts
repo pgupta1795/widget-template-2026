@@ -144,7 +144,14 @@ export function useWafMutation<TData = unknown, TBody = unknown>(
 	opts: RequestOptions = {},
 ): UseMutationResult<ServiceResponse<TData>, ServiceError, TBody> {
 	return useMutation<ServiceResponse<TData>, ServiceError, TBody>({
-		mutationFn: (body: TBody) =>
-			httpClient.execute<TData>(method, url, { ...opts, data: body as any }),
+		mutationFn: (body: TBody) => {
+			// Route through method-specific helpers so withBody runs:
+			// JSON.stringify + Content-Type: application/json are applied automatically.
+			if (method === "POST") return httpClient.post<TData>(url, body, opts);
+			if (method === "PUT") return httpClient.put<TData>(url, body, opts);
+			if (method === "PATCH") return httpClient.patch<TData>(url, body, opts);
+			// DELETE has no body
+			return httpClient.execute<TData>(method, url, opts);
+		},
 	});
 }
